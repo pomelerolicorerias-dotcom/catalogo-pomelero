@@ -38,16 +38,16 @@
             <div class="flex-1 max-w-md mx-2">
                 <div class="relative">
                     <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, marca o capacidad..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/60 transition-all">
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/60 transition-all">
                     <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
 
             <!-- BOTONES SUPERIORES -->
             <div class="flex items-center gap-3">
-                <button onclick="openClientProfileModal()" class="bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5" title="Ingresar o Crear Usuario">
+                <button onclick="openClientAuthModal()" class="bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5" title="Iniciar Sesión o Crear Cuenta">
                     <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    <span id="clientNavName">Ingresar o Crear</span>
+                    <span id="clientNavName">Iniciar Sesión</span>
                 </button>
                 <button onclick="openCart()" class="relative bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -62,7 +62,7 @@
         </div>
     </header>
 
-    <!-- ALERTA SEMANAL / REQUISICION -->
+    <!-- ALERTA SEMANAL -->
     <div id="weeklyAlertBanner" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-4 py-3 text-center text-xs sm:text-sm text-amber-300 flex items-center justify-center gap-3">
         <span>👋 ¡Hola! Han pasado más de 7 días desde tu última visita. ¿Deseas armar tu pedido de mayoreo para esta semana?</span>
         <button onclick="dismissWeeklyAlert()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs">Cerrar</button>
@@ -70,7 +70,6 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
-
         <!-- VISTA CATALOGO -->
         <div id="view-catalogo" class="space-y-6">
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="categoryFilters">
@@ -91,7 +90,6 @@
                 <button onclick="verifyAdminPassword()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-xl transition-all">Acceder al Panel</button>
             </div>
 
-            <!-- PANEL DE ADMIN DESBLOQUEADO -->
             <div id="adminPanelContent" class="hidden space-y-6">
                 <div class="flex border-b border-slate-800 gap-4 overflow-x-auto">
                     <button onclick="switchAdminTab('sync')" id="tabSyncBtn" class="pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all">Sincronizar Excel y SKU</button>
@@ -109,13 +107,13 @@
                     <div id="clientsListContainer" class="space-y-4"></div>
                 </div>
 
-                <!-- SECCION CONFIGURAR WHATSAPP Y LOGOTIPO -->
+                <!-- SECCION CONFIGURAR -->
                 <div id="adminConfigSection" class="hidden space-y-6">
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
                         <h3 class="font-bold text-lg text-slate-200">Número de WhatsApp para Pedidos</h3>
                         <div class="flex gap-3">
                             <input type="text" id="adminPhoneInput" placeholder="Ej. 523781211112" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                            <button onclick="saveAdminPhone()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap">Guardar Teléfono</button>
+                            <button onclick="saveAdminPhone()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap">Guardar Teléfono</button>
                         </div>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
@@ -137,30 +135,27 @@
                         <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between space-y-3">
                             <div>
                                 <h3 class="font-bold text-slate-200">Plantilla de Inventario con SKU</h3>
-                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos para evitar duplicar productos.</p>
+                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos.</p>
                             </div>
-                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">Descargar Plantilla Base</button>
+                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium">Descargar Plantilla Base</button>
                         </div>
                         <div class="bg-rose-950/20 border border-rose-900/40 p-5 rounded-2xl flex flex-col justify-between space-y-3">
                             <div>
                                 <h3 class="font-bold text-rose-300">Zona de Peligro</h3>
-                                <p class="text-xs text-rose-400/80 mt-1">Borra absolutamente todo el catálogo actual para iniciar desde cero.</p>
+                                <p class="text-xs text-rose-400/80 mt-1">Borra absolutamente todo el catálogo actual.</p>
                             </div>
-                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">Borrar Catálogo Completo</button>
+                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Borrar Catálogo Completo</button>
                         </div>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-6">
-                        <div class="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-8 text-center transition-all cursor-pointer bg-slate-950/50 relative" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                        <div class="border-2 border-dashed border-slate-700 rounded-2xl p-8 text-center bg-slate-950/50 relative" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
                             <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
-                            <div class="space-y-3">
-                                <h3 class="font-semibold text-slate-200">Arrastra tu archivo Excel aquí o haz clic</h3>
-                                <p class="text-xs text-slate-400">El sistema actualizará precios basándose en el <b>Código (SKU)</b>.</p>
-                            </div>
+                            <h3 class="font-semibold text-slate-200">Arrastra tu archivo Excel aquí o haz clic</h3>
                         </div>
                         <div id="syncPreviewContainer" class="hidden space-y-4 pt-4 border-t border-slate-800">
                             <div class="flex justify-between items-center">
                                 <span id="syncStatusText" class="text-sm font-medium text-amber-400">Archivo cargado con éxito</span>
-                                <button onclick="executeSync()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all">Sincronizar a Base de Datos</button>
+                                <button onclick="executeSync()" class="bg-amber-500 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm">Sincronizar a Base de Datos</button>
                             </div>
                         </div>
                     </div>
@@ -169,7 +164,7 @@
                 <!-- SECCION PEDIDOS -->
                 <div id="adminOrdersSection" class="hidden space-y-6">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-slate-200">Gestión de Pedidos de Clientes</h3>
+                        <h3 class="font-bold text-lg text-slate-200">Gestión de Pedidos</h3>
                         <div class="flex gap-2">
                             <button onclick="filterOrders('pending')" id="filterPendBtn" class="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold">Pendientes</button>
                             <button onclick="filterOrders('archived')" id="filterArchBtn" class="bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold">Archivados</button>
@@ -181,37 +176,44 @@
         </div>
     </main>
 
-    <!-- MODAL PERFIL DE CLIENTE (INGRESAR O CREAR) -->
-    <div id="clientProfileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
-                <h3 class="font-bold text-lg text-amber-400">Ingresar o Crear Usuario</h3>
-                <button onclick="closeClientProfileModal()" class="text-slate-400 hover:text-slate-200">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+    <!-- MODAL DE INICIO DE SESIÓN / CREAR CUENTA (ESTILO MICROSOFT) -->
+    <div id="clientAuthModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 w-full max-w-md rounded-2xl p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeClientAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- LOGOTIPO EN MODAL -->
+            <div class="space-y-2">
+                <h3 class="text-2xl font-bold text-slate-100" id="authModalTitle">Iniciar sesión</h3>
+                <p class="text-xs text-slate-400" id="authModalSubtitle">Usa tu número de teléfono o usuario registrado para acceder al catálogo de mayoreo.</p>
             </div>
-            <p class="text-xs text-slate-400">Regístrate o actualiza tus datos. Esto quedará guardado para autocompletar tus pedidos al instante y se sincronizará con el sistema del negocio.</p>
-            
-            <div class="space-y-3">
+
+            <!-- PASO 1: IDENTIFICADOR (TELÉFONO / USUARIO) -->
+            <div id="authStep1" class="space-y-4">
                 <div>
-                    <label class="text-xs font-medium text-slate-300 block mb-1">Nombre o Negocio *</label>
-                    <input type="text" id="profileName" placeholder="Ej. Licorería El Porvenir" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="authIdentifier" placeholder="Teléfono, usuario o nombre..." class="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all">
                 </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-300 block mb-1">Teléfono / WhatsApp *</label>
-                    <input type="tel" id="profilePhone" placeholder="Ej. 3781234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <div class="text-xs space-y-2">
+                    <a href="#" onclick="switchAuthMode('register'); return false;" class="text-amber-400 hover:underline block">¿No tiene una cuenta? Cree una.</a>
                 </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-300 block mb-1">Dirección de Entrega *</label>
-                    <input type="text" id="profileAddress" placeholder="Calle, Número, Colonia, Ciudad" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                </div>
-                <div>
-                    <label class="text-xs font-medium text-slate-300 block mb-1">Notas Predeterminadas</label>
-                    <textarea id="profileNotes" placeholder="Referencias de entrega..." rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+                <div class="pt-4 flex justify-end">
+                    <button onclick="processAuthStep1()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg">Siguiente</button>
                 </div>
             </div>
 
-            <button onclick="saveClientProfile()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20">Guardar y Registrarse</button>
+            <!-- PASO 2: FORMULARIO DE REGISTRO / COMPLETAR DATOS -->
+            <div id="authStepRegister" class="space-y-3 hidden">
+                <input type="text" id="regName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <input type="tel" id="regPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <input type="text" id="regAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <textarea id="regNotes" placeholder="Notas de entrega (opcional)..." rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+                
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchAuthMode('login')" class="text-xs text-slate-400 hover:text-amber-400 underline">← Volver a Iniciar Sesión</button>
+                    <button onclick="registerNewClient()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg">Registrarme</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -220,33 +222,19 @@
         <div class="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800">
                 <h3 class="font-bold text-lg text-amber-400">Tu Pedido en Curso</h3>
-                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-200 p-1">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-200 p-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            
             <div id="cartItemsList" class="flex-1 overflow-y-auto py-4 space-y-3 divide-y divide-slate-800/50"></div>
-
             <div class="pt-4 border-t border-slate-800 space-y-4">
-                <div class="flex justify-between items-center text-lg font-bold">
-                    <span>Total Estimado:</span>
-                    <span id="cartTotalPrice" class="text-amber-400">$0 MXN</span>
-                </div>
-
+                <div class="flex justify-between items-center text-lg font-bold"><span>Total Estimado:</span><span id="cartTotalPrice" class="text-amber-400">$0 MXN</span></div>
                 <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                    <div class="flex justify-between items-center">
-                        <p class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Datos de Entrega</p>
-                        <button onclick="openClientProfileModal()" class="text-xs text-amber-400 hover:underline">Modificar mis datos</button>
-                    </div>
-                    <input type="text" id="clientName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                    <input type="tel" id="clientPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                    <input type="text" id="clientAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                    <textarea id="clientNotes" placeholder="Notas adicionales (opcional)..." rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+                    <div class="flex justify-between items-center"><p class="text-xs font-semibold text-slate-300 uppercase">Datos de Entrega</p><button onclick="openClientAuthModal()" class="text-xs text-amber-400 hover:underline">Modificar mis datos</button></div>
+                    <input type="text" id="clientName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <input type="tel" id="clientPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <input type="text" id="clientAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <textarea id="clientNotes" placeholder="Notas adicionales..." rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100"></textarea>
                 </div>
-
-                <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
-                    <span>Generar y Enviar Pedido</span>
-                </button>
+                <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg">Generar y Enviar Pedido</button>
             </div>
         </div>
     </div>
@@ -255,7 +243,6 @@
     <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 text-center space-y-4 shadow-2xl">
             <h3 class="text-xl font-bold text-slate-100">¡Pedido Registrado con Éxito!</h3>
-            <p class="text-sm text-slate-400">Haz clic abajo para notificar por WhatsApp al negocio:</p>
             <a id="whatsappBtnLink" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg">Enviar Notificación por WhatsApp</a>
             <button onclick="closeSuccessModal()" class="text-slate-400 hover:text-slate-200 text-sm font-medium py-2">Volver al Catálogo</button>
         </div>
@@ -331,42 +318,73 @@
             alert("Logotipo restablecido.");
         }
 
-        // Gestión de Perfil de Cliente y Base de Datos de Clientes
-        function openClientProfileModal() {
-            const profile = JSON.parse(localStorage.getItem('pomelero_client_profile') || '{}');
-            document.getElementById('profileName').value = profile.name || '';
-            document.getElementById('profilePhone').value = profile.phone || '';
-            document.getElementById('profileAddress').value = profile.address || '';
-            document.getElementById('profileNotes').value = profile.notes || '';
-            document.getElementById('clientProfileModal').classList.remove('hidden');
+        // Gestión Estilo Microsoft de Iniciar Sesión / Registro
+        function openClientAuthModal() {
+            switchAuthMode('login');
+            document.getElementById('clientAuthModal').classList.remove('hidden');
         }
 
-        function closeClientProfileModal() { document.getElementById('clientProfileModal').classList.add('hidden'); }
+        function closeClientAuthModal() {
+            document.getElementById('clientAuthModal').classList.add('hidden');
+        }
 
-        function saveClientProfile() {
-            const name = document.getElementById('profileName').value.trim();
-            const phone = document.getElementById('profilePhone').value.trim();
-            const address = document.getElementById('profileAddress').value.trim();
-            const notes = document.getElementById('profileNotes').value.trim();
+        function switchAuthMode(mode) {
+            const step1 = document.getElementById('authStep1');
+            const stepReg = document.getElementById('authStepRegister');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+
+            if (mode === 'login') {
+                step1.classList.remove('hidden');
+                stepReg.classList.add('hidden');
+                title.textContent = "Iniciar sesión";
+                subtitle.textContent = "Usa tu número de teléfono o usuario registrado para acceder al catálogo de mayoreo.";
+            } else {
+                step1.classList.add('hidden');
+                stepReg.classList.remove('hidden');
+                title.textContent = "Cree una cuenta";
+                subtitle.textContent = "Regístrese por primera vez para guardar sus datos de entrega en Pomelero.";
+            }
+        }
+
+        function processAuthStep1() {
+            const val = document.getElementById('authIdentifier').value.trim();
+            if(!val) { alert("Por favor ingresa tu teléfono o usuario."); return; }
+
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const found = regClients.find(c => c.phone === val || c.name.toLowerCase().includes(val.toLowerCase()));
+
+            if(found) {
+                localStorage.setItem('pomelero_client_profile', JSON.stringify(found));
+                loadClientProfileToUI();
+                closeClientAuthModal();
+                alert(`¡Bienvenido de nuevo, ${found.name}! Sesión iniciada correctamente.`);
+            } else {
+                alert("No se encontró ninguna cuenta con ese dato. Por favor, regístrese.");
+                switchAuthMode('register');
+                document.getElementById('regPhone').value = val;
+            }
+        }
+
+        function registerNewClient() {
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const address = document.getElementById('regAddress').value.trim();
+            const notes = document.getElementById('regNotes').value.trim();
 
             if(!name || !phone || !address) { alert("Completa los campos obligatorios (*)."); return; }
 
             const profile = { name, phone, address, notes, registeredDate: new Date().toLocaleString() };
             localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
 
-            // Guardar en la Base de Datos general de Clientes Registrados
-            let registeredClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            const existingIndex = registeredClients.findIndex(c => c.phone === phone);
-            if(existingIndex >= 0) {
-                registeredClients[existingIndex] = profile; // Actualizar si ya existe por teléfono
-            } else {
-                registeredClients.push(profile); // Crear nuevo registro
-            }
-            localStorage.setItem('pomelero_registered_clients', JSON.stringify(registeredClients));
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const idx = regClients.findIndex(c => c.phone === phone);
+            if(idx >= 0) regClients[idx] = profile; else regClients.push(profile);
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(regClients));
 
             loadClientProfileToUI();
-            closeClientProfileModal();
-            alert("¡Usuario registrado/actualizado con éxito!");
+            closeClientAuthModal();
+            alert("¡Cuenta creada y guardada con éxito!");
         }
 
         function loadClientProfileToUI() {
@@ -380,20 +398,13 @@
             }
         }
 
-        // Alerta Semanal (7 días)
+        // Alerta Semanal
         function checkWeeklyAlert() {
             const lastVisit = localStorage.getItem('pomelero_last_visit_date');
             const now = new Date().getTime();
-            if(!lastVisit) {
-                localStorage.setItem('pomelero_last_visit_date', now);
-            } else {
-                const diffDays = (now - parseInt(lastVisit)) / (1000 * 60 * 60 * 24);
-                if(diffDays >= 7) {
-                    document.getElementById('weeklyAlertBanner').classList.remove('hidden');
-                }
-            }
+            if(!lastVisit) localStorage.setItem('pomelero_last_visit_date', now);
+            else if((now - parseInt(lastVisit)) / (1000 * 60 * 60 * 24) >= 7) document.getElementById('weeklyAlertBanner').classList.remove('hidden');
         }
-
         function dismissWeeklyAlert() {
             localStorage.setItem('pomelero_last_visit_date', new Date().getTime());
             document.getElementById('weeklyAlertBanner').classList.add('hidden');
@@ -403,17 +414,10 @@
             const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
             document.getElementById('clientsCount').textContent = clients.length;
             const container = document.getElementById('clientsListContainer');
-            if(clients.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay clientes registrados todavía.</div>`;
-                return;
-            }
+            if(clients.length === 0) { container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay clientes registrados todavía.</div>`; return; }
             container.innerHTML = clients.map(c => `
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center text-sm">
-                    <div>
-                        <h4 class="font-bold text-amber-400">${c.name}</h4>
-                        <p class="text-xs text-slate-300">📞 ${c.phone} | 📍 ${c.address}</p>
-                        ${c.notes ? `<p class="text-xs text-slate-400 mt-1">Notas: ${c.notes}</p>` : ''}
-                    </div>
+                    <div><h4 class="font-bold text-amber-400">${c.name}</h4><p class="text-xs text-slate-300">📞 ${c.phone} | 📍 ${c.address}</p></div>
                     <span class="text-[10px] text-slate-500">Registro: ${c.registeredDate || 'N/A'}</span>
                 </div>
             `).join('');
@@ -421,18 +425,12 @@
 
         function downloadClientsExcel() {
             const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            if(clients.length === 0) { alert("No hay clientes para exportar."); return; }
-            const wsData = [
-                ["Nombre", "Telefono", "Direccion", "Notas", "FechaRegistro"],
-                ...clients.map(c => [c.name, c.phone, c.address, c.notes || "", c.registeredDate || ""])
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "ClientesPomelero");
-            XLSX.writeFile(wb, "BaseDeDatos_Clientes_Pomelero.xlsx");
+            if(clients.length === 0) { alert("No hay clientes."); return; }
+            const ws = XLSX.utils.aoa_to_sheet([["Nombre", "Telefono", "Direccion", "Notas", "FechaRegistro"], ...clients.map(c => [c.name, c.phone, c.address, c.notes || "", c.registeredDate || ""])]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Clientes"); XLSX.writeFile(wb, "Clientes_Pomelero.xlsx");
         }
 
-        // Navegación Admin
+        // Navegación
         function switchTab(tab) {
             document.getElementById('view-catalogo').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
@@ -456,7 +454,7 @@
             if (document.getElementById('adminPasswordInput').value === ADMIN_PASS) {
                 document.getElementById('adminLoginBox').classList.add('hidden');
                 document.getElementById('adminPanelContent').classList.remove('hidden');
-            } else { alert("Contraseña incorrecta."); }
+            } else alert("Contraseña incorrecta.");
         }
 
         // Renderizado Catálogo
@@ -487,7 +485,7 @@
                         <p class="text-xs text-slate-400 mt-1">${p.capacity || ''}</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                        <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs text-slate-400">MXN</small></span>
+                        <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs font-normal text-slate-400">MXN</small></span>
                         <button onclick='addToCart(${JSON.stringify(p)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
                     </div>
                 </div>
@@ -561,7 +559,7 @@
 
         function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
 
-        // Sincronización Excel
+        // Excel Sync
         function downloadExcelTemplate() {
             const ws = XLSX.utils.aoa_to_sheet([["Codigo", "Nombre", "Categoria", "Precio", "Capacidad", "Imagen"], ...products.map(p => [p.sku, p.name, p.category, p.price, p.capacity, p.image])]);
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventario"); XLSX.writeFile(wb, "Plantilla_Pomelero.xlsx");
