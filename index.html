@@ -4,1624 +4,722 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomelero Licorerías - Catálogo de Mayoreo</title>
-    
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SheetJS para leer Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <!-- Configuración de Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif'],
-                    },
-                    colors: {
-                        pomelero: {
-                            bg: '#0F172A', /* Ajustado para que combine mejor con el fondo del logo */
-                            gold: '#cba052', 
-                            light: '#f8f9fa',
-                            card: '#ffffff'
-                        }
-                    }
-                }
-            }
-        }
+    <!-- Firebase SDK v9 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        
+        // Configuración global Firebase (se puede inicializar si se requiere nube)
     </script>
-
-    <!-- Import Maps para React y Firebase -->
-    <script type="importmap">
-        {
-            "imports": {
-                "react": "https://esm.sh/react@18.2.0",
-                "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
-            }
-        }
-    </script>
-
-    <!-- Babel para compilar React/JSX en el navegador -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <style>
-        body { background-color: #f8f9fa; margin: 0; padding: 0; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useMemo, useRef } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { initializeApp } from 'firebase/app';
-        import { getAuth, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
-        import { getFirestore, collection, getDocs, doc, onSnapshot, writeBatch, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pomelero-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        
-        let app, db, auth;
-        if (firebaseConfig) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        }
-
-        const initialMockData = [
-            // BRANDY
-            { name: "Azteca de Oro", category: "Brandy", volume: "200ml", price: 49 },
-            { name: "Azteca de Oro", category: "Brandy", volume: "750ml", price: 175 },
-            { name: "Torres 5", category: "Brandy", volume: "700ml", price: 189 },
-            { name: "Torres 10", category: "Brandy", volume: "700ml", price: 210 },
-            { name: "Torres 15", category: "Brandy", volume: "700ml", price: 500 },
-            { name: "Torres Mazapan", category: "Brandy", volume: "700ml", price: 385 },
-            { name: "Torres 20", category: "Brandy", volume: "700ml", price: 990 },
-            { name: "Don Pedro Gran Reserva", category: "Brandy", volume: "1lt", price: 185 },
-            { name: "Presidente", category: "Brandy", volume: "200ml", price: 40 },
-            { name: "Presidente", category: "Brandy", volume: "700ml", price: 125 },
-            { name: "Presidente", category: "Brandy", volume: "940ml", price: 130 },
-            { name: "Don Pedro Gran Reserva", category: "Brandy", volume: "200ml", price: 41 },
-            { name: "Don Pedro Clasico", category: "Brandy", volume: "200ml", price: 38 },
-            { name: "Don Pedro Clasico", category: "Brandy", volume: "1lt", price: 185 },
-            { name: "Don Pedro Clasico", category: "Brandy", volume: "750ml", price: 162 },
-            
-            // CERVEZA
-            { name: "Corona Media Ambar", category: "Cerveza", volume: "Caja 24 pzas", price: 375 },
-            { name: "Corona Media Clara", category: "Cerveza", volume: "Caja 24 pzas", price: 360 },
-            { name: "Pacifico Lata", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 360 },
-            { name: "Pacifico Media Clara", category: "Cerveza", volume: "Caja 24 pzas", price: 375 },
-            { name: "Estrella Mega", category: "Cerveza", volume: "Caja 12 pzas", price: 495 },
-            { name: "Heineke 0.0 Lata", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 360 },
-            { name: "Estrella Ampolleta", category: "Cerveza", volume: "210ml (Caja 24 pzas)", price: 265 },
-            { name: "Corona Ambar Ampolleta", category: "Cerveza", volume: "120ml (Caja 24 pzas)", price: 255 },
-            { name: "Corona Familiar", category: "Cerveza", volume: "Caja 12 pzas", price: 435 },
-            { name: "Corona Laton", category: "Cerveza", volume: "473ml (Caja 24 pzas)", price: 485 },
-            { name: "Corona Mega", category: "Cerveza", volume: "Caja 12 pzas", price: 480 },
-            { name: "Corona Clara Ampolleta", category: "Cerveza", volume: "120ml (Caja 24 pzas)", price: 245 },
-            { name: "Corona Misil", category: "Cerveza", volume: "Caja 24 pzas", price: 370 },
-            { name: "Coronita Lata Light", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 485 },
-            { name: "Estrella Laton", category: "Cerveza", volume: "473ml (Caja 24 pzas)", price: 465 },
-            { name: "Estrella Media", category: "Cerveza", volume: "Caja 24 pzas", price: 375 },
-            { name: "Modelo Especial Vidrio", category: "Cerveza", volume: "355ml (Caja 12 pzas)", price: 240 },
-            { name: "Modelo Especial Lata", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 430 },
-            { name: "Corona Lata", category: "Cerveza", volume: "330ml (Caja 24 pzas)", price: 360 },
-            { name: "Modelo Especial Lata", category: "Cerveza", volume: "330ml (Caja 24 pzas)", price: 390 },
-            { name: "Modelo Especial Misil", category: "Cerveza", volume: "710ml (Caja 24 pzas)", price: 400 },
-            { name: "Modelo Especial Laton", category: "Cerveza", volume: "473ml (Caja 24 pzas)", price: 500 },
-            { name: "Corona Cero Lata", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 370 },
-            { name: "Modelo Negra Vidrio", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 245 },
-            { name: "Victoria Mega", category: "Cerveza", volume: "1.2Lt (Caja 12 pzas)", price: 480 },
-            { name: "Victoria Laton", category: "Cerveza", volume: "475ml (Caja 24 pzas)", price: 480 },
-            { name: "Victoria Media", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 500 },
-            { name: "Michelob Ultra Vidrio", category: "Cerveza", volume: "355ml (Caja 24 pzas)", price: 390 },
-            { name: "Modelo Clara Mega", category: "Cerveza", volume: "1.2Lt (Caja 12 pzas)", price: 490 },
-            { name: "Sol Clamato Laton", category: "Cerveza", volume: "475ml (Caja 24 pzas)", price: 455 },
-
-            // CHANPANG
-            { name: "Moet & Chandon Ice", category: "Chanpang", volume: "750ml", price: 1590 },
-            { name: "Moet & Chandon Nectar Imperial (Rosa)", category: "Chanpang", volume: "750ml", price: 1580 },
-            { name: "Moet & Chandon Nectar Imperial (Negro)", category: "Chanpang", volume: "750ml", price: 1350 },
-            { name: "Moet & Chandon Imperial Brut", category: "Chanpang", volume: "750ml", price: 1335 },
-            { name: "Moet & Chandon Rose", category: "Chanpang", volume: "750ml", price: 1700 },
-            { name: "Chandon Delice", category: "Chanpang", volume: "750ml", price: 375 },
-            { name: "Chandon Rose", category: "Chanpang", volume: "750ml", price: 375 },
-            { name: "Chandon Garden", category: "Chanpang", volume: "750ml", price: 375 },
-            { name: "Baron Maxime Brut", category: "Chanpang", volume: "750ml", price: 215 },
-            { name: "Veuve Clicquot Brut", category: "Chanpang", volume: "750ml", price: 1370 },
-            { name: "Don Perignon", category: "Chanpang", volume: "750ml", price: 6400 },
-            { name: "Chandom Brut", category: "Chanpang", volume: "750ml", price: 375 },
-
-            // COGNAC
-            { name: "Hennessy X.O", category: "Cognac", volume: "700ml", price: 4700 },
-            { name: "Hennesys V.S", category: "Cognac", volume: "700ml", price: 700 },
-            { name: "Hennesys VSOP", category: "Cognac", volume: "700ml", price: 1070 },
-            { name: "Martell V.S.", category: "Cognac", volume: "700ML", price: 615 },
-            { name: "Martell VSOP", category: "Cognac", volume: "700ml", price: 790 },
-            { name: "Martell X.O", category: "Cognac", volume: "700ml", price: 5900 },
-            { name: "Martell Cordon Blue", category: "Cognac", volume: "700ml", price: 4500 },
-            { name: "Remmy Martin VSOP", category: "Cognac", volume: "700ml", price: 950 },
-
-            // GINEBRA
-            { name: "Beefeater", category: "Ginebra", volume: "750ml", price: 380 },
-            { name: "Beefeater Blackberry", category: "Ginebra", volume: "750ml", price: 390 },
-            { name: "Beefeater Pink", category: "Ginebra", volume: "700ml", price: 475 },
-            { name: "Hendricks", category: "Ginebra", volume: "750ml", price: 775 },
-            { name: "Bombay Shapire", category: "Ginebra", volume: "375ml", price: 380 },
-            { name: "Oso Negro Gin", category: "Ginebra", volume: "1Lt", price: 152 },
-            { name: "Bull dog", category: "Ginebra", volume: "750ml", price: 530 },
-            { name: "Diega (Varios Sabores)", category: "Ginebra", volume: "750ml", price: 475 },
-            { name: "Tanqueray", category: "Ginebra", volume: "750ml", price: 450 },
-
-            // JARABE
-            { name: "Dolzura Natural", category: "Jarabe", volume: "1Lt", price: 49 },
-            { name: "Dolzura Curacao Azul", category: "Jarabe", volume: "1Lt", price: 65 },
-            { name: "Madrileña Natural", category: "Jarabe", volume: "1Lt", price: 55 },
-            { name: "Madrileña Granadina", category: "Jarabe", volume: "1Lt", price: 55 },
-            { name: "Dolzura Granadina", category: "Jarabe", volume: "1Lt", price: 49 },
-            { name: "Dolzura Sabores (mango, maracuya, avellana, caramelo, vainilla)", category: "Jarabe", volume: "1Lt", price: 65 },
-            { name: "Drag Valley Natural", category: "Jarabe", volume: "1Lt", price: 49 },
-            { name: "Drag Valley Curacao", category: "Jarabe", volume: "1Lt", price: 49 },
-            { name: "Drag Valley Granadina", category: "Jarabe", volume: "1Lt", price: 49 },
-            { name: "Mix Margarita Sabores", category: "Jarabe", volume: "1Lt", price: 49 },
-
-            // LICOR
-            { name: "Amaretto Disaronno", category: "Licor", volume: "700ml", price: 435 },
-            { name: "Frangelico", category: "Licor", volume: "700ml", price: 390 },
-            { name: "Hpnotiq", category: "Licor", volume: "750ml", price: 450 },
-            { name: "Barullo", category: "Licor", volume: "1Lt", price: 260 },
-            { name: "Aperol", category: "Licor", volume: "700ml", price: 275 },
-            { name: "Baileys", category: "Licor", volume: "750ml", price: 345 },
-            { name: "Campari", category: "Licor", volume: "750ml", price: 365 },
-            { name: "SISI Licor de Hierbas", category: "Licor", volume: "1Lt", price: 180 },
-            { name: "Tallador Infusion Tamarindo", category: "Licor", volume: "1Lt", price: 100 },
-            { name: "Tallador Infusion Mango", category: "Licor", volume: "1Lt", price: 100 },
-            { name: "Tallador Infusion Naranja", category: "Licor", volume: "1Lt", price: 100 },
-            { name: "Flamingo Sabores", category: "Licor", volume: "1Lt", price: 140 },
-            { name: "Flamingo Carajillo", category: "Licor", volume: "1Lt", price: 173 },
-            { name: "Gran Malo Horchata", category: "Licor", volume: "750ml", price: 276 },
-            { name: "Gran Malo Jamaica", category: "Licor", volume: "750ml", price: 352 },
-            { name: "Gran Malo Tamarindo", category: "Licor", volume: "750ml", price: 260 },
-            { name: "Generacion Azul Sabores", category: "Licor", volume: "1Lt", price: 65 },
-            { name: "Jagermeister", category: "Licor", volume: "700ml", price: 424 },
-            { name: "Kahlúa Licor de Café", category: "Licor", volume: "1Lt", price: 168 },
-            { name: "Licor de Vodka Smirnoff Guava", category: "Licor", volume: "750ml", price: 222 },
-            { name: "Licor 43", category: "Licor", volume: "1Lt", price: 430 },
-            { name: "Licor 43", category: "Licor", volume: "750ml", price: 400 },
-            { name: "Licor de Naranja Controy", category: "Licor", volume: "1Lt", price: 205 },
-            { name: "Licor de Café Don Pancho", category: "Licor", volume: "1Lt", price: 127 },
-            { name: "Licor El Tallador Reposado Pet", category: "Licor", volume: "1Lt", price: 20 },
-            { name: "Licor El Tallador Pet", category: "Licor", volume: "5Lt", price: 130 },
-            { name: "Licor Tallador Mango Galon Pet", category: "Licor", volume: "5Lt", price: 340 },
-            { name: "Licor Tallador Mango Vidrio", category: "Licor", volume: "500ml", price: 60 },
-            { name: "Tallador Tamarindo Vidrio", category: "Licor", volume: "500ml", price: 60 },
-            { name: "Tallador Tamarindo Galon Pet", category: "Licor", volume: "5Lt", price: 340 },
-            { name: "Tres Coronas Jerez", category: "Licor", volume: "1Lt", price: 90 },
-            { name: "Tres Coronas", category: "Licor", volume: "4Lt", price: 195 },
-            { name: "Sidra Valle Redonda Rosada", category: "Licor", volume: "700ml", price: 85 },
-            { name: "Sidra Valle Redonda Blanca", category: "Licor", volume: "700ml", price: 85 },
-            { name: "Sidra Campanario Rosada", category: "Licor", volume: "1.7Lt", price: 150 },
-            { name: "Sidra Campanario Blanca", category: "Licor", volume: "1.7Lt", price: 150 },
-            { name: "Sidra Campanario Bco", category: "Licor", volume: "700ml", price: 0 }, // Precio no visible claro
-            { name: "Prado (Natural, Piñón, Café Capuchino)", category: "Licor", volume: "1Lt", price: 120 },
-            { name: "Prado (Natural, Piñón, Café Capuchino)", category: "Licor", volume: "500ml", price: 75 },
-            { name: "Prado (Natural, Piñón, Café Capuchino) Antiguo", category: "Licor", volume: "50ml", price: 25 },
-            { name: "Like Me Cafe", category: "Licor", volume: "750ml", price: 0 }, // Precio no visible claro
-            { name: "Like Me Menta", category: "Licor", volume: "750ml", price: 120 },
-            { name: "Like Me Nuez", category: "Licor", volume: "750ml", price: 75 },
-
-            // MEZCAL
-            { name: "Union Joven", category: "Mezcal", volume: "700ml", price: 445 },
-            { name: "Montelobos", category: "Mezcal", volume: "750ml", price: 530 },
-            { name: "Zacatecano Joven", category: "Mezcal", volume: "1Lt", price: 89 },
-            { name: "Zignum Espadin Joven", category: "Mezcal", volume: "750ml", price: 323 },
-            { name: "400 Conejos Joven Espadin", category: "Mezcal", volume: "750ml", price: 410 },
-            { name: "400 Conejos Reposado", category: "Mezcal", volume: "750ml", price: 560 },
-            { name: "Recuerdo de Oaxaca", category: "Mezcal", volume: "750ml", price: 420 },
-            { name: "Mitre Origen Joven Espadin", category: "Mezcal", volume: "750ml", price: 347 },
-
-            // RON
-            { name: "Antillano Oro", category: "Ron", volume: "750ml", price: 120 },
-            { name: "Antillano Añejo", category: "Ron", volume: "750ml", price: 145 },
-            { name: "Antillano Blanco", category: "Ron", volume: "1Lt", price: 420 },
-            { name: "Appleton Estate", category: "Ron", volume: "750ml", price: 158 },
-            { name: "Appleton 8", category: "Ron", volume: "750ml", price: 313 },
-            { name: "Bacardi Añejo", category: "Ron", volume: "1Lt", price: 220 },
-            { name: "Bacardi Patona", category: "Ron", volume: "1.75Lt", price: 350 },
-            { name: "Bacardi Blanco", category: "Ron", volume: "200ml", price: 48 },
-            { name: "Bacardi Blanco", category: "Ron", volume: "980ml", price: 179 },
-            { name: "Bacardi Blanco", category: "Ron", volume: "750ml", price: 165 },
-            { name: "Bacardi Spiced", category: "Ron", volume: "750ml", price: 145 },
-            { name: "Bacardi Solera", category: "Ron", volume: "750ml", price: 270 },
-            { name: "Bacardi Sabores (Raspberry, Coco, Mango Chile)", category: "Ron", volume: "750ml", price: 165 },
-            { name: "Captain Morgan Original", category: "Ron", volume: "750ml", price: 160 },
-            { name: "Captain Morgan White", category: "Ron", volume: "750ml", price: 150 },
-            { name: "Havana Club 3 Años", category: "Ron", volume: "750ml", price: 154 },
-            { name: "Havana Añejo", category: "Ron", volume: "750ml", price: 205 },
-            { name: "Havana Club 7 Años", category: "Ron", volume: "750ml", price: 305 },
-            { name: "Kraken Black", category: "Ron", volume: "750ml", price: 182 },
-            { name: "Kraken White", category: "Ron", volume: "750ml", price: 173 },
-            { name: "Zacapa Ambar", category: "Ron", volume: "750ml", price: 515 },
-            { name: "Zacapa 23", category: "Ron", volume: "750ml", price: 980 },
-            { name: "Matusalem Clasico", category: "Ron", volume: "750ml", price: 310 },
-            { name: "Matusalem 18", category: "Ron", volume: "750ml", price: 675 },
-            { name: "Malibu", category: "Ron", volume: "750ml", price: 179 },
-            { name: "Matusalem Platinum", category: "Ron", volume: "750ml", price: 260 },
-
-            // TEQUILA
-            { name: "Joya Blanco", category: "Tequila", volume: "750ml (3/4)", price: 345 },
-            { name: "Joya Cristalino Añejo", category: "Tequila", volume: "750ml (3/4)", price: 856 },
-            { name: "La Santa Añejo Cristalino", category: "Tequila", volume: "750ml", price: 1375 },
-            { name: "Joya Reposado", category: "Tequila", volume: "750ml (3/4)", price: 432 },
-            { name: "Cuadra Blanco", category: "Tequila", volume: "1Lt", price: 287 },
-            { name: "Cuadra Reposado", category: "Tequila", volume: "1Lt", price: 287 },
-            { name: "Cuadra Añejo", category: "Tequila", volume: "750ml (3/4)", price: 560 },
-            { name: "Cuadra Blanco", category: "Tequila", volume: "750ml (3/4)", price: 492 },
-            { name: "Chispo Blanco", category: "Tequila", volume: "1Lt", price: 162 },
-            { name: "Fregon Blanco", category: "Tequila", volume: "750ml (3/4)", price: 265 },
-            { name: "Fregon Reposado", category: "Tequila", volume: "750ml (3/4)", price: 275 },
-            { name: "Newton Blanco", category: "Tequila", volume: "1Lt + 250ml", price: 492 },
-            { name: "Newmix Sabores", category: "Tequila", volume: "473ml", price: 26 },
-            { name: "Newmix Sabores", category: "Tequila", volume: "350ml", price: 21 },
-            { name: "Blanco Madero", category: "Tequila", volume: "750ml", price: 340 },
-            { name: "1800 Añejo", category: "Tequila", volume: "1.75Lt", price: 1450 },
-            { name: "1800 Añejo Cristalino", category: "Tequila", volume: "1.75Lt", price: 1590 },
-            { name: "1800 Guachimontones", category: "Tequila", volume: "700ml", price: 2490 },
-            { name: "1800 Añejo Cristalino", category: "Tequila", volume: "700ml", price: 660 },
-            { name: "1800 Reposado", category: "Tequila", volume: "700ml", price: 465 },
-            { name: "1800 Blanco", category: "Tequila", volume: "700ml", price: 461 },
-            { name: "1800 Añejo", category: "Tequila", volume: "1Lt", price: 790 },
-            { name: "1800 Añejo", category: "Tequila", volume: "700ml", price: 650 },
-            { name: "1800 Milenio", category: "Tequila", volume: "700ml", price: 2800 },
-            { name: "30-30 Blanco", category: "Tequila", volume: "1Lt", price: 300 },
-            { name: "30-30 Blanco", category: "Tequila", volume: "1.75Lt", price: 510 },
-            { name: "30-30 Blanco", category: "Tequila", volume: "750ml", price: 255 },
-            { name: "30-30 Reposado", category: "Tequila", volume: "1Lt", price: 300 },
-            { name: "30-30 Reposado", category: "Tequila", volume: "750ml", price: 255 },
-            { name: "30-30 Reposado", category: "Tequila", volume: "1.75Lt", price: 510 },
-            { name: "30-30 Añejo", category: "Tequila", volume: "750ml", price: 585 },
-            { name: "30-30 Cristalino", category: "Tequila", volume: "750ml", price: 620 },
-            { name: "7 Leguas Antaño", category: "Tequila", volume: "750ml", price: 4100 },
-            { name: "7 Leguas Blanco", category: "Tequila", volume: "1Lt", price: 687 },
-            { name: "7 Leguas Tahona 47", category: "Tequila", volume: "700ml", price: 990 },
-            { name: "7 Leguas Blanco", category: "Tequila", volume: "750ml", price: 575 },
-            { name: "7 Leguas Blanco Siete Decadas", category: "Tequila", volume: "700ml", price: 2680 },
-            { name: "7 Leguas Blanco", category: "Tequila", volume: "1.75Lt", price: 1255 },
-            { name: "7 Leguas Reposado", category: "Tequila", volume: "3Lt", price: 3078 },
-            { name: "7 Leguas Blanco", category: "Tequila", volume: "3Lt", price: 2850 },
-            { name: "7 Leguas Añejo", category: "Tequila", volume: "700ml", price: 1050 },
-            { name: "7 Leguas Reposado", category: "Tequila", volume: "750ml", price: 697 },
-            { name: "7 Leguas Reposado", category: "Tequila", volume: "1.75Lt", price: 1405 },
-            { name: "7 Leguas Reposado", category: "Tequila", volume: "1Lt", price: 783 },
-            { name: "Antiguo Cristalino", category: "Tequila", volume: "750ml", price: 460 },
-            { name: "Antiguo Herradura Reposado", category: "Tequila", volume: "750ml", price: 345 },
-            { name: "Antiguo Herradura Plata", category: "Tequila", volume: "750ml", price: 320 },
-            { name: "Antiguo Herradura Plata", category: "Tequila", volume: "950ml", price: 380 },
-            { name: "Antiguo Herradura Reposado", category: "Tequila", volume: "950ml", price: 375 },
-            { name: "Cascahuin Blanco", category: "Tequila", volume: "750ml", price: 475 },
-            { name: "Cascahuin Reposado", category: "Tequila", volume: "750ml", price: 650 },
-            { name: "Cascahuin Tahona", category: "Tequila", volume: "750ml", price: 832 },
-            { name: "Cabrito Reposado", category: "Tequila", volume: "750ml + 250ml", price: 144 },
-            { name: "Cabrito Reposado", category: "Tequila", volume: "950ml + 375ml", price: 163 },
-            { name: "Campo Azul Blanco Select", category: "Tequila", volume: "750ML", price: 195 },
-            { name: "Campo Azul Añejo Select", category: "Tequila", volume: "750ML", price: 350 },
-            { name: "Campo Azul Reposado Select", category: "Tequila", volume: "750ML", price: 195 },
-            { name: "Campo Azul Diamante Select", category: "Tequila", volume: "750ML", price: 540 },
-            { name: "Campo Azul Rep Duo", category: "Tequila", volume: "750ml", price: 192 },
-            { name: "Campo Azul 1940 Blanco 40*", category: "Tequila", volume: "750ml", price: 550 },
-            { name: "Clase Azul Reposado", category: "Tequila", volume: "750ml", price: 3600 },
-            { name: "Clase Azul Plata", category: "Tequila", volume: "750ml", price: 2900 },
-            { name: "Campo Azul Clasico Reposado", category: "Tequila", volume: "1Lt", price: 154 },
-            { name: "Cazadores Blanco", category: "Tequila", volume: "1Lt", price: 265 },
-            { name: "Cazadores Reposado", category: "Tequila", volume: "950ml", price: 263 },
-            { name: "Centenario Reposado", category: "Tequila", volume: "3Lt", price: 1370 },
-            { name: "Centenario Reposado", category: "Tequila", volume: "1Lt", price: 300 },
-            { name: "Centenario Reposado", category: "Tequila", volume: "750ml", price: 263 },
-            { name: "Centenario Plata", category: "Tequila", volume: "1Lt", price: 300 },
-            { name: "Centenario Plata", category: "Tequila", volume: "750ml", price: 260 },
-            { name: "Centenario Plata", category: "Tequila", volume: "3Lt", price: 1380 },
-            { name: "Centenario Añejo", category: "Tequila", volume: "3Lt", price: 2400 },
-            { name: "Centenario Añejo", category: "Tequila", volume: "695ml", price: 530 },
-            { name: "Centenario Azul Baby Mango", category: "Tequila", volume: "700ml", price: 174 },
-            { name: "Centenario Azul Reposado", category: "Tequila", volume: "950ml", price: 220 },
-            { name: "Centenario Azul", category: "Tequila", volume: "750ml", price: 190 },
-            { name: "Centenario Leyenda", category: "Tequila", volume: "750ml", price: 2550 },
-            { name: "Centenario 40", category: "Tequila", volume: "700ml", price: 350 },
-            { name: "Centenario Cristalino Añejo Ultra", category: "Tequila", volume: "750ml", price: 1240 },
-            { name: "Centenario Reposado Cristalino Ultra", category: "Tequila", volume: "750ml", price: 400 },
-            { name: "Centenario Gallardo", category: "Tequila", volume: "750ml", price: 11400 },
-            { name: "Centinela Eterno Cristalino", category: "Tequila", volume: "3Lt", price: 3200 },
-            { name: "Centinela Eterno Cristalino", category: "Tequila", volume: "750ML", price: 611 },
-            { name: "Centinela Blanco Premium", category: "Tequila", volume: "750ml", price: 346 },
-            { name: "Clasico Centinela Blanco", category: "Tequila", volume: "1Lt", price: 270 },
-            { name: "Centinela Reposado Premium", category: "Tequila", volume: "750ml", price: 385 },
-            { name: "Centinela Eterno Cristalino", category: "Tequila", volume: "3Lt", price: 500 },
-            { name: "Clasico Centinela Reposado", category: "Tequila", volume: "1Lt", price: 285 },
-            { name: "Cristeros Reposado", category: "Tequila", volume: "750ml", price: 450 },
-            { name: "Cristeros Platinum", category: "Tequila", volume: "750ml", price: 375 },
-            { name: "Casa Dragones Joven", category: "Tequila", volume: "750ml", price: 4900 },
-            { name: "Casa Dragones Blanco", category: "Tequila", volume: "750ml", price: 1450 },
-            { name: "Casa Dragones Añejo", category: "Tequila", volume: "750ml", price: 3050 },
-            { name: "Casa Amigos Reposado", category: "Tequila", volume: "750ml", price: 650 },
-            { name: "Don Julio 1942", category: "Tequila", volume: "750ml", price: 2940 },
-            { name: "Don Julio Primavera", category: "Tequila", volume: "750ml", price: 2415 },
-            { name: "Don Julio Real", category: "Tequila", volume: "750ml", price: 15000 },
-            { name: "Don Julio 70", category: "Tequila", volume: "750ml", price: 720 },
-            { name: "Don Julio Añejo", category: "Tequila", volume: "750ml", price: 880 },
-            { name: "Don Julio Blanco", category: "Tequila", volume: "750ml", price: 480 },
-            { name: "Don Julio Ceniza", category: "Tequila", volume: "700ml", price: 990 },
-            { name: "Don Julio Reposado", category: "Tequila", volume: "750ml", price: 590 },
-            { name: "Don Nacho Blanco Premium", category: "Tequila", volume: "750ml", price: 530 },
-            { name: "Don Nacho Extra Premium Añejo", category: "Tequila", volume: "750ml", price: 645 },
-            { name: "Don Nacho Extra Premium Reposado", category: "Tequila", volume: "750ml", price: 515 },
-            { name: "Don Nacho Blanco", category: "Tequila", volume: "750ml", price: 315 },
-            { name: "Don Nacho Reposado", category: "Tequila", volume: "750ml", price: 330 },
-            { name: "Don Ramon Plata Diamante + 200ml Plata", category: "Tequila", volume: "Pack", price: 300 },
-            { name: "Don Ramon Reposado (Tapon Redondo)", category: "Tequila", volume: "750ml", price: 180 },
-            { name: "Don Ramon Reposado Plata Diamante", category: "Tequila", volume: "750ml", price: 210 },
-            { name: "Reserva de Don Ramon Reposado (Roja)", category: "Tequila", volume: "750ml", price: 295 },
-            { name: "Don Armando Rva Cristalino", category: "Tequila", volume: "750ml", price: 650 },
-            { name: "El Amo Añejo", category: "Tequila", volume: "750ml", price: 483 },
-            { name: "El Amo Reposado", category: "Tequila", volume: "750ml", price: 282 },
-            { name: "El Amo Cristalino", category: "Tequila", volume: "750ml", price: 515 },
-            { name: "El Amo Extra Añejo", category: "Tequila", volume: "750ml", price: 727 },
-            { name: "El Amo Miniaturas", category: "Tequila", volume: "100ml", price: 731 },
-            { name: "El Amo Blanco Premium", category: "Tequila", volume: "750ml", price: 371 },
-            { name: "Espolon Reposado", category: "Tequila", volume: "750ml", price: 443 },
-            { name: "Espolon Añejo", category: "Tequila", volume: "750ml", price: 650 },
-            { name: "Espolon Blanco", category: "Tequila", volume: "750ml", price: 400 },
-            { name: "Espolon Cristalino", category: "Tequila", volume: "750ml", price: 686 },
-            { name: "Gran Pasion Blanco", category: "Tequila", volume: "750ml", price: 700 },
-            { name: "Gran Pasion Reposado", category: "Tequila", volume: "750ml", price: 750 },
-            { name: "Gran Pasion Reposado Cristalino", category: "Tequila", volume: "750ml", price: 820 },
-            { name: "Galindo Añejo", category: "Tequila", volume: "700ml", price: 440 },
-            { name: "Toro Alteño Cristalino", category: "Tequila", volume: "750ml", price: 320 },
-            { name: "Hacienda de Tepa Garrafon Bco o Rep", category: "Tequila", volume: "5Lt", price: 300 },
-            { name: "Hacienda de Tepa Blanco", category: "Tequila", volume: "1Lt", price: 250 },
-            { name: "Hacienda de Tepa Blanco", category: "Tequila", volume: "750ml", price: 205 },
-            { name: "Hacienda de Tepa Reposado", category: "Tequila", volume: "1Lt", price: 250 },
-            { name: "Hacienda de Tepa Reposado", category: "Tequila", volume: "750ml", price: 205 },
-            { name: "Hacienda de Tepa Cristalino", category: "Tequila", volume: "750ml", price: 315 },
-            { name: "Hacienda de Tepa Añejo", category: "Tequila", volume: "750ml", price: 550 },
-            { name: "Hacienda de Tepa Black", category: "Tequila", volume: "750ml", price: 326 },
-            { name: "Herradura Blanco Original", category: "Tequila", volume: "700ml 46*", price: 780 },
-            { name: "Herradura Blanco", category: "Tequila", volume: "950ml", price: 570 },
-            { name: "Herradura Añejo", category: "Tequila", volume: "750ml", price: 900 },
-            { name: "Herradura Plata", category: "Tequila", volume: "950ml", price: 610 },
-            { name: "Herradura Plata", category: "Tequila", volume: "750ml", price: 430 },
-            { name: "Herradura Plata", category: "Tequila", volume: "1.75Lt", price: 940 },
-            { name: "Herradura Reposado Cristal", category: "Tequila", volume: "700ml", price: 585 },
-            { name: "Herradura Ultra", category: "Tequila", volume: "750ml", price: 630 },
-            { name: "Herradura Reposado", category: "Tequila", volume: "1.75Lt", price: 1400 },
-            { name: "Herradura Reposado", category: "Tequila", volume: "950ml", price: 700 },
-            { name: "Herradura Reposado", category: "Tequila", volume: "700ml", price: 590 },
-            { name: "Herradura 150 Aniversario Doble Rep", category: "Tequila", volume: "750ml", price: 900 },
-            { name: "Herradura Selección Suprema", category: "Tequila", volume: "750ml", price: 3780 },
-            { name: "Hornitos Reposado", category: "Tequila", volume: "750ml", price: 342 },
-            { name: "Hornitos Black Barrel", category: "Tequila", volume: "750ml", price: 420 },
-            { name: "Jimador Blanco", category: "Tequila", volume: "750ml", price: 205 },
-            { name: "Jimador Blanco", category: "Tequila", volume: "1Lt", price: 295 },
-            { name: "Jimador Reposado", category: "Tequila", volume: "1Lt", price: 290 },
-            { name: "Jose Cuervo Especial Reposado", category: "Tequila", volume: "695ml", price: 150 },
-            { name: "Jose Cuervo Especial Reposado", category: "Tequila", volume: "990ml", price: 195 },
-            { name: "Maestro Dobel Diamante Patona", category: "Tequila", volume: "3Lt", price: 2700 },
-            { name: "Maestro Dobel Diamante Patona", category: "Tequila", volume: "1.75Lt", price: 1450 },
-            { name: "Maestro Tequilero Dobel Blanco", category: "Tequila", volume: "750ml", price: 535 },
-            { name: "Maestro Tequilero Dobel Reposado", category: "Tequila", volume: "750ml", price: 550 },
-            { name: "Maestro Tequilero Dobel Iron Head", category: "Tequila", volume: "750ml", price: 817 },
-            { name: "Maestro Tequilero Dobel Pavito", category: "Tequila", volume: "750ml", price: 820 },
-            { name: "Maestro Tequilero Dobel Añejo", category: "Tequila", volume: "750ml", price: 790 },
-            { name: "Maestro Tequilero Dobel Diamante", category: "Tequila", volume: "750ml", price: 590 },
-            { name: "Maestro Dobel Humito", category: "Tequila", volume: "750ml", price: 620 },
-            { name: "Maestro Dobel 50 Cristalino", category: "Tequila", volume: "750ml", price: 2480 },
-            { name: "Patron Silver", category: "Tequila", volume: "750ml", price: 435 },
-            { name: "Patron Añejo Cristalino", category: "Tequila", volume: "700ml", price: 610 },
-            { name: "Patron Reposado", category: "Tequila", volume: "750ml", price: 530 },
-            { name: "Patron Añejo", category: "Tequila", volume: "750ml", price: 640 },
-            { name: "Ocho Añejo", category: "Tequila", volume: "750ml", price: 790 },
-            { name: "Ocho Plata", category: "Tequila", volume: "750ml", price: 565 },
-            { name: "Ocho Extra Añejo", category: "Tequila", volume: "750ml", price: 2600 },
-            { name: "Ocho Reposado", category: "Tequila", volume: "750ml", price: 655 },
-            { name: "Ocho Single Barrel", category: "Tequila", volume: "750ml", price: 990 },
-            { name: "Pueblo Viejo Reposado", category: "Tequila", volume: "750ml (3/4)", price: 292 },
-            { name: "Pueblo Viejo Añejo", category: "Tequila", volume: "1.75Lt", price: 790 },
-            { name: "Pueblo Viejo Añejo", category: "Tequila", volume: "700ml", price: 450 },
-            { name: "Pueblo Viejo Añejo", category: "Tequila", volume: "1Lt", price: 470 },
-            { name: "Pueblo Viejo Reposado", category: "Tequila", volume: "1Lt", price: 346 },
-            { name: "Reserva de la Familia Añejo Cristalino P/X Orgánico", category: "Tequila", volume: "700ml", price: 1650 },
-            { name: "Reserva de la Familia Extra Añejo", category: "Tequila", volume: "750ml", price: 2900 },
-            { name: "Reserva de la Familia Platino", category: "Tequila", volume: "750ml", price: 745 },
-            { name: "Reserva de la Familia Reposado", category: "Tequila", volume: "750ml (3/4)", price: 1000 },
-            { name: "Reserva de la Torre Blanco", category: "Tequila", volume: "1Lt", price: 231 },
-            { name: "Reserva de la Torre Reposado", category: "Tequila", volume: "1Lt", price: 253 },
-            { name: "Reserva de la Torre Añejo", category: "Tequila", volume: "1Lt", price: 315 },
-            { name: "Reserva de la Torre Blanco 40* Premium", category: "Tequila", volume: "750ml", price: 374 },
-            { name: "Reserva de la Torre Rep 40* Premium", category: "Tequila", volume: "750ml", price: 397 },
-            { name: "Rey de Copenhague Blanco 35*", category: "Tequila", volume: "1Lt", price: 157 },
-            { name: "Broche de Oro Añejo", category: "Tequila", volume: "1Lt", price: 285 },
-            { name: "Reysol", category: "Tequila", volume: "750ml", price: 4200 },
-            { name: "San Matias 135 Aniversario", category: "Tequila", volume: "750ml", price: 9550 },
-            { name: "San Matias Cristal Añejo", category: "Tequila", volume: "750ml", price: 630 },
-            { name: "San Matias Gran Reserva Blanco", category: "Tequila", volume: "700ml", price: 389 },
-            { name: "San Matias Gran Reserva Extra Añejo", category: "Tequila", volume: "700ml", price: 465 },
-            { name: "San Matias Tahona Blanco", category: "Tequila", volume: "750ml", price: 1070 },
-            { name: "San Matias Tahona Reposado", category: "Tequila", volume: "750ml", price: 1260 },
-            { name: "San Matias Tahona Añejo", category: "Tequila", volume: "750ml", price: 1310 },
-            { name: "Sangre Alteña Blanco o Rep", category: "Tequila", volume: "750ml", price: 235 },
-            { name: "Sangre Alteña Añejo", category: "Tequila", volume: "750ml", price: 315 },
-            { name: "Sangre Alteña Cristalino Premium", category: "Tequila", volume: "750ml", price: 630 },
-            { name: "Tesoro de Don Felipe Reposado", category: "Tequila", volume: "750ml", price: 644 },
-            { name: "Tesoro de Don Felipe Blanco", category: "Tequila", volume: "750ml", price: 636 },
-            { name: "Tapatio Añejo", category: "Tequila", volume: "1Lt", price: 860 },
-            { name: "Tapatio Blanco", category: "Tequila", volume: "1Lt", price: 573 },
-            { name: "Tapatio Reposado", category: "Tequila", volume: "1Lt", price: 615 },
-            { name: "Tapatio 110", category: "Tequila", volume: "1Lt", price: 719 },
-            { name: "Tequileño Blanco", category: "Tequila", volume: "1Lt", price: 275 },
-            { name: "Tequileño Reposado", category: "Tequila", volume: "1Lt", price: 335 },
-            { name: "Tradicional Cristalino", category: "Tequila", volume: "750ml", price: 465 },
-            { name: "Tradicional Cristalino", category: "Tequila", volume: "1.75Lt", price: 980 },
-            { name: "Tradicional Plata", category: "Tequila", volume: "695ml", price: 300 },
-            { name: "Tradicional Plata", category: "Tequila", volume: "950ml", price: 360 },
-            { name: "Tradicional Reposado", category: "Tequila", volume: "695ml", price: 296 },
-            { name: "Tradicional Reposado", category: "Tequila", volume: "950ml", price: 360 },
-            { name: "Trujillo Cuarenta", category: "Tequila", volume: "750ml", price: 411 },
-            { name: "Trujillo Cristal", category: "Tequila", volume: "750ml", price: 440 },
-            { name: "Trujillo Carbon", category: "Tequila", volume: "700ml", price: 573 },
-            { name: "Trujillo Tahona", category: "Tequila", volume: "750ml", price: 530 },
-            { name: "El Charro Duo Reposado", category: "Tequila", volume: "750ml (3/4)", price: 152 },
-            { name: "El Charro Duo Blanco", category: "Tequila", volume: "750ml (3/4)", price: 150 },
-
-            // VINO
-            { name: "Finca las Moras Reserva Chardonay", category: "Vino", volume: "750ml", price: 240 },
-            { name: "Finca las Moras Reserva Cabernet Shiraz", category: "Vino", volume: "750ml", price: 240 },
-            { name: "Matarromera Crianza", category: "Vino", volume: "750ml", price: 800 },
-            { name: "Tablas Tempranillo Grenache Petite Sirah", category: "Vino", volume: "750ml", price: 370 },
-            { name: "Finca las Moras Reserva Malbec", category: "Vino", volume: "750ml", price: 240 },
-            { name: "Finca las Moras Rosado Dulce", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Finca las Moras Tinto Dulce", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Finca Las Moras Sauvignon Blanco", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Finca Las Moras Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Finca Las Moras Malbec", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Finca las Moras Merlot", category: "Vino", volume: "750ml", price: 116 },
-            { name: "Trapiche Malbec Reserva", category: "Vino", volume: "750ml", price: 210 },
-            { name: "Trapiche Roble Pinot Noir", category: "Vino", volume: "750ml", price: 221 },
-            { name: "Trapiche Varietal Cabernet", category: "Vino", volume: "750ml", price: 155 },
-            { name: "Giacobazzi Tinto Lambrusco", category: "Vino", volume: "1.75Lt", price: 150 },
-            { name: "Giacobazzi Tinto Lambrusco", category: "Vino", volume: "750ML", price: 100 },
-            { name: "Giacobazzi Modena Lambrusco Emilia", category: "Vino", volume: "750ML", price: 100 },
-            { name: "Cuatro Soles Roble", category: "Vino", volume: "750ml", price: 120 },
-            { name: "Casillero del Diablo Chardonay", category: "Vino", volume: "750ml", price: 200 },
-            { name: "Casillero del Diablo Belight Sauvignon Blanc", category: "Vino", volume: "750ml", price: 205 },
-            { name: "Casillero del Diablo Rose", category: "Vino", volume: "750ml", price: 195 },
-            { name: "Casillero del Diablo Belight Rose", category: "Vino", volume: "750ml", price: 195 },
-            { name: "Casillero del Diablo Devils Brut Espumoso", category: "Vino", volume: "750ml", price: 250 },
-            { name: "Casillero del Diablo Red Blend", category: "Vino", volume: "750ml", price: 198 },
-            { name: "Casillero Cabernet Reserva Privada", category: "Vino", volume: "750ml", price: 315 },
-            { name: "Casillero Intensend Red", category: "Vino", volume: "750ml", price: 198 },
-            { name: "Casillero Devil Colleccion", category: "Vino", volume: "750ml", price: 250 },
-            { name: "Casillero del Diablo Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 190 },
-            { name: "Casillero del Diablo Carmenere", category: "Vino", volume: "750ml", price: 190 },
-            { name: "Casillero del Diablo Merlot", category: "Vino", volume: "750ml", price: 190 },
-            { name: "Concha y Toro Sweet Red", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Merlot", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Cabernet Sauvignon Blanco", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Shiraz", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Malbec", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Carmenere", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Zinfandel", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Selección", category: "Vino", volume: "750ml", price: 105 },
-            { name: "Concha y Toro Lambrusco", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Concha y Toro Reservado Rose", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Broque Reserva Tempranillo", category: "Vino", volume: "750ml", price: 398 },
-            { name: "Broque Crianza Tempranillo", category: "Vino", volume: "750ml", price: 267 },
-            { name: "La Cetto Petite Sirah", category: "Vino", volume: "750ml", price: 150 },
-            { name: "La Cetto Nebbiolo Reserva", category: "Vino", volume: "750ml", price: 275 },
-            { name: "La Cetto Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 155 },
-            { name: "La Cetto Blanc Rosa Zinfandel", category: "Vino", volume: "750ml", price: 155 },
-            { name: "Chilensis Carmenere", category: "Vino", volume: "750ml", price: 115 },
-            { name: "Catena Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 499 },
-            { name: "Beringer", category: "Vino", volume: "1.5Lt", price: 410 },
-            { name: "Trisquel", category: "Vino", volume: "750ml", price: 230 },
-            { name: "Ucero Consagrar", category: "Vino", volume: "750ml", price: 180 },
-            { name: "Sangre de Toro", category: "Vino", volume: "750ml", price: 230 },
-            { name: "Sangre de Toro Reserva", category: "Vino", volume: "750ml", price: 285 },
-            { name: "Don Simon Blanco", category: "Vino", volume: "750ml", price: 90 },
-            { name: "Don Simon Rosado", category: "Vino", volume: "750ml", price: 90 },
-            { name: "Don Simon Tinto", category: "Vino", volume: "750ml", price: 90 },
-            { name: "California Blanco y Tinto Galon", category: "Vino", volume: "4Lt", price: 275 },
-            { name: "California Blanco, Tinto y Rosado Tetra Pack", category: "Vino", volume: "1Lt", price: 71 },
-            { name: "Lambrusco Dolce Amore", category: "Vino", volume: "750ml", price: 133 },
-            { name: "Lambrusco Dolce Amore Bco", category: "Vino", volume: "750ml", price: 133 },
-            { name: "Lambrusco Dolce Amore Rosado", category: "Vino", volume: "750ml", price: 133 },
-            { name: "Lambrusco Vino Blanco Espumoso", category: "Vino", volume: "750ml", price: 154 },
-            { name: "Lambrusco Moscato", category: "Vino", volume: "750ml", price: 121 },
-            { name: "Lambrusco Rosado", category: "Vino", volume: "750ml", price: 112 },
-            { name: "Lambrusco Tinto", category: "Vino", volume: "750ml", price: 115 },
-            { name: "Baron Brut", category: "Vino", volume: "750ml", price: 205 },
-            { name: "Cune Rivera del Duero", category: "Vino", volume: "750ml", price: 250 },
-            { name: "Donelli Lambrusco", category: "Vino", volume: "750ml", price: 155 },
-            { name: "Sangre de Cristo", category: "Vino", volume: "750ml", price: 120 },
-            { name: "Viña Maipo Chardonnay", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Viu Manen Carmenere", category: "Vino", volume: "750ml", price: 130 },
-            { name: "Chateaust Michelle Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 430 },
-            { name: "Stella Rosa Non Alcoholic Rose 0.0%", category: "Vino", volume: "750ml", price: 330 },
-            { name: "Stella Variedad de Sabores", category: "Vino", volume: "750ml", price: 330 },
-            { name: "Santo Tomas", category: "Vino", volume: "750ml", price: 165 },
-            { name: "Xa Domec Blanco", category: "Vino", volume: "750ml", price: 107 },
-            { name: "Xa Domec Cabernet", category: "Vino", volume: "750ml", price: 111 },
-            { name: "Casa Madero 3V", category: "Vino", volume: "750ml", price: 470 },
-            { name: "Casa Madero 2V", category: "Vino", volume: "750ml", price: 372 },
-            { name: "Casa Madero 3V Gran Reserva", category: "Vino", volume: "750ml", price: 1090 },
-            { name: "Casa Madero V Rosado", category: "Vino", volume: "750ml", price: 340 },
-            { name: "Casa Madero Cabernet Sauvignon", category: "Vino", volume: "750ml", price: 460 },
-            { name: "Casa Madero Malbec", category: "Vino", volume: "750ml", price: 460 },
-            { name: "Casa Madero Merlot", category: "Vino", volume: "750ml", price: 470 },
-            { name: "Vino Erre Punto Blanco", category: "Vino", volume: "750ml", price: 273 },
-            { name: "Altas Cumbres Viognier", category: "Vino", volume: "750ml", price: 117 },
-            { name: "Torre De Oña Rioja", category: "Vino", volume: "750ml", price: 132 },
-            { name: "Trivento Reserve Chardonnay", category: "Vino", volume: "750ml", price: 118 },
-            { name: "Trivento Malbec", category: "Vino", volume: "750ml", price: 210 },
-            { name: "Trivento Malbec Rose", category: "Vino", volume: "750ml", price: 210 },
-            { name: "Diablo Dark Red", category: "Vino", volume: "750ml", price: 315 },
-            { name: "Vino Beronia Rioja", category: "Vino", volume: "750ml", price: 453 },
-            { name: "Marques de Caceres", category: "Vino", volume: "750ml", price: 210 },
-            { name: "Monte Xanic Carbenet Sauvignon", category: "Vino", volume: "750ml", price: 650 },
-            { name: "Monte Xanic Merlot", category: "Vino", volume: "750ml", price: 680 },
-            { name: "Monte Xanic Sauvignon Blanc Viña Kristel", category: "Vino", volume: "750ml", price: 450 },
-            { name: "Monte Xanic Chenin Colomboar", category: "Vino", volume: "750ml", price: 330 },
-            { name: "Monte Xanic Chardonay", category: "Vino", volume: "750ml", price: 550 },
-            { name: "Monte Xanic Cabernet Sauvignon Merlot", category: "Vino", volume: "750ml", price: 680 },
-            { name: "Monte Xanic Rose", category: "Vino", volume: "750ml", price: 450 },
-            { name: "Calixa Shiraz", category: "Vino", volume: "750ml", price: 450 },
-            { name: "Calixa Blend", category: "Vino", volume: "750ml", price: 450 },
-            { name: "Navarro Correas Coleccion Privada", category: "Vino", volume: "750ml", price: 425 },
-            { name: "Campo Viejo Gran Reserva Rioja", category: "Vino", volume: "750ml", price: 410 },
-            { name: "Asti Espumoso Dolce", category: "Vino", volume: "750ml", price: 165 },
-            { name: "Proseco", category: "Vino", volume: "1.5Lt", price: 690 },
-            { name: "Gaetano de Aquino Merlot", category: "Vino", volume: "750ml", price: 110 },
-            { name: "Lives Reserve Tinto", category: "Vino", volume: "750ml", price: 138 },
-            { name: "Boones Sabores", category: "Vino", volume: "750ml", price: 69 },
-
-            // VODKA
-            { name: "Sky con Vaso", category: "Vodka", volume: "750ml", price: 175 },
-            { name: "Karat", category: "Vodka", volume: "1Lt", price: 87 },
-            { name: "Absolut Smoky Piña", category: "Vodka", volume: "750ml", price: 245 },
-            { name: "Absolut", category: "Vodka", volume: "750ml", price: 184 },
-            { name: "Absolut Natural", category: "Vodka", volume: "1Lt", price: 238 },
-            { name: "Absolut Variedad de Sabores", category: "Vodka", volume: "750ml", price: 194 },
-            { name: "Grey Goose", category: "Vodka", volume: "750ml", price: 530 },
-            { name: "Oso Negro Tamarindo", category: "Vodka", volume: "750ml", price: 130 },
-            { name: "Oso Negro", category: "Vodka", volume: "1.2Lt", price: 105 },
-            { name: "Smirnoff", category: "Vodka", volume: "750ml", price: 190 },
-            { name: "Smirnoft Tamarindo", category: "Vodka", volume: "750ml", price: 202 },
-            { name: "Smirnoft Tamarindo", category: "Vodka", volume: "1Lt", price: 260 },
-            { name: "Zaverich Duo", category: "Vodka", volume: "750ml", price: 184 },
-            { name: "Zaverich Spicy Tamarindo", category: "Vodka", volume: "1Lt", price: 125 },
-            { name: "Stolichnaya Rojo", category: "Vodka", volume: "750ml", price: 227 },
-            { name: "Zaverich Natural", category: "Vodka", volume: "1.75Lt", price: 152 },
-            { name: "Wyborowa Tamarindo", category: "Vodka", volume: "750ml", price: 137 },
-            { name: "Zaberich Natural", category: "Vodka", volume: "1Lt", price: 100 },
-
-            // WISKY
-            { name: "Red Label", category: "Wisky", volume: "700ml", price: 280 },
-            { name: "Johnie Walker Blonde", category: "Wisky", volume: "700ml", price: 445 },
-            { name: "Blue Label", category: "Wisky", volume: "700ml", price: 6800 },
-            { name: "Double Black Label", category: "Wisky", volume: "700ml", price: 1150 },
-            { name: "Green Label", category: "Wisky", volume: "700ml", price: 1670 },
-            { name: "Gold Label Reserve", category: "Wisky", volume: "750ml", price: 1400 },
-            { name: "Black Label Diageo", category: "Wisky", volume: "750ml", price: 815 },
-            { name: "Black & White", category: "Wisky", volume: "750ml", price: 189 },
-            { name: "Crow Royal De Luxe", category: "Wisky", volume: "1Lt", price: 550 },
-            { name: "Crow Royal", category: "Wisky", volume: "750ml", price: 445 },
-            { name: "Buchanans 12 Diageo", category: "Wisky", volume: "750ml", price: 690 },
-            { name: "Buchanas 12 Diageo", category: "Wisky", volume: "1Lt", price: 970 },
-            { name: "Buchanans 18", category: "Wisky", volume: "750ml", price: 1950 },
-            { name: "Buchanans Master", category: "Wisky", volume: "750ml", price: 980 },
-            { name: "Buchanans Two Soul", category: "Wisky", volume: "750ml", price: 800 },
-            { name: "Buchanas 12", category: "Wisky", volume: "4.5Lt", price: 3950 },
-            { name: "Buchanas Piña", category: "Wisky", volume: "750ml", price: 650 },
-            { name: "Buchanans Red Seal", category: "Wisky", volume: "750ml", price: 4750 },
-            { name: "Ballantines Fitness", category: "Wisky", volume: "750ml", price: 195 },
-            { name: "Chivas Regal 12", category: "Wisky", volume: "750ml", price: 550 },
-            { name: "Chivas 12 Pack Pachita", category: "Wisky", volume: "375ml", price: 550 },
-            { name: "Chivas 13", category: "Wisky", volume: "750ml", price: 670 },
-            { name: "Glenfidich 15 Años", category: "Wisky", volume: "750ml", price: 1550 },
-            { name: "Glenffidich Pack Celeste", category: "Wisky", volume: "750ml", price: 1044 },
-            { name: "Glenddifich 12", category: "Wisky", volume: "750ml", price: 1000 },
-            { name: "Chivas 18", category: "Wisky", volume: "750ml", price: 2900 },
-            { name: "The Glenlivet Double Oak", category: "Wisky", volume: "1Lt", price: 1200 },
-            { name: "The Glenlivet Caribbean Reserve", category: "Wisky", volume: "750ml", price: 900 },
-            { name: "Jack Daniels", category: "Wisky", volume: "700ml", price: 400 },
-            { name: "Jack Daniels Apple", category: "Wisky", volume: "700ml", price: 405 },
-            { name: "Jack Daniels Gentlen Man", category: "Wisky", volume: "700ml", price: 670 },
-            { name: "Jack Daniels Honey", category: "Wisky", volume: "750ml", price: 405 },
-            { name: "Macayan 12 Years", category: "Wisky", volume: "700ml", price: 1600 },
-            { name: "Macallan Gold Class", category: "Wisky", volume: "700ml", price: 1150 },
-            { name: "Old Parr 12", category: "Wisky", volume: "750ml", price: 650 },
-            { name: "Passport Scotch Nueva Presentacion", category: "Wisky", volume: "700ml", price: 132 },
-            { name: "William Lawsons Chili", category: "Wisky", volume: "750ml", price: 75 },
-            { name: "William Lawsons", category: "Wisky", volume: "750ml", price: 146 },
-            { name: "Toky Suntoryn", category: "Wisky", volume: "750ml", price: 600 }
-        ];
-
-        
-        // Convertimos el logo png a base64 para incrustarlo directamente
-        const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TpSKVBjtYcMhQHcSCqIijVqEIFUKt0KqDyaVf0KQhSXFxFFwLDn4sVh1cnHV1cBUEwQ8QJ0cnRRcpf09pI8UeD+9+vPd+7919gNCoMM3qmgA03TazqYRYSK6Ivi8I0AcRIjAiM/WEORuG4/q+h4+vd1Ge5X3fn6NbzBgM8AnEs0zTDeIN4ulNQ+O8TxxmZUkifE48ZtIFiR+5Ljv8xrnkssAzw2Y2M08cJhaLXSw3MCubGvEUcURWdcoXkh6rnLc4a5UKa92TvzCUV1aWuU5zCAksYQkiRMiogxIqsBKjnSjRwkTOxz38I44/SS6ZXGUwcsyhCjVke/A/+N2tWZicdJKCScD14lgfI0BwF2jWjfX7sGU3T4DAM3Clt/yVBjD9SXqtrYWPgL5t4OK6rcl7wOUOMPikS4ZkS16aQiEPHM/om7JA3y3Qs+b01trH6QOQoV4lboCDQ2C0QNnrHu/uau3t3zOt/n4AiSlyro5t+mAAAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfoCBAWMSvHj0kAAA+dSURBVHja7Z15sFVVGcefRzTMEBUVE+E9iQnU1MScSksHndE/mqaZ0WmsmdTSGacM0zHNMvpHZ0yZ0dTSaWe0cWyayWlwSkF0tEFEVEBFQUVRFB+g8Mbn9b3ce869956z7zn77LXX78wMvOGed+/Z+5zzu7/fWuvs3cAYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGNMgBqI8o8d7w2fJ0P/vR6+n/N3ZqYhYg4Hl8D1wBHAl8Bx0P8e76318H29/v02sAr4B/AHwzSDEr7hM8A04BTgDODIfs1lPfAM8CjwU2AxMAW8i1nCEk4CPgl8pYe+H6Vq8Gvgu8AfgUWeGZqAhDOAjwGfBxQh6S8N+A3wFeBuYLFnjoa0M28HjgM+A1zm4+b9pQ/4N+BrwG3AHs8sD1VnTgA+C1zlk0O26H1/FXgIeMwzzkEZnXmN2/m61C1e0xXAF4AH1b2YYwL2oO3K93gK0hT/nNf4b2CjZ6Jt2s6cBtwAnIOmW7u1CnjMbf/bnpm2aDvzAuAKXG/Ots28Wz3tdu/3npkGaTtzK/B1t+lSj6lX3/bHwGq1fW2PtzOvA64D3uMppC9+T+1ee8z4nIAn52q8p2kL8+p+r3l2epA2w/1eU3rX32Wf7wJ/1n5jC2yHtzNvdE/GfW5a2w01p41ZtN2y3DPV1Xl/hTfF2q0o/o0s0Z8V19uZFwIfd9+vK/K131d/p+5jT9vP94R10x/1Hq9t0a7+1t0p12g/M0A7b3V1n+E11rYoV39rrzHn92T46O/A+d5k1W7F9WeFdsX32+3Mi9wT8oJe/a2/s4E56n9P2t/Wk2n92s/cDPyHpyf1e5n2N11v5w09Xl3QfH/G4j3a/z7tG3N+/864K3qft/t7L+6I3z0DPeF36l6j1e/KzGz7+0e8B9R+1m6sMdf781yP7xP6u6L2s5b31/8V72U9ZfX+GvP7m0Z8b/Rer+17vM17z/tA/V/x39/n9Xy8/b3P9fjZ/r3e49sJ/V4t1+OPgNlq+7O/Hn79mZvwA2Ctt7P6w/Z3w//xXq7+rXmNPWl3wN+xP8H8fnbR7Tf9/7Q2/tN/r/34aM2x/q/+s/e29re//i1b1+OXgH/b/274H//N8Efsb9W+o/q/+ndw37T9bWkP3X//6x1xN9u1H1/t99B22M7R/rdN22/7vH7j3S89Pfn3zW1sO3AksFm/sIReDdwO/AhY7plkQ1o/j22b82K26y51i3vW+2H1T7bYn7g1sBE4TftXl1r5N2CT2v61fS1I7+ebwEHA3/Xv+00Z8DbgH8Axalvb1o4w/4/q+HjX/t+vP3A7cLzavratbaf+/y794x571Ld6z68C/qC2T0Ff0w5YgX6H+yL1516u4+m6+XN1v/TntK4vBf4CfEr/P22/9dD9d4PaHts7P9rP2z7+Z9rP2w2/oPZ172Xtz1s74r8A/I/2v9bL0b+39/h6H/4/9R+8/e3n+/X3vA/0Hh9e//f1n/H2r+d9ofXyev2j97j1+I2N+K+r/awd/Z3x91834t8b/VwXjI8B9/o7rN1aY873Z+8b8Q+7R/z/uH92o/2sXf2tj8B7mPaz1vR3/s8E+6O9/Z1v637oPf6s2s9y9ff7A58E/u7+G+2I7/f1n4/n6P97o7+n1f+tH/Aepv2sp/2tv60v3B1xK9rP3NjN7o64U/vfcT1s+/lFv/8u3282aPv52l53/F2o/cxwP9901+14FfB9v7+k6471V017z7sH9Gv//632M2/u95p2x0e9x2tbdKs/07yG+7RtzPPd3XGLfT5n0b1+9rTf2n3m5e6OuBH4tWciK+Z84Mtu+51mO1l7HjB+6O6IO9R2Q8xpx/hbwI2Yw2a1Hbi7h4Bfu+13g2egLdq5f+buiFtQO8o7WfFh4Fbc1mNPTxu03XyVuwMe7n69wzORvPim2w4/wE5Maa+B2t5mX+BuiPtwe5hYmXG2G3Yex21/c80wTNu57wX+gNsdq71eK5B3ux3wDO3B4171tX3uIuAftAdbkxbHujtL+3L0vMezRkMOmf9v3Yt1H91TjHk/O3+QeA9aX3e5T40x1kXfN3C82vF23Qv0Q7c0/7wEPE7d2L4S4nI82f9H6t7o/rZ83yRge1X014BfAL+nbqB0fQfL/6r7Svk7uC0aL3lGGWO1/n4MuBu4C1jK2GvU2n7m9wH/Bv4M/B1r9hhjrNGfU4HfAXcBd/a0J+Q+R8Yf4150tX3uCdzqf2P32hhjzM/o6a/191Lcp1T8vX5kPNO9QO8DPgm8H01mY4xJ1J/FwL81+T0A/E596T2R8XfchXmS2xP0QvcfY4yJ0p/lwH0x+zMNuFd94mWR8fe5LcxT3Av4eLTyNcaYGP3ZBNwbkz87gFvUZ26KjD/LvZAvcE/eM3B7oRhjTKz+LADujcGfj7s91m+qP9weGX+h20v0AuBU3JYhxhgTlD9z3fX7s0j8OQN4TH3mtcj469xeIufiln/4F1oYY0xY/nweWBcBP1cCt6rP7IyMfx/wn24vkrPQE/cYY0y4/jwN/CUQfp4ErlGf2RcZfybwsnsBJ7olZ4wxJmZ/9uD6eX1I/LwEuFp9Z0dk/Ivc0vYvcEsvvBPt82mMMRH5sxE4NAJ/vghcoT60LjL+HGArcCZugmUjcI1noiX8CbjIbX91zxjT7M8W4KqA/HkJuFJ9aVlk/DHA68BZuImX52nFaoI1e54Fru3hecYY0+zPVuCGgPx5CrhMfWlZZPxZbm+RczHBch1m88/u+8B1PTzPGGN6xH8U+EUA/twLnKe+9EBk/AVuiZxzcZMsbwf2eeZYy8fLwA09PM8YY3rEfxRweQD+3Auco770QGT8x4DNbr/bS9RnaUow2sXoN/2eMca0wO904NoA/DkdOFN9abXI+LOArXij4jL1WeXl43jgxp6eZ4wxtsXvDOA3Pvw5FX1IffxV4B71pfmR8We5h64zcY3a0eozy8en3A54Q0/PM8YY2+J3JjA/AH+mAqepL82PjP8YcBFwNm6yZbpnhqX83ASs6Ol5xhhjW/xOBb7rw5+v4/YOPkx96ebI+LcB33A7yqXAacA6zxRLuBu4pKfnGWOMbfFPA37Ww58vAcern2yJjP8ocBnwSdzOQv2eGZbyU+CyHp9njDEt8Dsd+FYPfz6PGwQfoX6yJTL+g7jJlvOAExA/f8k/vB7t2v9tj88zxpge8U/FTfF148+Z6K0N1E8eioz/W+DrblLmpcAHcbu59HmGWMH73N0tU+B5xhjT4l+O2923m9H3tOBQ9ZPNkfEfA74OnIebmDkKWOyZYA1vxK01VItvjDFd8N+P2/Xeyej728BD1E82R8a/H3jA7QJ0BPAXz/h6/Lvc3aU2vjHGGPEvB97XwZ+vAo9QP3k4Mv4a3BIsR+DG0jfgxuh7YlgzH6/itnQvjW+MMcaM+I8DPunhz7fRE90+QP1kc2T8u90eIsfjJmo241b+6YlhTbya2yX1k/GNMcaIEf8xwOQO/nwB/a2Xv6P+8mBkfA04Dbcx/eG4xT7WAm96Rtg/n2bg+rL4xhhjxH888AkPfx4DHqX+siYy/iZcD2m82+z7UGAXWvGax68C15fHN8YYI/5JwEkd/DkTNxn7sPpLo2v/p4DpuE5R03E7vKxAS189vJ7b/f7y8vjGGKPHfxpwYgd/DscNnQ5Tf2l07V8JvB832XIabqzlK9BSV4/PBtaUyTfGGD3+s4EpHfw5DH2360PqL42u/R8EFuLG6T8dt07SArT0lRfvZ9q0eQW+McaM+M8Bzuvhz+HAA9RfGl37fwL4BvAV3GTMy4E1aOkrL64tS2+MMUaP/1y3nXYX/hwCPED9pdG1/3ncXqHfxb1wlwBr0NJXTlzZ98Yboxf/XNxus134sx94gPpLo2t/I245uS8D5+GWsNnkmSBG7E0xxhj1L18Aru/hz37AA9RfGl3723ATNS/Hjbd7n1t/qIeNMYbI/m8Ebuzhz964J2H1t0bX/oeAK3F7h7yfm7jZI1Eyxpg+/T8PuLEPftv7sEbjzS3AD4H3A2fiJls2o39o3BhjpP7uD9wckD93Asdp1N40Xm1XN/o04HTcVqI70R9SNsaY2Pw/ABwXkD8fR+/yX6PxGtc+BtwHfAk32XIa2uHGGNO6v6sCB8Tgz/uBOzRqv5zGawA4CLgT+CpuvP1KtMONMcb4+X8QMCsGf04Bbtco7XEdiP/oNuCWqnk/bqLmcswh2BhjjF//DwaOjsGfU4A7NUrHdXy4XwKuBM7F7SRb8x3XGGP66M8hwOEx+PMB4A6N0nFdH1o4ELgBuAhdCqIxxvg5fxhwZAz+nIzeyr+uW9eH/0eBT7u3317gEcxj2BhjjF//pwKfjMGfU9Bz+HVd2x6gHbgAOBG3fXgT+kfGxhiTVP/TgcfE4M/J6LXzdd0+1r1j1NqBPwJOAn6AfgvYGGMS7M+JwOQY/DkZuFOjMq6r9hF+2O2E1B+4EHgS/bYwxpgE+3MScGIM/hyL3sm/rmv1EWH8QncB3wTchVu9J+ZRY2OMiUqf04BPxeDPsbid9wO1r3S4l5iBuCXg3gdswO1T2sONNsaYKPTZAFwagz+fAO7WvqL2s+XF/dK94A4CFgDvxi0H2A9t1hhjYtDndOCHMfjzceBu7StqP1uK15Puc/f778a4b6wxxnTvz3rgezH4sxi4R/uK2s8m4zXr7hE1X+K2E1uMeRwYY6L1Z4PbA8aH3/uAu7WvqP1ML97P1F0tP+q2E30H81AxxkTvzwbgbzH4sxC4V/uK2s/04q3p/gGv6Zfubpn7gQ24P2BjjInev08B/4zBn4XAfdpX1H6mh20n9xG3X+cK3A5L+/w9Bv4H1W17a4yJ3t9NwC9i8OcjwP3aV9R+ppdtB9NqJ6rrcA/H7/v8jR9wR8Qz2gPGGNO6P1uAFT0879HA/dpX1H5mcE7dZ7mH48vQ2x2t9PjH0GZ/4/bOueTuiG0eP+eZaIxpnz83ABt6eF4d0/mY2k/6x3mue/5P4+9U+7jHryK/r2N1d8S1Hj/nmWiMydOfHwFrenjew9pPEvvL8rS12u9V+/HxfiW8sZvdHbHR4+c8E40xefpzA3BfD88r489jHn/y2N11n+X2W72qB2dIecDdbu8Pj5/zTDTG5OnPDcA9PTzvYe0nI+S3tXz7uP3L9nZzO4yW2L/D3REvevycZ6IxJk9/bgD+3cPzHtJ+MkJ+2z3+W24nk0uAsf83d0fM9/g5z0RjTJ7+3ADc3cPzHtR+kthflgNru/z+q27vke+g/b+N23V2vsfPeSYaY/L0ZwtwRw/PU3/J2J/j8d92V61O3f7Z7bH+2H97R1zr8XOeicaYPP25Adivh+epv2TsT4//trsT3w686/afvXvEP+zuiA0eP+eZaIzJ058bgH/08Dz1l4z96fH3uX8e3427u13d33W/+rO7I3Z7/JxnQvL0/wP/sB4Z8s/8iQAAAABJRU5ErkJggg==";
-
-        const TreeIcon = () => (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22v-8"></path>
-                <path d="M12 14c-2.5-1.5-4-3-4-5.5a4.5 4.5 0 1 1 9 0c0 2.5-1.5 4-4 5.5"></path>
-                <path d="M12 9v-2"></path>
-                <path d="M9 10.5v-1"></path>
-                <path d="M15 10.5v-1"></path>
-            </svg>
-        );
-
-        const SearchIcon = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-        );
-
-        const UploadIcon = () => (
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-pomelero-gold mb-4">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-        );
-
-        const CartIcon = () => (
-            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-        );
-
-        const TrashIcon = () => (
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-        );
-
-        const CustomModal = ({ title, message, onClose }) => (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center transform transition-all">
-                    <div className="w-12 h-12 rounded-full bg-pomelero-gold/20 text-pomelero-gold flex items-center justify-center mx-auto mb-4">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"></path></svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                    <p className="text-gray-600 mb-6">{message}</p>
-                    <button onClick={onClose} className="w-full bg-pomelero-bg text-white font-semibold py-2.5 rounded-lg hover:bg-opacity-90 transition-colors">
-                        Aceptar
-                    </button>
+    <!-- HEADER / NAVEGACIÓN -->
+    <header class="bg-slate-900/90 border-b border-amber-500/30 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <!-- LOGO E IDENTIDAD -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('catalogo')">
+                <div class="w-12 h-12 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                    <!-- LOGOTIPO DE LA TIENDA -->
+                    <svg viewBox="0 0 500 500" class="w-full h-full object-cover">
+                        <circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/>
+                        <path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/>
+                        <text x="250" y="445" font-family="Outfit, sans-serif" font-size="42" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="4">POMELERO</text>
+                        <text x="250" y="475" font-family="Outfit, sans-serif" font-size="20" font-weight="400" fill="#d97706" text-anchor="middle" letter-spacing="6">LICORERÍAS</text>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-amber-400 tracking-wider">POMELERO</h1>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-medium">Catálogo de Mayoreo</p>
                 </div>
             </div>
-        );
 
-        const ProductImagePlaceholder = ({ category, name, imageUrl }) => {
-            const [imgError, setImgError] = useState(false);
+            <!-- BUSCADOR -->
+            <div class="flex-1 max-w-md mx-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, marca o capacidad..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/60 transition-all">
+                    <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
 
-            if (imageUrl && !imgError) {
-                return (
-                    <div className="w-full h-48 bg-white flex items-center justify-center p-2 relative overflow-hidden">
-                        <img 
-                            src={imageUrl} 
-                            alt={name} 
-                            className="max-h-full max-w-full object-contain mix-blend-multiply"
-                            onError={() => setImgError(true)}
-                        />
+            <!-- BOTONES SUPERIORES -->
+            <div class="flex items-center gap-3">
+                <button onclick="openCart()" class="relative bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>Pedido</span>
+                    <span id="cartBadge" class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <button onclick="switchTab('admin')" class="bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                    <span>Administrar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+
+        <!-- VISTA CATALOGO -->
+        <div id="view-catalogo" class="space-y-6">
+            <!-- FILTROS DE CATEGORIA -->
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="categoryFilters">
+                <button onclick="filterCategory('TODOS')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/20">Todos</button>
+            </div>
+
+            <!-- CONTENEDOR DE PRODUCTOS -->
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+
+        <!-- VISTA ADMINISTRADOR -->
+        <div id="view-admin" class="hidden max-w-4xl mx-auto space-y-6">
+            <!-- PANTALLA DE LOGIN ADMIN -->
+            <div id="adminLoginBox" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl max-w-md mx-auto text-center space-y-4">
+                <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-100">Panel de Administración</h2>
+                <p class="text-sm text-slate-400">Ingresa la contraseña para gestionar precios, inventario y pedidos.</p>
+                <input type="password" id="adminPasswordInput" placeholder="Contraseña..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-center text-slate-100 focus:outline-none focus:border-amber-500">
+                <button onclick="verifyAdminPassword()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-xl transition-all">Acceder al Panel</button>
+            </div>
+
+            <!-- PANEL DE ADMIN DESBLOQUEADO -->
+            <div id="adminPanelContent" class="hidden space-y-6">
+                <!-- PESTAÑAS ADMIN -->
+                <div class="flex border-b border-slate-800 gap-4">
+                    <button onclick="switchAdminTab('sync')" id="tabSyncBtn" class="pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition-all">Sincronizar Excel y SKU</button>
+                    <button onclick="switchAdminTab('orders')" id="tabOrdersBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all">Ver Pedidos (<span id="ordersCount">0</span>)</button>
+                </div>
+
+                <!-- SECCION SINCRONIZAR EXCEL -->
+                <div id="adminSyncSection" class="space-y-6">
+                    <!-- ACCIONES DE PLANTILLA Y PELIGRO -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-slate-200">Plantilla de Inventario con SKU</h3>
+                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos para evitar duplicar productos al actualizar precios.</p>
+                            </div>
+                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Descargar Plantilla Base
+                            </button>
+                        </div>
+                        <div class="bg-rose-950/20 border border-rose-900/40 p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-rose-300">Zona de Peligro</h3>
+                                <p class="text-xs text-rose-400/80 mt-1">¿Cometiste muchos errores? Borra absolutamente todo el catálogo actual para iniciar completamente desde cero.</p>
+                            </div>
+                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Borrar Catálogo Completo
+                            </button>
+                        </div>
                     </div>
-                );
+
+                    <!-- CAJA DE CARGA DE EXCEL -->
+                    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-6">
+                        <div class="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-8 text-center transition-all cursor-pointer bg-slate-950/50 relative"
+                             ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                            <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                            <div class="space-y-3">
+                                <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                </div>
+                                <h3 class="font-semibold text-slate-200">Arrastra tu archivo Excel aquí o haz clic</h3>
+                                <p class="text-xs text-slate-400">El sistema actualizará precios basándose en el <b>Código (SKU)</b> o agregará nuevos productos si no existen.</p>
+                            </div>
+                        </div>
+
+                        <!-- INSTRUCCIONES DE USO (SOLO APARECEN DESBLOQUEADAS AQUÍ) -->
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs text-slate-400 space-y-2">
+                            <p class="font-semibold text-slate-300">💡 Instrucciones para actualizar tu Excel:</p>
+                            <ul class="list-disc list-inside space-y-1 text-slate-400">
+                                <li class="text-slate-400">Usa la plantilla descargable para mantener las columnas correctas (Codigo, Nombre, Categoria, Precio, Capacidad, Imagen).</li>
+                                <li class="text-slate-400">Si cambias la descripción de un producto pero conservas su <b>Código (SKU)</b> original, el sistema actualizará los datos sin duplicarlo.</li>
+                                <li class="text-slate-400">Si dejas el código en blanco o pones uno nuevo, se agregará como un artículo independiente.</li>
+                            </ul>
+                        </div>
+
+                        <div id="syncPreviewContainer" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                            <div class="flex justify-between items-center">
+                                <span id="syncStatusText" class="text-sm font-medium text-amber-400">Archivo cargado con éxito</span>
+                                <button onclick="executeSync()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20">Sincronizar a Base de Datos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCION PEDIDOS -->
+                <div id="adminOrdersSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-200">Gestión de Pedidos de Clientes</h3>
+                        <div class="flex gap-2">
+                            <button onclick="filterOrders('pending')" id="filterPendBtn" class="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold">Pendientes</button>
+                            <button onclick="filterOrders('archived')" id="filterArchBtn" class="bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold">Archivados</button>
+                        </div>
+                    </div>
+                    <div id="ordersListContainer" class="space-y-4">
+                        <!-- Se llena con JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL CARRITO / PEDIDO -->
+    <div id="cartModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800">
+                <h3 class="font-bold text-lg text-amber-400">Tu Pedido en Curso</h3>
+                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-200 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="cartItemsList" class="flex-1 overflow-y-auto py-4 space-y-3 divide-y divide-slate-800/50">
+                <!-- Items del carrito -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="flex justify-between items-center text-lg font-bold">
+                    <span>Total Estimado:</span>
+                    <span id="cartTotalPrice" class="text-amber-400">$0 MXN</span>
+                </div>
+
+                <!-- FORMULARIO CLIENTE -->
+                <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <p class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Datos para Entrega / Factura</p>
+                    <input type="text" id="clientName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                    <input type="tel" id="clientPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                    <input type="text" id="clientAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                    <textarea id="clientNotes" placeholder="Notas adicionales (opcional)..." rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+
+                <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Generar y Enviar Pedido</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXITO / WHATSAPP -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-100">¡Pedido Registrado con Éxito!</h3>
+            <p class="text-sm text-slate-400">Tu orden se ha guardado en el sistema y se ha enviado al panel del administrador. Haz clic abajo para notificar por WhatsApp al negocio:</p>
+            
+            <a id="whatsappBtnLink" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                <span>Enviar Notificación por WhatsApp</span>
+            </a>
+
+            <button onclick="closeSuccessModal()" class="text-slate-400 hover:text-slate-200 text-sm font-medium py-2">Volver al Catálogo</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGICA -->
+    <script>
+        const businessPhone = "523781211112";
+        const ADMIN_PASS = "pomelero2026";
+
+        // Inventario completo inicial precargado (con SKU único)
+        const initialMockData = [
+            { sku: "BRN-AZT-200", name: "Azteca de Oro 200ml", category: "Brandy", price: 49, capacity: "200ml", image: "" },
+            { sku: "BRN-AZT-750", name: "Azteca de Oro 750ml", category: "Brandy", price: 175, capacity: "750ml", image: "" },
+            { sku: "BRN-TRS-5", name: "Torres 5 700ml", category: "Brandy", price: 189, capacity: "700ml", image: "" },
+            { sku: "BRN-TRS-10", name: "Torres 10 700ml", category: "Brandy", price: 210, capacity: "700ml", image: "" },
+            { sku: "BRN-TRS-15", name: "Torres 15 700ml", category: "Brandy", price: 500, capacity: "700ml", image: "" },
+            { sku: "BRN-TRS-MAZ", name: "Torres Mazapan 700ml", category: "Brandy", price: 385, capacity: "700ml", image: "" },
+            { sku: "BRN-TRS-20", name: "Torres 20 700ml", category: "Brandy", price: 990, capacity: "700ml", image: "" },
+            { sku: "BRN-DPR-1LT", name: "Don Pedro Gran Reserva 1lt", category: "Brandy", price: 185, capacity: "1lt", image: "" },
+            { sku: "BRN-DPR-200", name: "Don Pedro Gran Reserva 200ml", category: "Brandy", price: 41, capacity: "200ml", image: "" },
+            { sku: "BRN-DPR-CLS200", name: "Don Pedro Clasico 200ml", category: "Brandy", price: 38, capacity: "200ml", image: "" },
+            { sku: "BRN-DPR-CLS750", name: "Don Pedro Clasico 750ml", category: "Brandy", price: 162, capacity: "750ml", image: "" },
+            { sku: "BRN-PRS-200", name: "Presidente 200ml", category: "Brandy", price: 40, capacity: "200ml", image: "" },
+            { sku: "BRN-PRS-700", name: "Presidente 700ml", category: "Brandy", price: 125, capacity: "700ml", image: "" },
+            { sku: "BRN-PRS-940", name: "Presidente 940ml", category: "Brandy", price: 130, capacity: "940ml", image: "" },
+            { sku: "CER-CRN-AMB", name: "Corona Media Ambar", category: "Cerveza", price: 375, capacity: "355ml", image: "" },
+            { sku: "CER-CRN-CLR", name: "Corona Media Clara", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
+            { sku: "CER-PCF-LTA", name: "Pacifico Lata", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
+            { sku: "CER-EST-MGA", name: "Estrella Mega", category: "Cerveza", price: 495, capacity: "1.2Lt", image: "" },
+            { sku: "CER-HNK-00", name: "Heineken 0.0", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
+            { sku: "CHP-MET-ICE", name: "Moet & Chandon Ice", category: "Chanpang", price: 1590, capacity: "750ml", image: "" },
+            { sku: "CHP-MET-ROS", name: "Moet & Chandon Nectar Imperial Rosa", category: "Chanpang", price: 1580, capacity: "750ml", image: "" },
+            { sku: "CGN-HNS-XO", name: "Hennessy X.O", category: "Cognac", price: 4700, capacity: "700ml", image: "" },
+            { sku: "CGN-HNS-VS", name: "Hennessy V.S", category: "Cognac", price: 700, capacity: "700ml", image: "" },
+            { sku: "GIN-BEE-750", name: "Beefeater", category: "Ginebra", price: 380, capacity: "750ml", image: "" },
+            { sku: "GIN-BMB-375", name: "Bombay Sapphire", category: "Ginebra", price: 380, capacity: "375ml", image: "" },
+            { sku: "JRB-DLZ-NAT", name: "Dolzura Natural", category: "Jarabe", price: 49, capacity: "1lt", image: "" },
+            { sku: "JRB-DLZ-CUR", name: "Dolzura Curacao Azul", category: "Jarabe", price: 65, capacity: "1lt", image: "" },
+            { sku: "LCR-DIS-700", name: "Amaretto Disaronno", category: "Licor", price: 435, capacity: "700ml", image: "" },
+            { sku: "LCR-BAI-750", name: "Baileys", category: "Licor", price: 345, capacity: "750ml", image: "" },
+            { sku: "MEZ-UNI-700", name: "Union Joven", category: "Mezcal", price: 445, capacity: "700ml", image: "" },
+            { sku: "MEZ-400-ESP", name: "400 Conejos Joven Espadin", category: "Mezcal", price: 410, capacity: "750ml", image: "" },
+            { sku: "RON-APP-8", name: "Appleton 8", category: "Ron", price: 313, capacity: "750ml", image: "" },
+            { sku: "RON-BCR-ANJ", name: "Bacardi Añejo", category: "Ron", price: 220, capacity: "1lt", image: "" },
+            { sku: "TEQ-1800-ANJ", name: "1800 Añejo", category: "Tequila", price: 650, capacity: "700ml", image: "" },
+            { sku: "TEQ-1800-BLC", name: "1800 Blanco", category: "Tequila", price: 461, capacity: "700ml", image: "" },
+            { sku: "TEQ-DJL-70", name: "Don Julio 70", category: "Tequila", price: 720, capacity: "750ml", image: "" },
+            { sku: "TEQ-DJL-1942", name: "Don Julio 1942", category: "Tequila", price: 2940, capacity: "750ml", image: "" },
+            { sku: "VIN-MTR-CRN", name: "Matarromera Crianza", category: "Vino", price: 800, capacity: "750ml", image: "" },
+            { sku: "VOD-ABS-750", name: "Absolut Vodka", category: "Vodka", price: 184, capacity: "750ml", image: "" },
+            { sku: "WSK-JHW-BLCK", name: "Johnnie Walker Black Label", category: "Wisky", price: 815, capacity: "750ml", image: "" },
+            { sku: "WSK-JCK-700", name: "Jack Daniels", category: "Wisky", price: 400, capacity: "700ml", image: "" }
+        ];
+
+        let products = [];
+        let cart = [];
+        let currentCategory = "TODOS";
+        let parsedExcelData = null;
+
+        // Inicializar datos en localStorage o mock
+        function initApp() {
+            const saved = localStorage.getItem('pomelero_products');
+            if (saved) {
+                try { products = JSON.parse(saved); } catch(e) { products = initialMockData; }
+            } else {
+                products = initialMockData;
+                localStorage.setItem('pomelero_products', JSON.stringify(products));
+            }
+            renderCategories();
+            renderProducts();
+            loadOrders();
+        }
+
+        function saveProductsToStorage() {
+            localStorage.setItem('pomelero_products', JSON.stringify(products));
+        }
+
+        // Navegación de pestañas principales
+        function switchTab(tab) {
+            document.getElementById('view-catalogo').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            if (tab === 'catalogo') document.getElementById('view-catalogo').classList.remove('hidden');
+            if (tab === 'admin') document.getElementById('view-admin').classList.remove('hidden');
+        }
+
+        function switchAdminTab(subtab) {
+            document.getElementById('adminSyncSection').classList.add('hidden');
+            document.getElementById('adminOrdersSection').classList.add('hidden');
+            document.getElementById('tabSyncBtn').className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
+            document.getElementById('tabOrdersBtn').className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all";
+
+            if (subtab === 'sync') {
+                document.getElementById('adminSyncSection').classList.remove('hidden');
+                document.getElementById('tabSyncBtn').className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition-all";
+            } else {
+                document.getElementById('adminOrdersSection').classList.remove('hidden');
+                document.getElementById('tabOrdersBtn').className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition-all";
+                renderOrdersList();
+            }
+        }
+
+        function verifyAdminPassword() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === ADMIN_PASS) {
+                document.getElementById('adminLoginBox').classList.add('hidden');
+                document.getElementById('adminPanelContent').classList.remove('hidden');
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+        }
+
+        // Renderizado del Catálogo
+        function renderCategories() {
+            const cats = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = cats.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${currentCategory === cat ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/20' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'}">${cat}</button>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            renderCategories();
+            renderProducts();
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const grid = document.getElementById('productsGrid');
+
+            const filtered = products.filter(p => {
+                const matchCat = currentCategory === 'TODOS' || p.category === currentCategory;
+                const matchQuery = (p.name && p.name.toLowerCase().includes(query)) || (p.sku && p.sku.toLowerCase().includes(query)) || (p.capacity && p.capacity.toLowerCase().includes(query));
+                return matchCat && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No se encontraron productos.</div>`;
+                return;
             }
 
-            const colorMap = {
-                'Brandy': 'bg-orange-800',
-                'Tequila': 'bg-yellow-600',
-                'Cerveza': 'bg-yellow-400',
-                'Ron': 'bg-amber-700',
-                'Vodka': 'bg-blue-300',
-                'Chanpang': 'bg-pink-200',
-                'Vino': 'bg-red-900',
-                'Whisky': 'bg-orange-500',
-                'Ginebra': 'bg-emerald-600'
-            };
-            const bgClass = colorMap[category] || 'bg-slate-500';
-            const initial = name ? name.charAt(0).toUpperCase() : 'L';
-            
-            return (
-                <div className={`w-full h-48 ${bgClass} flex flex-col items-center justify-center relative overflow-hidden`}>
-                    <div className="absolute inset-0 opacity-20 flex items-center justify-center">
-                         <svg width="80" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M10 2v5l-3 4v11h10V11l-3-4V2z"></path>
-                            <line x1="8" y1="2" x2="16" y2="2"></line>
-                        </svg>
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-4 flex flex-col justify-between transition-all group shadow-lg">
+                    <div>
+                        <div class="h-36 bg-slate-950/60 rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-800/80 relative">
+                            ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-all">` : `
+                                <div class="text-center p-2">
+                                    <span class="text-xs font-bold text-amber-500/60 tracking-wider">${p.category || 'LICOR'}</span>
+                                    <p class="text-xs text-slate-400 mt-1">${p.capacity || ''}</p>
+                                </div>
+                            `}
+                            <span class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-md text-[10px] text-amber-400 px-2 py-0.5 rounded-md border border-slate-800 font-mono">${p.sku || 'SKU'}</span>
+                        </div>
+                        <span class="text-xs text-amber-500 font-semibold uppercase tracking-wider">${p.category}</span>
+                        <h4 class="font-semibold text-slate-100 text-sm mt-0.5 line-clamp-2">${p.name}</h4>
+                        <p class="text-xs text-slate-400 mt-1">${p.capacity || 'Estándar'}</p>
                     </div>
-                    <span className="text-white text-5xl font-serif font-bold opacity-80 z-10 drop-shadow-md">{initial}</span>
-                </div>
-            );
-        };
-
-        const CartModal = ({ cart, products, onClose, onCheckout, updateCart }) => {
-            const [name, setName] = useState('');
-            const [phone, setPhone] = useState('');
-            const [address, setAddress] = useState('');
-            const [notes, setNotes] = useState('');
-            const [errorMsg, setErrorMsg] = useState('');
-
-            const cartItems = Object.entries(cart).map(([id, qty]) => {
-                const prod = products.find(p => `${p.name}-${p.volume}` === id);
-                return { id, qty, ...prod };
-            }).filter(item => item.name && item.qty > 0);
-
-            const total = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                if (!name.trim() || !phone.trim()) {
-                    setErrorMsg('Por favor ingresa tu nombre y teléfono (WhatsApp).');
-                    return;
-                }
-                if (cartItems.length === 0) {
-                    setErrorMsg('El carrito está vacío.');
-                    return;
-                }
-                onCheckout({ name, phone, address, notes }, cartItems, total);
-            };
-
-            return (
-                <div className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50 p-0 md:p-4 transition-all">
-                    <div className="bg-white w-full md:max-w-2xl md:rounded-2xl h-[90vh] md:h-auto max-h-[90vh] flex flex-col overflow-hidden rounded-t-2xl shadow-2xl">
-                        <div className="flex justify-between items-center p-4 md:p-6 border-b border-gray-100 bg-gray-50">
-                            <h2 className="text-xl md:text-2xl font-serif font-bold text-pomelero-bg flex items-center gap-2">
-                                <CartIcon /> Tu Pedido
-                            </h2>
-                            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-200 text-gray-500 transition-colors">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                            </button>
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-500 block">Precio Mayoreo</span>
+                            <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs font-normal text-slate-400">MXN</small></span>
                         </div>
-                        
-                        <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col md:flex-row gap-8">
-                            <div className="flex-1 border-b md:border-b-0 md:border-r border-gray-100 md:pr-6 pb-6 md:pb-0">
-                                <h3 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider">Productos Seleccionados</h3>
-                                {cartItems.length === 0 ? (
-                                    <p className="text-gray-400 italic">No has seleccionado ningún producto.</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {cartItems.map(item => (
-                                            <div key={item.id} className="flex justify-between items-start gap-2">
-                                                <div className="flex-1">
-                                                    <p className="font-semibold text-gray-900 text-sm leading-tight">{item.name}</p>
-                                                    <p className="text-xs text-gray-500 mb-1">{item.volume}</p>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <button type="button" onClick={() => updateCart(item.id, item.qty - 1)} className="w-6 h-6 rounded bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 font-bold">-</button>
-                                                        <span className="text-sm font-medium w-4 text-center">{item.qty}</span>
-                                                        <button type="button" onClick={() => updateCart(item.id, item.qty + 1)} className="w-6 h-6 rounded bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-200 font-bold">+</button>
-                                                        <button type="button" onClick={() => updateCart(item.id, 0)} className="ml-2 text-red-400 hover:text-red-600 p-1"><TrashIcon /></button>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="font-bold text-pomelero-bg">${(item.price * item.qty).toFixed(2)}</p>
-                                                    <p className="text-[10px] text-gray-400">${item.price} c/u</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex-1">
-                                <h3 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider">Tus Datos</h3>
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    {errorMsg && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{errorMsg}</div>}
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre Completo *</label>
-                                        <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Ej. Juan Pérez" className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-pomelero-gold focus:ring-1 focus:ring-pomelero-gold text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Teléfono (WhatsApp) *</label>
-                                        <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Ej. 555 123 4567" className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-pomelero-gold focus:ring-1 focus:ring-pomelero-gold text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Dirección de Entrega (Opcional)</label>
-                                        <input type="text" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Para envíos o recoger en tienda" className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-pomelero-gold focus:ring-1 focus:ring-pomelero-gold text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Notas del pedido</label>
-                                        <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Instrucciones especiales..." className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-pomelero-gold focus:ring-1 focus:ring-pomelero-gold text-sm h-16 resize-none"></textarea>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div className="p-4 md:p-6 border-t border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div className="w-full md:w-auto text-center md:text-left">
-                                <p className="text-gray-500 text-sm">Total a pagar</p>
-                                <p className="text-3xl font-black text-pomelero-bg">${total.toFixed(2)}</p>
-                            </div>
-                            <button 
-                                type="button"
-                                onClick={handleSubmit}
-                                disabled={cartItems.length === 0}
-                                className="w-full md:w-auto px-8 py-3 bg-pomelero-gold text-white font-bold rounded-xl shadow-lg shadow-pomelero-gold/30 hover:shadow-pomelero-gold/50 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                            >
-                                Enviar Pedido
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const AdminView = ({ onSync, products }) => {
-            const [fileData, setFileData] = useState([]);
-            const [fileName, setFileName] = useState('');
-            const [isDragging, setIsDragging] = useState(false);
-            const [activeTab, setActiveTab] = useState('excel');
-            const [orders, setOrders] = useState([]);
-            const [orderTab, setOrderTab] = useState('nuevo');
-            const fileInputRef = useRef(null);
-
-            useEffect(() => {
-                if (!db) return;
-                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-                const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
-                    const loadedOrders = [];
-                    snapshot.forEach(doc => {
-                        loadedOrders.push({ id: doc.id, ...doc.data() });
-                    });
-                    loadedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    setOrders(loadedOrders);
-                });
-                return () => unsubscribe();
-            }, []);
-
-            const updateOrderStatus = async (id, status) => {
-                if (!db) return;
-                try {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { status });
-                } catch (e) { console.error(e); }
-            };
-
-            const deleteOrder = async (id) => {
-                if (!db) return;
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id));
-                } catch (e) { console.error(e); }
-            };
-
-            const processFile = (file) => {
-                if (!file) return;
-                
-                if (!file.name.match(/\.(xlsx|xls)$/i)) {
-                    alert("Por favor, sube únicamente un archivo Excel (.xlsx o .xls)");
-                    return;
-                }
-
-                setFileName(file.name);
-
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    try {
-                        if (!window.XLSX) {
-                            alert("La herramienta de lectura de Excel no se ha cargado. Verifica tu conexión a internet y recarga la página.");
-                            return;
-                        }
-
-                        const data = new Uint8Array(evt.target.result);
-                        const wb = window.XLSX.read(data, { type: 'array' });
-                        const wsname = wb.SheetNames[0]; 
-                        const ws = wb.Sheets[wsname];
-                        const rawData = window.XLSX.utils.sheet_to_json(ws, { defval: "" });
-                        
-                        const normalized = rawData.map(row => {
-                            const lowerRow = {};
-                            for(let k in row) {
-                                if(row[k] !== undefined && row[k] !== null) {
-                                    const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                                    lowerRow[cleanKey] = row[k];
-                                }
-                            }
-
-                            const getVal = (possibleNames) => {
-                                const key = Object.keys(lowerRow).find(k => possibleNames.some(p => k.includes(p)));
-                                return key ? lowerRow[key] : '';
-                            };
-                            
-                            let priceRaw = getVal(['precio', 'costo', 'mayoreo', 'importe', 'price']);
-                            let price = 0;
-                            if (typeof priceRaw === 'number') {
-                                price = priceRaw;
-                            } else if (typeof priceRaw === 'string') {
-                                price = parseFloat(priceRaw.replace(/[^0-9.-]+/g,""));
-                            }
-                            
-                            const rawName = getVal(['nombre', 'producto', 'articulo', 'descrip', 'name']);
-                            const nameStr = rawName ? String(rawName).trim() : '';
-                            
-                            return {
-                                name: nameStr,
-                                price: isNaN(price) ? 0 : price,
-                                category: String(getVal(['categoria', 'familia', 'tipo', 'departamento', 'category']) || 'General'),
-                                volume: String(getVal(['capacidad', 'volumen', 'ml', 'litro', 'presentacion', 'tamaño']) || ''),
-                                imageUrl: String(getVal(['imagen', 'foto', 'url', 'image', 'link']) || '')
-                            };
-                        }).filter(item => item.name && item.name !== '' && item.name !== 'undefined');
-
-                        if (normalized.length === 0) {
-                            alert("El archivo se leyó, pero no se encontraron productos. Verifica que las columnas se llamen: Nombre, Precio, Categoria, etc.");
-                        }
-
-                        setFileData(normalized);
-                    } catch (error) {
-                        console.error("Error al procesar Excel:", error);
-                        alert("Hubo un error interno al leer el archivo. Asegúrate de que no esté dañado o protegido con contraseña.");
-                    }
-                };
-                
-                reader.onerror = () => {
-                    alert("Error al intentar leer el archivo desde tu computadora.");
-                }
-
-                reader.readAsArrayBuffer(file);
-                
-                if(fileInputRef.current) fileInputRef.current.value = null; 
-            };
-
-            const handleDragOver = (e) => {
-                e.preventDefault();
-                setIsDragging(true);
-            };
-
-            const handleDragLeave = (e) => {
-                e.preventDefault();
-                setIsDragging(false);
-            };
-
-            const handleDrop = (e) => {
-                e.preventDefault();
-                setIsDragging(false);
-                const file = e.dataTransfer.files[0];
-                processFile(file);
-            };
-
-            return (
-                <div className="max-w-5xl mx-auto mt-8 p-4">
-                    <div className="flex gap-2 mb-6 border-b border-gray-200 pb-2 overflow-x-auto hide-scrollbar">
-                        <button 
-                            onClick={() => setActiveTab('excel')}
-                            className={`px-6 py-3 font-semibold rounded-t-lg transition-colors whitespace-nowrap ${activeTab === 'excel' ? 'bg-pomelero-bg text-white' : 'text-gray-500 hover:bg-gray-100'}`}
-                        >
-                            Actualizar Catálogo (Excel)
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('orders')}
-                            className={`px-6 py-3 font-semibold rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'orders' ? 'bg-pomelero-bg text-white' : 'text-gray-500 hover:bg-gray-100'}`}
-                        >
-                            Ver Pedidos {orders.filter(o => o.status === 'nuevo').length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{orders.filter(o => o.status === 'nuevo').length}</span>}
+                        <button onclick='addToCart(${JSON.stringify(p)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl transition-all shadow-md shadow-amber-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </div>
-
-                    {activeTab === 'excel' && (
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
-                            <h2 className="text-3xl font-serif text-pomelero-bg font-bold mb-2">Administrador del Catálogo</h2>
-                            <p className="text-gray-500 mb-4">Sube tu archivo <span className="font-semibold text-pomelero-gold">lista mayoreo rebajas 4 AGOSTO.xlsx</span> para sobreescribir los precios y productos de la base de datos.</p>
-                            
-                            <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-xl mb-6 text-left">
-                                <strong>Columnas recomendadas en tu Excel:</strong> Nombre, Precio, Categoria, Capacidad, Imagen (URL). <br/>
-                                <span className="opacity-80">El sistema intentará detectarlas automáticamente, pero nombrarlas así garantiza el éxito.</span>
-                            </div>
-                            
-                            <div 
-                                className={`border-2 border-dashed rounded-xl p-10 transition-colors cursor-pointer mb-6 ${isDragging ? 'border-pomelero-gold bg-pomelero-gold/10' : 'border-gray-300 hover:bg-gray-50'}`}
-                                onClick={() => fileInputRef.current.click()}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                            >
-                                <input type="file" accept=".xlsx, .xls" className="hidden" ref={fileInputRef} onChange={(e) => processFile(e.target.files[0])} />
-                                <UploadIcon />
-                                <p className="text-lg text-gray-700 font-medium">Haz clic aquí o arrastra tu archivo Excel</p>
-                                <p className="text-sm text-gray-400 mt-1">{fileName ? `Archivo seleccionado: ${fileName}` : 'Soporta .xlsx, .xls'}</p>
-                            </div>
-
-                            {fileData.length > 0 && (
-                                <div className="mt-8 text-left">
-                                    <div className="bg-emerald-50 text-emerald-700 p-4 rounded-lg mb-6 flex justify-between items-center flex-wrap gap-4">
-                                        <div>
-                                            <span className="font-bold block">¡Archivo leído correctamente!</span>
-                                            <span className="text-sm">Se encontraron {fileData.length} productos válidos.</span>
-                                        </div>
-                                        <button 
-                                            onClick={() => onSync(fileData)}
-                                            className="bg-emerald-600 text-white px-6 py-2 rounded-lg shadow-sm font-semibold hover:bg-emerald-700 transition-colors"
-                                        >
-                                            Sincronizar a Base de Datos
-                                        </button>
-                                    </div>
-
-                                    <h3 className="font-bold text-gray-800 mb-3">Vista Previa de Datos:</h3>
-                                    <div className="overflow-x-auto rounded-lg border border-gray-200">
-                                        <table className="w-full text-sm text-left text-gray-500">
-                                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                                <tr>
-                                                    <th className="px-6 py-3">Producto</th>
-                                                    <th className="px-6 py-3">Categoría</th>
-                                                    <th className="px-6 py-3">Presentación</th>
-                                                    <th className="px-6 py-3">Precio</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {fileData.slice(0, 5).map((row, i) => (
-                                                    <tr key={i} className="bg-white border-b">
-                                                        <td className="px-6 py-4 font-medium text-gray-900">{row.name}</td>
-                                                        <td className="px-6 py-4">{row.category}</td>
-                                                        <td className="px-6 py-4">{row.volume}</td>
-                                                        <td className="px-6 py-4 font-bold text-emerald-600">${Number(row.price).toFixed(2)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                        {fileData.length > 5 && (
-                                            <div className="p-3 text-center text-sm text-gray-500 bg-gray-50">
-                                                Y {fileData.length - 5} productos más...
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'orders' && (
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-serif text-pomelero-bg font-bold">Registro de Pedidos</h2>
-                                <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                                    <button onClick={() => setOrderTab('nuevo')} className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${orderTab === 'nuevo' ? 'bg-white text-pomelero-bg shadow-sm' : 'text-gray-500'}`}>Pendientes</button>
-                                    <button onClick={() => setOrderTab('archivado')} className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${orderTab === 'archivado' ? 'bg-white text-pomelero-bg shadow-sm' : 'text-gray-500'}`}>Archivados</button>
-                                </div>
-                            </div>
-                            
-                            {orders.filter(o => (o.status || 'nuevo') === orderTab).length === 0 ? (
-                                <div className="text-center py-10 bg-gray-50 rounded-xl">
-                                    <p className="text-gray-500 font-medium">No hay pedidos en esta sección.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {orders.filter(o => (o.status || 'nuevo') === orderTab).map(order => (
-                                        <div key={order.id} className="border border-gray-200 rounded-xl p-5 hover:border-pomelero-gold transition-colors shadow-sm">
-                                            <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h3 className="font-bold text-lg text-gray-900">{order.customer.name}</h3>
-                                                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${orderTab === 'nuevo' ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>
-                                                            {orderTab === 'nuevo' ? 'Pendiente' : 'Archivado'}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                                                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                                        {order.customer.phone}
-                                                    </p>
-                                                    {order.customer.address && (
-                                                        <p className="text-sm text-gray-600 mt-1 bg-gray-50 px-2 py-1 rounded inline-block border border-gray-100">Dir: {order.customer.address}</p>
-                                                    )}
-                                                </div>
-                                                <div className="text-left md:text-right">
-                                                    <p className="text-2xl font-black text-pomelero-bg">${order.total.toFixed(2)}</p>
-                                                    <p className="text-xs text-gray-400 mt-1">{new Date(order.createdAt).toLocaleString('es-MX', {dateStyle:'medium', timeStyle:'short'})}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="bg-gray-50 rounded-lg p-4 text-sm border border-gray-100 relative">
-                                                <p className="font-semibold text-gray-700 mb-2 border-b border-gray-200 pb-2">Artículos del Pedido:</p>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                    {order.items.map((item, idx) => (
-                                                        <div key={idx} className="flex justify-between items-center py-1">
-                                                            <span className="text-gray-600"><span className="font-bold text-pomelero-gold">{item.qty}x</span> {item.name} <span className="text-xs text-gray-400">({item.volume})</span></span>
-                                                            <span className="font-medium text-gray-800">${(item.price * item.qty).toFixed(2)}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {order.customer.notes && (
-                                                    <div className="mt-3 bg-yellow-50 p-3 rounded-md text-yellow-800 border border-yellow-100">
-                                                        <span className="font-bold block text-xs uppercase mb-1">Notas del cliente:</span>
-                                                        {order.customer.notes}
-                                                    </div>
-                                                )}
-
-                                                <div className="mt-4 flex justify-end gap-2 border-t border-gray-200 pt-4">
-                                                    {orderTab === 'nuevo' ? (
-                                                        <button 
-                                                            onClick={() => updateOrderStatus(order.id, 'archivado')}
-                                                            className="text-sm px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-lg hover:bg-emerald-200 transition-colors"
-                                                        >
-                                                            Marcar como Atendido (Archivar)
-                                                        </button>
-                                                    ) : (
-                                                        <>
-                                                            <button 
-                                                                onClick={() => updateOrderStatus(order.id, 'nuevo')}
-                                                                className="text-sm px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors"
-                                                            >
-                                                                Restaurar
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => deleteOrder(order.id)}
-                                                                className="text-sm px-4 py-2 bg-red-100 text-red-700 font-bold rounded-lg hover:bg-red-200 transition-colors"
-                                                            >
-                                                                Eliminar Definitivamente
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
-            );
-        };
+            `).join('');
+        }
 
-        const CatalogView = ({ products, cart, updateCart }) => {
-            const [searchTerm, setSearchTerm] = useState('');
-            const [selectedCategory, setSelectedCategory] = useState('Todos');
+        // Carrito de Compras y Pedidos
+        function addToCart(product) {
+            const existing = cart.find(item => item.sku === product.sku);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartBadge();
+            openCart();
+        }
 
-            const categories = useMemo(() => {
-                const cats = new Set(products.map(p => p.category.trim()));
-                return ['Todos', ...Array.from(cats).filter(c => c).sort()];
-            }, [products]);
+        function updateCartItemQty(sku, change) {
+            const item = cart.find(i => i.sku === sku);
+            if (item) {
+                item.qty += change;
+                if (item.qty <= 0) {
+                    cart = cart.filter(i => i.sku !== sku);
+                }
+            }
+            updateCartBadge();
+            renderCartItems();
+        }
 
-            const filteredProducts = useMemo(() => {
-                return products.filter(p => {
-                    const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-                    const matchCategory = selectedCategory === 'Todos' || p.category.trim() === selectedCategory;
-                    return matchSearch && matchCategory;
-                });
-            }, [products, searchTerm, selectedCategory]);
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            if (totalQty > 0) {
+                badge.textContent = totalQty;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
 
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-                        <div className="w-full md:w-1/2 relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <SearchIcon />
-                            </div>
-                            <input 
-                                type="text" 
-                                placeholder="Buscar licores, marcas, presentaciones..." 
-                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pomelero-gold focus:border-transparent shadow-sm"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+        function openCart() {
+            document.getElementById('cartModal').classList.remove('hidden');
+            renderCartItems();
+        }
+
+        function closeCart() {
+            document.getElementById('cartModal').classList.add('hidden');
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsList');
+            const totalEl = document.getElementById('cartTotalPrice');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">Tu carrito está vacío.</div>`;
+                totalEl.textContent = "$0 MXN";
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                return `
+                    <div class="py-3 flex justify-between items-center gap-3">
+                        <div class="flex-1">
+                            <h5 class="text-sm font-semibold text-slate-200 line-clamp-1">${item.name}</h5>
+                            <span class="text-xs text-amber-400 font-bold">$${item.price} c/u</span>
                         </div>
-                        
-                        <div className="w-full md:w-auto flex overflow-x-auto hide-scrollbar gap-2 pb-2">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat ? 'bg-pomelero-gold text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
+                        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
+                            <button onclick="updateCartItemQty('${item.sku}', -1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300 hover:bg-slate-800 font-bold">-</button>
+                            <span class="text-sm font-semibold w-6 text-center">${item.qty}</span>
+                            <button onclick="updateCartItemQty('${item.sku}', 1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300 hover:bg-slate-800 font-bold">+</button>
                         </div>
                     </div>
+                `;
+            }).join('');
 
-                    {filteredProducts.length === 0 ? (
-                        <div className="text-center py-20">
-                            <p className="text-2xl text-gray-400 font-serif">No se encontraron productos.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-                            {filteredProducts.map((product, idx) => (
-                                <div key={idx} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group overflow-hidden">
-                                    <ProductImagePlaceholder category={product.category} name={product.name} imageUrl={product.imageUrl} />
-                                    <div className="p-4 flex flex-col flex-grow">
-                                        <span className="text-[10px] md:text-xs font-bold text-pomelero-gold uppercase tracking-wider mb-1">{product.category}</span>
-                                        <h3 className="text-sm md:text-base font-bold text-gray-800 leading-tight flex-grow">{product.name}</h3>
-                                        <div className="mt-3 flex flex-col gap-3">
-                                            <p className="text-[10px] text-gray-400 leading-none">{product.volume}</p>
-                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                                                <p className="text-lg md:text-xl font-black text-pomelero-bg">${Number(product.price).toFixed(2)}</p>
-                                                
-                                                <div className="flex items-center w-full md:w-auto bg-gray-50 border border-gray-200 rounded-lg overflow-hidden shrink-0">
-                                                    {(!cart[`${product.name}-${product.volume}`] || cart[`${product.name}-${product.volume}`] === 0) ? (
-                                                        <button 
-                                                            onClick={() => updateCart(`${product.name}-${product.volume}`, 1)} 
-                                                            className="px-3 py-1.5 md:py-1 bg-white text-pomelero-bg border border-pomelero-gold font-bold text-sm w-full hover:bg-pomelero-gold hover:text-white transition-colors"
-                                                        >
-                                                            Agregar
-                                                        </button>
-                                                    ) : (
-                                                        <>
-                                                            <button 
-                                                                onClick={() => updateCart(`${product.name}-${product.volume}`, cart[`${product.name}-${product.volume}`] - 1)} 
-                                                                className="px-3 md:px-2 py-1.5 md:py-1 text-pomelero-bg hover:bg-gray-200 font-black text-lg leading-none"
-                                                            >-</button>
-                                                            <span className="px-2 text-sm font-bold w-8 text-center text-pomelero-bg bg-white py-1.5 md:py-1 border-x border-gray-200">{cart[`${product.name}-${product.volume}`]}</span>
-                                                            <button 
-                                                                onClick={() => updateCart(`${product.name}-${product.volume}`, cart[`${product.name}-${product.volume}`] + 1)} 
-                                                                className="px-3 md:px-2 py-1.5 md:py-1 text-pomelero-bg hover:bg-gray-200 font-black text-lg leading-none"
-                                                            >+</button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            );
-        };
+            totalEl.textContent = `$${total} MXN`;
+        }
 
-        const App = () => {
-            const [view, setView] = useState('catalog');
-            const [products, setProducts] = useState([]);
-            const [cart, setCart] = useState({});
-            const [showCartModal, setShowCartModal] = useState(false);
-            const [loading, setLoading] = useState(true);
-            const [modal, setModal] = useState({ show: false, title: '', message: '' });
-            const [isSyncing, setIsSyncing] = useState(false);
+        function submitOrder() {
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const address = document.getElementById('clientAddress').value.trim();
+            const notes = document.getElementById('clientNotes').value.trim();
 
-            const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-            const [showAdminLogin, setShowLoginAdmin] = useState(false);
-            const [adminPassword, setAdminPassword] = useState('');
-            const [checkoutSuccess, setCheckoutSuccess] = useState({ show: false, url: '' });
+            if (!name || !phone || !address) {
+                alert("Por favor completa los campos obligatorios (* Nombre, Teléfono y Dirección).");
+                return;
+            }
 
-            const showModal = (title, message) => setModal({ show: true, title, message });
+            if (cart.length === 0) {
+                alert("Tu carrito está vacío.");
+                return;
+            }
 
-            const handleAdminClick = () => {
-                if (isAdminAuthenticated) {
-                    setView('admin');
-                } else {
-                    setShowLoginAdmin(true);
-                }
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+            const newOrder = {
+                id: orderId,
+                date: new Date().toLocaleString(),
+                client: { name, phone, address, notes },
+                items: cart,
+                total,
+                status: 'pending'
             };
 
-            const handleAdminLogin = (e) => {
-                e.preventDefault();
-                if (adminPassword === 'pomelero2026') {
-                    setIsAdminAuthenticated(true);
-                    setShowLoginAdmin(false);
-                    setView('admin');
-                    setAdminPassword('');
-                } else {
-                    showModal('Acceso denegado', 'La contraseña ingresada es incorrecta.');
-                }
-            };
+            // Guardar en localStorage pedidos
+            let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+            orders.unshift(newOrder);
+            localStorage.setItem('pomelero_orders', JSON.stringify(orders));
 
-            const updateCart = (productId, quantity) => {
-                setCart(prev => {
-                    const newCart = { ...prev };
-                    if (quantity <= 0) {
-                        delete newCart[productId];
-                    } else {
-                        newCart[productId] = quantity;
-                    }
-                    return newCart;
-                });
-            };
+            // Preparar mensaje WhatsApp
+            let waText = `*NUEVO PEDIDO - POMELERO* 🛒%0A`;
+            waText += `*Folio:* ${orderId}%0A`;
+            waText += `*Cliente:* ${name}%0A`;
+            waText += `*Teléfono:* ${phone}%0A`;
+            waText += `*Dirección:* ${address}%0A`;
+            if(notes) waText += `*Notas:* ${notes}%0A`;
+            waText += `%0A*DETALLE DE PRODUCTOS:*%0A`;
+            cart.forEach(i => {
+                waText += `- ${i.qty}x ${i.name} ($${i.price * i.qty} MXN)%0A`;
+            });
+            waText += `%0A*TOTAL ESTIMADO:* $${total} MXN`;
 
-            const handleCheckout = async (customerData, cartItems, total) => {
-                const businessPhone = "523781211112"; 
+            document.getElementById('whatsappBtnLink').href = `https://wa.me/${businessPhone}?text=${waText}`;
 
-                let waMessage = `*NUEVO PEDIDO - POMELERO MAYOREO* 📦\n\n`;
-                waMessage += `*Cliente:* ${customerData.name}\n`;
-                waMessage += `*Teléfono:* ${customerData.phone}\n`;
-                if (customerData.address) waMessage += `*Dirección:* ${customerData.address}\n`;
-                if (customerData.notes) waMessage += `*Notas:* ${customerData.notes}\n\n`;
-                waMessage += `*Artículos:*\n`;
-                cartItems.forEach(item => {
-                    waMessage += `▫️ ${item.qty}x ${item.name} (${item.volume}) - $${(item.price * item.qty).toFixed(2)}\n`;
-                });
-                waMessage += `\n*TOTAL:* $${total.toFixed(2)}\n\n`;
-                waMessage += `Por favor confirmen mi pedido. ¡Gracias!`;
+            // Limpiar carrito y cerrar modal
+            cart = [];
+            updateCartBadge();
+            closeCart();
 
-                const encodedMessage = encodeURIComponent(waMessage);
-                const whatsappUrl = `https://wa.me/${businessPhone}?text=${encodedMessage}`;
+            // Mostrar modal de éxito
+            document.getElementById('successModal').classList.remove('hidden');
+        }
 
-                if (db) {
-                    setIsSyncing(true);
-                    try {
-                        const orderData = {
-                            customer: customerData,
-                            items: cartItems,
-                            total: total,
-                            status: 'nuevo',
-                            createdAt: new Date().toISOString()
-                        };
-                        const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-                        await addDoc(ordersRef, orderData);
-                    } catch (error) {
-                        console.error("No se guardó en BD, pero se enviará por WhatsApp: ", error);
-                    } finally {
-                        setIsSyncing(false);
-                    }
-                }
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
 
-                setCart({});
-                setShowCartModal(false);
-                setCheckoutSuccess({ show: true, url: whatsappUrl });
-            };
+        // Gestión de Excel y SKU (Plantilla y Carga)
+        function downloadExcelTemplate() {
+            const wsData = [
+                ["Codigo", "Nombre", "Categoria", "Precio", "Capacidad", "Imagen"],
+                ...products.map(p => [p.sku || "", p.name || "", p.category || "", p.price || 0, p.capacity || "", p.image || ""])
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "InventarioPomelero");
+            XLSX.writeFile(wb, "Plantilla_Inventario_Pomelero.xlsx");
+        }
 
-            useEffect(() => {
-                if (!db) {
-                    setProducts(initialMockData);
-                    setLoading(false);
-                    return;
-                }
+        function clearEntireDatabase() {
+            if (confirm("⚠️ ¿Estás COMPLETAMENTE SEGURO de borrar todo el catálogo? Esta acción no se puede deshacer.")) {
+                products = [];
+                localStorage.removeItem('pomelero_products');
+                renderCategories();
+                renderProducts();
+                alert("Catálogo borrado exitosamente.");
+            }
+        }
 
-                let unsubscribe = () => {};
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) processExcelFile(file);
+        }
 
-                const initializeAppAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+        function handleFileDrop(e) {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) processExcelFile(file);
+        }
 
-                        const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'catalog_products');
-                        
-                        unsubscribe = onSnapshot(productsRef, (snapshot) => {
-                            const loadedData = [];
-                            snapshot.forEach(doc => {
-                                loadedData.push({ id: doc.id, ...doc.data() });
-                            });
-                            
-                            setProducts(loadedData.length > 0 ? loadedData : initialMockData);
-                            setLoading(false);
-                        }, (error) => {
-                            console.error("Error al escuchar base de datos:", error);
-                            setLoading(false);
+        function processExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+
+                    parsedExcelData = json.map(row => {
+                        // Normalizar claves ignorando mayúsculas y acentos
+                        const cleanRow = {};
+                        Object.keys(row).forEach(k => {
+                            const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                            cleanRow[cleanKey] = row[k];
                         });
-                    } catch (error) {
-                        console.error("Error de autenticación:", error);
-                        setLoading(false);
-                    }
-                };
 
-                initializeAppAuth();
-                return () => unsubscribe();
-            }, []);
-
-            const syncToDatabase = async (newProductsData) => {
-                if (!db) {
-                    let updatedList = [...products];
-                    let added = 0;
-                    let updated = 0;
-                    newProductsData.forEach(newItem => {
-                        const existingIndex = updatedList.findIndex(p => p.name.toLowerCase().trim() === newItem.name.toLowerCase().trim());
-                        if (existingIndex >= 0) {
-                            updatedList[existingIndex] = { ...updatedList[existingIndex], ...newItem };
-                            updated++;
-                        } else {
-                            updatedList.push(newItem);
-                            added++;
-                        }
-                    });
-                    setProducts(updatedList);
-                    showModal("Actualización Local", `¡Listo! Se actualizaron ${updated} productos y se agregaron ${added} nuevos.`);
-                    setView('catalog');
-                    return;
-                }
-
-                setIsSyncing(true);
-                try {
-                    const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'catalog_products');
-                    const snapshot = await getDocs(productsRef);
-                    
-                    const existingDocs = {};
-                    snapshot.docs.forEach(document => {
-                        const data = document.data();
-                        if(data.name) {
-                            const normName = data.name.toLowerCase().trim();
-                            existingDocs[normName] = { ref: document.ref, data: data };
-                        }
+                        return {
+                            sku: String(cleanRow['codigo'] || cleanRow['sku'] || ('SKU-' + Math.random().toString(36).substr(2, 6))).trim(),
+                            name: String(cleanRow['nombre'] || cleanRow['producto'] || 'Sin nombre').trim(),
+                            category: String(cleanRow['categoria'] || cleanRow['tipo'] || 'General').trim(),
+                            price: parseFloat(cleanRow['precio'] || cleanRow['mayoreo'] || 0),
+                            capacity: String(cleanRow['capacidad'] || cleanRow['volumen'] || '').trim(),
+                            image: String(cleanRow['imagen'] || cleanRow['url'] || '').trim()
+                        };
                     });
 
-                    const batches = [];
-                    let currentBatch = writeBatch(db);
-                    let opCount = 0;
-                    let addedCount = 0;
-                    let updatedCount = 0;
-
-                    newProductsData.forEach(item => {
-                        const normName = item.name.toLowerCase().trim();
-                        
-                        if (existingDocs[normName]) {
-                            currentBatch.update(existingDocs[normName].ref, { 
-                                price: item.price,
-                                category: item.category,
-                                volume: item.volume,
-                                imageUrl: item.imageUrl || existingDocs[normName].data.imageUrl || '',
-                                updatedAt: new Date().toISOString() 
-                            });
-                            updatedCount++;
-                        } else {
-                            const newDocRef = doc(productsRef);
-                            currentBatch.set(newDocRef, { ...item, updatedAt: new Date().toISOString() });
-                            addedCount++;
-                        }
-
-                        opCount++;
-                        if (opCount === 450) { 
-                            batches.push(currentBatch);
-                            currentBatch = writeBatch(db);
-                            opCount = 0;
-                        }
-                    });
-
-                    if (opCount > 0) {
-                        batches.push(currentBatch);
-                    }
-
-                    for (let batch of batches) {
-                        await batch.commit();
-                    }
-
-                    showModal("¡Éxito!", `Sincronización completa. Se actualizaron ${updatedCount} productos y se agregaron ${addedCount} nuevos.`);
-                    setView('catalog');
-                } catch (error) {
-                    showModal("Error de sincronización", error.message);
-                } finally {
-                    setIsSyncing(false);
+                    document.getElementById('syncStatusText').textContent = `Archivo procesado: ${parsedExcelData.length} productos listos para sincronizar por SKU.`;
+                    document.getElementById('syncPreviewContainer').classList.remove('hidden');
+                } catch (err) {
+                    alert("Error al leer el archivo Excel: " + err.message);
                 }
             };
+            reader.readAsArrayBuffer(file);
+        }
 
-            const totalCartItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+        function executeSync() {
+            if (!parsedExcelData || parsedExcelData.length === 0) return;
 
-            return (
-                <div className="min-h-screen flex flex-col relative">
-                    <nav className="bg-pomelero-bg text-white shadow-md sticky top-0 z-40">
-                        <div className="max-w-7xl mx-auto px-4">
-                            <div className="flex justify-between items-center h-20">
-                                {/* Integración del Logo Base64 */}
-                                <div className="flex items-center gap-2">
-                                    <img src={logoBase64} alt="Pomelero Logo" className="h-16 w-auto object-contain" />
-                                </div>
-                                
-                                <div className="flex gap-2 bg-slate-800 p-1 rounded-lg">
-                                    <button 
-                                        onClick={() => setView('catalog')} 
-                                        className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${view === 'catalog' ? 'bg-pomelero-gold text-white shadow-sm' : 'text-gray-300 hover:text-white'}`}
-                                    >
-                                        Catálogo
-                                    </button>
-                                    <button 
-                                        onClick={handleAdminClick} 
-                                        className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${view === 'admin' ? 'bg-pomelero-gold text-white shadow-sm' : 'text-gray-300 hover:text-white'}`}
-                                    >
-                                        Administrar
-                                    </button>
-                                </div>
-                            </div>
+            let updatedCount = 0;
+            let addedCount = 0;
+
+            parsedExcelData.forEach(newP => {
+                const index = products.findIndex(p => p.sku && p.sku.toLowerCase() === newP.sku.toLowerCase());
+                if (index !== -1) {
+                    // Actualizar conservando imagen anterior si la nueva viene vacía
+                    products[index] = {
+                        ...products[index],
+                        ...newP,
+                        image: newP.image ? newP.image : products[index].image
+                    };
+                    updatedCount++;
+                } else {
+                    products.push(newP);
+                    addedCount++;
+                }
+            });
+
+            saveProductsToStorage();
+            renderCategories();
+            renderProducts();
+            document.getElementById('syncPreviewContainer').classList.add('hidden');
+            alert(`Sincronización completa.\n- Productos actualizados por SKU: ${updatedCount}\n- Productos nuevos agregados: ${addedCount}`);
+            switchTab('catalogo');
+        }
+
+        // Panel de Pedidos Administrador
+        let currentOrderFilter = 'pending';
+
+        function loadOrders() {
+            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+            const pendingCount = orders.filter(o => o.status === 'pending').length;
+            document.getElementById('ordersCount').textContent = pendingCount;
+        }
+
+        function filterOrders(status) {
+            currentOrderFilter = status;
+            if (status === 'pending') {
+                document.getElementById('filterPendBtn').className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold";
+                document.getElementById('filterArchBtn').className = "bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold";
+            } else {
+                document.getElementById('filterArchBtn').className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold";
+                document.getElementById('filterPendBtn').className = "bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold";
+            }
+            renderOrdersList();
+        }
+
+        function renderOrdersList() {
+            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+            const container = document.getElementById('ordersListContainer');
+            loadOrders();
+
+            const filtered = orders.filter(o => o.status === currentOrderFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay pedidos en esta sección.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(ord => `
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-mono text-amber-400">${ord.id}</span>
+                            <h4 class="font-bold text-slate-100 text-base">${ord.client.name}</h4>
+                            <p class="text-xs text-slate-400">📞 ${ord.client.phone} | 📍 ${ord.client.address}</p>
+                            ${ord.client.notes ? `<p class="text-xs text-amber-500/80 mt-1">Nota: ${ord.client.notes}</p>` : ''}
                         </div>
-                    </nav>
-
-                    {loading && (
-                        <div className="flex-grow flex flex-col items-center justify-center">
-                            <div className="w-12 h-12 border-4 border-pomelero-gold border-t-transparent rounded-full animate-spin"></div>
-                            <p className="mt-4 text-gray-500 font-medium">Cargando catálogo...</p>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 block">${ord.date}</span>
+                            <span class="text-base font-bold text-amber-400">$${ord.total} MXN</span>
                         </div>
-                    )}
-
-                    {isSyncing && (
-                        <div className="fixed inset-0 bg-pomelero-bg/80 z-50 flex flex-col items-center justify-center text-white backdrop-blur-sm">
-                            <div className="w-16 h-16 border-4 border-pomelero-gold border-t-transparent rounded-full animate-spin mb-6"></div>
-                            <h2 className="text-2xl font-serif font-bold">Sincronizando Base de Datos...</h2>
-                            <p className="mt-2 text-gray-300">Este proceso puede tardar unos segundos dependiendo del tamaño de tu Excel.</p>
-                        </div>
-                    )}
-
-                    {!loading && view === 'catalog' && <CatalogView products={products} cart={cart} updateCart={updateCart} />}
-                    {!loading && view === 'admin' && isAdminAuthenticated && <AdminView onSync={syncToDatabase} products={products} />}
-
-                    {totalCartItems > 0 && view === 'catalog' && (
-                        <button 
-                            onClick={() => setShowCartModal(true)} 
-                            className="fixed bottom-6 right-6 bg-pomelero-bg border-2 border-pomelero-gold text-white p-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.3)] flex items-center gap-3 hover:scale-105 transition-transform z-40 group"
-                        >
-                            <CartIcon />
-                            <div className="flex flex-col items-start leading-none">
-                                <span className="font-bold text-sm">Ver Pedido</span>
-                                <span className="text-[10px] text-pomelero-gold">{totalCartItems} artículos</span>
-                            </div>
-                        </button>
-                    )}
-
-                    {showCartModal && (
-                        <CartModal 
-                            cart={cart} 
-                            products={products} 
-                            onClose={() => setShowCartModal(false)} 
-                            onCheckout={handleCheckout} 
-                            updateCart={updateCart}
-                        />
-                    )}
-
-                    {modal.show && <CustomModal title={modal.title} message={modal.message} onClose={() => setModal({show: false})} />}
-
-                    {checkoutSuccess.show && (
-                        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all">
-                            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
-                                <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">¡Pedido Guardado!</h3>
-                                <p className="text-gray-500 mb-6 text-sm">Para finalizar, envíanos el mensaje por WhatsApp haciendo clic en el botón de abajo.</p>
-                                <a 
-                                    href={checkoutSuccess.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    onClick={() => setCheckoutSuccess({show: false, url: ''})}
-                                    className="block w-full bg-[#25D366] text-white font-bold py-3.5 rounded-xl hover:bg-green-500 transition-colors mb-3 shadow-lg shadow-green-500/30"
-                                >
-                                    Enviar WhatsApp
-                                </a>
-                                <button type="button" onClick={() => setCheckoutSuccess({show: false, url: ''})} className="text-gray-400 text-sm font-semibold hover:text-gray-600">
-                                    Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {showAdminLogin && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all">
-                            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-500">
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2 font-serif">Área Privada</h3>
-                                <p className="text-gray-500 mb-6 text-sm">Ingresa la contraseña maestra para administrar.</p>
-                                <form onSubmit={handleAdminLogin}>
-                                    <input 
-                                        type="password" 
-                                        value={adminPassword}
-                                        onChange={(e) => setAdminPassword(e.target.value)}
-                                        placeholder="Contraseña" 
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-pomelero-gold bg-gray-50 text-center text-lg tracking-widest"
-                                    />
-                                    <div className="flex gap-3">
-                                        <button type="button" onClick={() => setShowLoginAdmin(false)} className="w-1/2 bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors">
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" className="w-1/2 bg-pomelero-bg text-white font-semibold py-3 rounded-xl hover:bg-opacity-90 transition-colors">
-                                            Ingresar
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1 text-xs">
+                        ${ord.items.map(i => `<div class="flex justify-between text-slate-300"><span>${i.qty}x ${i.name}</span> <span class="font-semibold">$${i.price * i.qty}</span></div>`).join('')}
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        ${ord.status === 'pending' ? `
+                            <button onclick="updateOrderStatus('${ord.id}', 'archived')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Marcar Atendido (Archivar)</button>
+                        ` : `
+                            <button onclick="updateOrderStatus('${ord.id}', 'pending')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Restaurar a Pendientes</button>
+                        `}
+                        <button onclick="deleteOrder('${ord.id}')" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Eliminar</button>
+                    </div>
                 </div>
-            );
-        };
+            `).join('');
+        }
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function updateOrderStatus(id, newStatus) {
+            let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+            orders = orders.map(o => o.id === id ? { ...o, status: newStatus } : o);
+            localStorage.setItem('pomelero_orders', JSON.stringify(orders));
+            renderOrdersList();
+        }
+
+        function deleteOrder(id) {
+            if (confirm("¿Estás seguro de eliminar este pedido permanentemente?")) {
+                let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+                orders = orders.filter(o => o.id !== id);
+                localStorage.setItem('pomelero_orders', JSON.stringify(orders));
+                renderOrdersList();
+            }
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
