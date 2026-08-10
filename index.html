@@ -270,9 +270,8 @@
         </div>
     </div>
 
-    <!-- Script Principal con los 679 productos ya integrados -->
+    <!-- Script Principal con los productos integrados -->
     <script>
-        // Catálogo completo integrado con los 679 productos oficiales de tu Excel
         let products = JSON.parse(localStorage.getItem('pomelero_products')) || [
             { name: "Azteca de Oro 200ml", category: "Brandy", price: 49, stock: 10, image: "", sku: "BRA001" },
             { name: "Azteca de Oro 750ml", category: "Brandy", price: 168, stock: 10, image: "", sku: "BRA002" },
@@ -318,7 +317,6 @@
         let storeLogo = localStorage.getItem('pomelero_logo') || '';
         let currentTheme = localStorage.getItem('pomelero_theme') || 'classic';
 
-        // Inicialización
         window.addEventListener('DOMContentLoaded', () => {
             applyTheme(currentTheme);
             updateLogoDisplay();
@@ -337,7 +335,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Catálogo y Productos
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
             const categories = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
@@ -402,7 +399,6 @@
             }).join('');
         }
 
-        // Carrito
         function addToCart(index) {
             const prod = products[index];
             const existing = cart.find(item => item.index === index);
@@ -531,7 +527,6 @@
             switchView('auth');
         }
 
-        // Autenticación de Clientes
         let isRegistering = false;
 
         function toggleAuthMode() {
@@ -701,7 +696,6 @@
             printWindow.document.close();
         }
 
-        // Panel de Administración
         function openAdminModal() {
             document.getElementById('adminModal').classList.remove('hidden');
             document.getElementById('adminPasswordInput').value = '';
