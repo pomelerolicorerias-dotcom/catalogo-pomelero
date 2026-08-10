@@ -5,53 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomelero Licorerías</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
     <!-- NAVEGACIÓN -->
-    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900">
+    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900 sticky top-0 z-50">
         <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
         <div class="flex gap-3">
-            <button onclick="showView('catalogo')" class="text-sm px-3 py-1">Catálogo</button>
+            <button onclick="showView('catalogo')" class="text-sm px-3 py-1 bg-slate-800 rounded-lg">Catálogo</button>
             <button onclick="showView('auth')" class="text-sm bg-amber-500 text-black px-3 py-1 rounded-lg font-bold">Ingresar</button>
             <button onclick="showView('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
         </div>
     </nav>
 
-    <main id="main-content" class="p-6 max-w-lg mx-auto">
+    <main class="p-6 max-w-6xl mx-auto">
         <!-- VISTA CATÁLOGO -->
-        <div id="view-catalogo" class="hidden">
+        <div id="view-catalogo">
             <h2 class="text-2xl font-bold mb-4">Productos</h2>
-            <div id="productsGrid" class="grid grid-cols-2 gap-4"></div>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
         </div>
 
         <!-- VISTA INGRESO / AUTENTICACIÓN -->
-        <div id="view-auth" class="bg-slate-900 p-8 rounded-2xl shadow-xl">
+        <div id="view-auth" class="hidden bg-slate-900 p-8 rounded-2xl shadow-xl max-w-md mx-auto">
             <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
             <input type="text" id="loginUser" placeholder="Usuario o Teléfono" class="w-full bg-slate-950 p-3 rounded-lg mb-3 border border-slate-700">
             <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded-lg mb-4 border border-slate-700">
-            <button onclick="alert('Funcionalidad de login activada')" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
+            <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
             <div class="text-xs text-center space-y-3 text-slate-400">
-                <p><a href="https://wa.me/523781211112?text=Hola, quiero solicitar la eliminación de mi cuenta." target="_blank" class="hover:text-white underline">Solicitar borrar cuenta</a></p>
-                <p><a href="https://wa.me/523781211112?text=Hola, olvidé mi contraseña. ¿Me ayudan a recuperarla?" target="_blank" class="hover:text-white underline">Recuperar contraseña</a></p>
+                <p><a href="https://wa.me/523781211112?text=Hola,%20solicito%20borrar%20mi%20cuenta." target="_blank" class="hover:text-white underline">Solicitar borrar cuenta</a></p>
+                <p><a href="https://wa.me/523781211112?text=Hola,%20olvidé%20mi%20contraseña.%20¿Me%20ayudan?" target="_blank" class="hover:text-white underline">Recuperar contraseña</a></p>
                 <p><a href="#" onclick="alert('Contacta al administrador para crear cuenta')" class="hover:text-white underline">¿No tiene cuenta? Cree una</a></p>
             </div>
         </div>
 
         <!-- VISTA ADMINISTRADOR -->
         <div id="view-admin" class="hidden">
-            <div id="adminLogin" class="bg-slate-900 p-6 rounded-xl">
+            <div id="adminLogin" class="bg-slate-900 p-6 rounded-xl max-w-sm mx-auto">
                 <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded border border-slate-700">
                 <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar al Panel</button>
             </div>
-            <div id="adminPanel" class="hidden space-y-4">
-                <h3 class="font-bold text-lg">Base de Usuarios</h3>
+            <div id="adminPanel" class="hidden space-y-6">
+                <h3 class="font-bold text-lg text-amber-400">Panel de Control - Base de Usuarios</h3>
                 <div id="userList" class="space-y-2"></div>
             </div>
         </div>
     </main>
 
     <script>
-        // Funciones de Navegación
         function showView(view) {
             document.getElementById('view-catalogo').classList.add('hidden');
             document.getElementById('view-auth').classList.add('hidden');
@@ -59,7 +59,6 @@
             document.getElementById('view-' + view).classList.remove('hidden');
         }
 
-        // Admin
         function checkAdmin() {
             if(document.getElementById('adminPass').value === "pomelero2026") {
                 document.getElementById('adminLogin').classList.add('hidden');
@@ -70,10 +69,18 @@
 
         function renderUsers() {
             const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            document.getElementById('userList').innerHTML = users.map(u => `
-                <div class="bg-slate-900 p-3 rounded flex justify-between items-center">
-                    <span>${u.name} | Tel: ${u.phone}</span>
-                    <button onclick="deleteUser('${u.phone}')" class="text-red-400 bg-red-950/30 px-2 py-1 rounded text-xs">Eliminar</button>
+            const container = document.getElementById('userList');
+            if(users.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm">No hay usuarios registrados.</p>`;
+                return;
+            }
+            container.innerHTML = users.map(u => `
+                <div class="bg-slate-900 p-3 rounded flex justify-between items-center border border-slate-800">
+                    <div>
+                        <h4 class="font-bold text-sm">${u.name}</h4>
+                        <p class="text-xs text-slate-400">Tel: ${u.phone} | Pass: ${u.password || 'N/A'}</p>
+                    </div>
+                    <button onclick="deleteUser('${u.phone}')" class="text-red-400 bg-red-950/40 px-3 py-1 rounded text-xs">Eliminar</button>
                 </div>
             `).join('');
         }
@@ -86,10 +93,52 @@
             }
         }
 
-        // Inicialización
+        function loginUser() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const found = users.find(u => u.phone === user && u.password === pass);
+            if(found) {
+                alert(`¡Bienvenido de nuevo, ${found.name}!`);
+                showView('catalogo');
+            } else {
+                alert("Usuario o contraseña incorrectos.");
+            }
+        }
+
+        // Cargar Catálogo Completo Real
+        const initialProducts = [
+            { name: "Azteca de Oro 200ml", price: 49 },
+            { name: "Azteca de Oro 750ml", price: 168 },
+            { name: "Torres 5 700ml", price: 189 },
+            { name: "Torres 10 700ml", price: 254 },
+            { name: "Torres 15 700ml", price: 500 },
+            { name: "torres mazapan 700 ml", price: 385 },
+            { name: "Torres 20 700ml", price: 990 },
+            { name: "Don pedro Gran Reserva 1lt", price: 185 },
+            { name: "Presidente 200 ml", price: 40 },
+            { name: "Presidente 700 ml", price: 125 },
+            { name: "Presidente 940 ml", price: 130 },
+            { name: "Don Predo Gran reserva 200ml", price: 41 },
+            { name: "Don Predo Clasico 200ml", price: 38 },
+            { name: "don pedro clasico 1 lit", price: 185 },
+            { name: "Don Predo Clasico 750ml", price: 162 },
+            { name: "cocacola 500 ml vidrio taparrosca caja con 24 pzas", price: 420 },
+            { name: "CORONA MEDIA AMBAR", price: 375 },
+            { name: "CORONA MEDIA CLARA", price: 365 },
+            { name: "pacifico lata 355 l", price: 385 },
+            { name: "pacifico media 355 ml", price: 385 }
+        ];
+        
+        const prods = JSON.parse(localStorage.getItem('pomelero_products') || JSON.stringify(initialProducts));
+        document.getElementById('productsGrid').innerHTML = prods.map(p => `
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col justify-between shadow-md">
+                <h4 class="font-semibold text-sm text-slate-200">${p.name}</h4>
+                <p class="text-amber-400 font-bold text-lg mt-3">$${p.price} <small class="text-xs text-slate-400 font-normal">MXN</small></p>
+            </div>
+        `).join('');
+
         showView('catalogo');
-        const prods = JSON.parse(localStorage.getItem('pomelero_products') || '[{"name":"Azteca de Oro","price":175}]');
-        document.getElementById('productsGrid').innerHTML = prods.map(p => `<div class="bg-slate-900 p-4 rounded-xl text-center"><h4 class="font-bold text-sm">${p.name}</h4><p class="text-amber-400 font-bold">$${p.price}</p></div>`).join('');
     </script>
 </body>
 </html>
