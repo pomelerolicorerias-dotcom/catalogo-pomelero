@@ -2,66 +2,67 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomelero Licorerías</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100">
-    <!-- HEADER -->
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+    <!-- NAVEGACIÓN -->
     <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900">
         <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
-        <div class="flex gap-4">
-            <button onclick="switchTab('catalogo')" class="text-sm">Catálogo</button>
-            <button onclick="switchTab('auth')" class="text-sm bg-amber-500 text-black px-3 py-1 rounded-lg font-bold">Ingresar</button>
-            <button onclick="switchTab('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
+        <div class="flex gap-3">
+            <button onclick="showView('catalogo')" class="text-sm px-3 py-1">Catálogo</button>
+            <button onclick="showView('auth')" class="text-sm bg-amber-500 text-black px-3 py-1 rounded-lg font-bold">Ingresar</button>
+            <button onclick="showView('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
         </div>
     </nav>
 
-    <main id="main-content" class="p-6 max-w-4xl mx-auto">
-        <!-- CATÁLOGO -->
-        <div id="view-catalogo">
-            <h2 class="text-2xl font-bold mb-4">Catálogo de Productos</h2>
-            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <main id="main-content" class="p-6 max-w-lg mx-auto">
+        <!-- VISTA CATÁLOGO -->
+        <div id="view-catalogo" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">Productos</h2>
+            <div id="productsGrid" class="grid grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- AUTH (INGRESAR) -->
-        <div id="view-auth" class="hidden bg-slate-900 p-8 rounded-2xl max-w-sm mx-auto shadow-xl">
+        <!-- VISTA INGRESO / AUTENTICACIÓN -->
+        <div id="view-auth" class="bg-slate-900 p-8 rounded-2xl shadow-xl">
             <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
-            <input type="text" id="loginUser" placeholder="Usuario o Teléfono" class="w-full bg-slate-950 p-3 rounded-lg mb-3 border border-slate-800">
-            <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded-lg mb-4 border border-slate-800">
-            <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
-            <div class="text-xs text-center space-y-2 text-slate-400">
-                <p><a href="#" onclick="requestDeletion()" class="hover:text-white">Solicitar borrar cuenta</a></p>
-                <p><a href="#" onclick="requestPassword()" class="hover:text-white">Recuperar contraseña</a></p>
-                <p><a href="#" onclick="alert('Registro disponible con el administrador')" class="hover:text-white">¿No tiene cuenta? Cree una</a></p>
+            <input type="text" id="loginUser" placeholder="Usuario o Teléfono" class="w-full bg-slate-950 p-3 rounded-lg mb-3 border border-slate-700">
+            <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded-lg mb-4 border border-slate-700">
+            <button onclick="alert('Funcionalidad de login activada')" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
+            <div class="text-xs text-center space-y-3 text-slate-400">
+                <p><a href="https://wa.me/523781211112?text=Hola, quiero solicitar la eliminación de mi cuenta." target="_blank" class="hover:text-white underline">Solicitar borrar cuenta</a></p>
+                <p><a href="https://wa.me/523781211112?text=Hola, olvidé mi contraseña. ¿Me ayudan a recuperarla?" target="_blank" class="hover:text-white underline">Recuperar contraseña</a></p>
+                <p><a href="#" onclick="alert('Contacta al administrador para crear cuenta')" class="hover:text-white underline">¿No tiene cuenta? Cree una</a></p>
             </div>
         </div>
 
-        <!-- ADMIN -->
+        <!-- VISTA ADMINISTRADOR -->
         <div id="view-admin" class="hidden">
-            <div id="loginAdmin" class="bg-slate-900 p-6 rounded-xl max-w-sm mx-auto">
-                <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded">
-                <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar</button>
+            <div id="adminLogin" class="bg-slate-900 p-6 rounded-xl">
+                <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded border border-slate-700">
+                <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar al Panel</button>
             </div>
-            <div id="adminPanel" class="hidden">
-                <h3 class="font-bold text-lg mb-4">Base de Usuarios</h3>
+            <div id="adminPanel" class="hidden space-y-4">
+                <h3 class="font-bold text-lg">Base de Usuarios</h3>
                 <div id="userList" class="space-y-2"></div>
             </div>
         </div>
     </main>
 
     <script>
-        function switchTab(tab) {
-            document.getElementById('view-catalogo').classList.toggle('hidden', tab !== 'catalogo');
-            document.getElementById('view-auth').classList.toggle('hidden', tab !== 'auth');
-            document.getElementById('view-admin').classList.toggle('hidden', tab !== 'admin');
+        // Funciones de Navegación
+        function showView(view) {
+            document.getElementById('view-catalogo').classList.add('hidden');
+            document.getElementById('view-auth').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-' + view).classList.remove('hidden');
         }
 
-        function requestDeletion() { window.open(`https://wa.me/523781211112?text=Hola, solicito borrar mi cuenta de Pomelero.`); }
-        function requestPassword() { window.open(`https://wa.me/523781211112?text=Hola, olvidé mi contraseña. ¿Me ayudan a recuperarla?`); }
-        
+        // Admin
         function checkAdmin() {
             if(document.getElementById('adminPass').value === "pomelero2026") {
-                document.getElementById('loginAdmin').classList.add('hidden');
+                document.getElementById('adminLogin').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 renderUsers();
             } else alert("Clave incorrecta");
@@ -70,22 +71,25 @@
         function renderUsers() {
             const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
             document.getElementById('userList').innerHTML = users.map(u => `
-                <div class="bg-slate-900 p-3 rounded flex justify-between">
-                    <span>${u.name} (Pass: ${u.password})</span>
-                    <button onclick="deleteUser('${u.phone}')" class="text-red-400">Eliminar</button>
+                <div class="bg-slate-900 p-3 rounded flex justify-between items-center">
+                    <span>${u.name} | Tel: ${u.phone}</span>
+                    <button onclick="deleteUser('${u.phone}')" class="text-red-400 bg-red-950/30 px-2 py-1 rounded text-xs">Eliminar</button>
                 </div>
             `).join('');
         }
 
         function deleteUser(phone) {
-            let users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            localStorage.setItem('pomelero_registered_clients', JSON.stringify(users.filter(u => u.phone !== phone)));
-            renderUsers();
+            if(confirm("¿Seguro que quieres borrar este usuario?")) {
+                let users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+                localStorage.setItem('pomelero_registered_clients', JSON.stringify(users.filter(u => u.phone !== phone)));
+                renderUsers();
+            }
         }
 
-        // Render inicial productos
-        const prods = JSON.parse(localStorage.getItem('pomelero_products') || '[{"name":"Azteca","price":175}]');
-        document.getElementById('productsGrid').innerHTML = prods.map(p => `<div class="bg-slate-900 p-4 rounded-xl font-bold">${p.name} <br> <span class="text-amber-400">$${p.price}</span></div>`).join('');
+        // Inicialización
+        showView('catalogo');
+        const prods = JSON.parse(localStorage.getItem('pomelero_products') || '[{"name":"Azteca de Oro","price":175}]');
+        document.getElementById('productsGrid').innerHTML = prods.map(p => `<div class="bg-slate-900 p-4 rounded-xl text-center"><h4 class="font-bold text-sm">${p.name}</h4><p class="text-amber-400 font-bold">$${p.price}</p></div>`).join('');
     </script>
 </body>
 </html>
