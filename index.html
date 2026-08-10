@@ -3,142 +3,614 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomelero Licorerías</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pomelero Licorerías - Catálogo de Mayoreo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- SheetJS para leer Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-    <!-- NAVEGACIÓN -->
-    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900 sticky top-0 z-50">
-        <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
-        <div class="flex gap-3">
-            <button onclick="showView('catalogo')" class="text-sm px-3 py-1 bg-slate-800 rounded-lg">Catálogo</button>
-            <button onclick="showView('auth')" class="text-sm bg-amber-500 text-black px-3 py-1 rounded-lg font-bold">Ingresar</button>
-            <button onclick="showView('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
-        </div>
-    </nav>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
-    <main class="p-6 max-w-6xl mx-auto">
-        <!-- VISTA CATÁLOGO -->
-        <div id="view-catalogo">
-            <h2 class="text-2xl font-bold mb-4">Productos</h2>
-            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
-        </div>
-
-        <!-- VISTA INGRESO / AUTENTICACIÓN -->
-        <div id="view-auth" class="hidden bg-slate-900 p-8 rounded-2xl shadow-xl max-w-md mx-auto">
-            <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
-            <input type="text" id="loginUser" placeholder="Usuario o Teléfono" class="w-full bg-slate-950 p-3 rounded-lg mb-3 border border-slate-700">
-            <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded-lg mb-4 border border-slate-700">
-            <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
-            <div class="text-xs text-center space-y-3 text-slate-400">
-                <p><a href="https://wa.me/523781211112?text=Hola,%20solicito%20borrar%20mi%20cuenta." target="_blank" class="hover:text-white underline">Solicitar borrar cuenta</a></p>
-                <p><a href="https://wa.me/523781211112?text=Hola,%20olvidé%20mi%20contraseña.%20¿Me%20ayudan?" target="_blank" class="hover:text-white underline">Recuperar contraseña</a></p>
-                <p><a href="#" onclick="alert('Contacta al administrador para crear cuenta')" class="hover:text-white underline">¿No tiene cuenta? Cree una</a></p>
+    <!-- HEADER / NAVEGACIÓN -->
+    <header class="bg-slate-900/90 border-b border-amber-500/30 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <!-- LOGO E IDENTIDAD -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('catalogo')">
+                <div id="headerLogoContainer" class="w-12 h-12 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                    <svg id="defaultLogoSvg" viewBox="0 0 500 500" class="w-full h-full object-cover">
+                        <circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/>
+                        <path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/>
+                        <text x="250" y="445" font-family="Outfit, sans-serif" font-size="42" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="4">POMELERO</text>
+                        <text x="250" y="475" font-family="Outfit, sans-serif" font-size="20" font-weight="400" fill="#d97706" text-anchor="middle" letter-spacing="6">LICORERÍAS</text>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-amber-400 tracking-wider">POMELERO</h1>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-medium">Catálogo de Mayoreo</p>
+                </div>
             </div>
+
+            <!-- BUSCADOR -->
+            <div class="flex-1 max-w-md mx-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, marca o capacidad..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/60 transition-all">
+                    <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- BOTONES SUPERIORES -->
+            <div class="flex items-center gap-3">
+                <button onclick="openClientAuthModal()" class="bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5" title="Iniciar Sesión o Crear Cuenta">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span id="clientNavName">Iniciar Sesión</span>
+                </button>
+                <button onclick="openCart()" class="relative bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>Pedido</span>
+                    <span id="cartBadge" class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <button onclick="switchTab('admin')" class="bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                    <span class="hidden sm:inline">Administrar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ALERTA SEMANAL -->
+    <div id="weeklyAlertBanner" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-4 py-3 text-center text-xs sm:text-sm text-amber-300 flex items-center justify-center gap-3">
+        <span>👋 ¡Hola! Han pasado más de 7 días desde tu última visita. ¿Deseas armar tu pedido de mayoreo para esta semana?</span>
+        <button onclick="dismissWeeklyAlert()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs">Cerrar</button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+        <!-- VISTA CATALOGO -->
+        <div id="view-catalogo" class="space-y-6">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="categoryFilters">
+                <button onclick="filterCategory('TODOS')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/20">Todos</button>
+            </div>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </div>
 
         <!-- VISTA ADMINISTRADOR -->
-        <div id="view-admin" class="hidden">
-            <div id="adminLogin" class="bg-slate-900 p-6 rounded-xl max-w-sm mx-auto">
-                <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded border border-slate-700">
-                <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar al Panel</button>
+        <div id="view-admin" class="hidden max-w-4xl mx-auto space-y-6">
+            <div id="adminLoginBox" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl max-w-md mx-auto text-center space-y-4">
+                <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-100">Panel de Administración</h2>
+                <p class="text-sm text-slate-400">Ingresa la contraseña para gestionar base de datos, clientes registrados y pedidos.</p>
+                <input type="password" id="adminPasswordInput" placeholder="Contraseña..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-center text-slate-100 focus:outline-none focus:border-amber-500">
+                <button onclick="verifyAdminPassword()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-xl transition-all">Acceder al Panel</button>
             </div>
-            <div id="adminPanel" class="hidden space-y-6">
-                <h3 class="font-bold text-lg text-amber-400">Panel de Control - Base de Usuarios</h3>
-                <div id="userList" class="space-y-2"></div>
+
+            <div id="adminPanelContent" class="hidden space-y-6">
+                <div class="flex border-b border-slate-800 gap-4 overflow-x-auto">
+                    <button onclick="switchAdminTab('sync')" id="tabSyncBtn" class="pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all">Sincronizar Excel y SKU</button>
+                    <button onclick="switchAdminTab('clients')" id="tabClientsBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Clientes Registrados (<span id="clientsCount">0</span>)</button>
+                    <button onclick="switchAdminTab('config')" id="tabConfigBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Configurar WhatsApp y Logo</button>
+                    <button onclick="switchAdminTab('orders')" id="tabOrdersBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Ver Pedidos (<span id="ordersCount">0</span>)</button>
+                </div>
+
+                <!-- SECCION CLIENTES REGISTRADOS -->
+                <div id="adminClientsSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-200">Base de Datos de Clientes Registrados</h3>
+                        <button onclick="downloadClientsExcel()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold">Descargar Excel de Clientes</button>
+                    </div>
+                    <div id="clientsListContainer" class="space-y-4"></div>
+                </div>
+
+                <!-- SECCION CONFIGURAR -->
+                <div id="adminConfigSection" class="hidden space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
+                        <h3 class="font-bold text-lg text-slate-200">Número de WhatsApp para Pedidos</h3>
+                        <div class="flex gap-3">
+                            <input type="text" id="adminPhoneInput" placeholder="Ej. 523781211112" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                            <button onclick="saveAdminPhone()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap">Guardar Teléfono</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
+                        <h3 class="font-bold text-lg text-slate-200">Personalizar Logotipo de la Tienda</h3>
+                        <div class="flex items-center gap-6">
+                            <div id="previewLogoBox" class="w-20 h-20 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg"></div>
+                            <div class="flex-1 space-y-3">
+                                <input type="file" id="logoFileInput" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300">
+                                <button onclick="updateStoreLogo()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2 rounded-xl text-sm transition-all">Guardar Nuevo Logotipo</button>
+                                <button onclick="resetStoreLogo()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm ml-2 transition-all">Restaurar Original</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCION SINCRONIZAR EXCEL -->
+                <div id="adminSyncSection" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-slate-200">Plantilla de Inventario con SKU</h3>
+                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos.</p>
+                            </div>
+                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium">Descargar Plantilla Base</button>
+                        </div>
+                        <div class="bg-rose-950/20 border border-rose-900/40 p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-rose-300">Zona de Peligro</h3>
+                                <p class="text-xs text-rose-400/80 mt-1">Borra absolutamente todo el catálogo actual.</p>
+                            </div>
+                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium">Borrar Catálogo Completo</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-6">
+                        <div class="border-2 border-dashed border-slate-700 rounded-2xl p-8 text-center bg-slate-950/50 relative" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                            <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                            <h3 class="font-semibold text-slate-200">Arrastra tu archivo Excel aquí o haz clic</h3>
+                        </div>
+                        <div id="syncPreviewContainer" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                            <div class="flex justify-between items-center">
+                                <span id="syncStatusText" class="text-sm font-medium text-amber-400">Archivo cargado con éxito</span>
+                                <button onclick="executeSync()" class="bg-amber-500 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm">Sincronizar a Base de Datos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCION PEDIDOS -->
+                <div id="adminOrdersSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-200">Gestión de Pedidos</h3>
+                        <div class="flex gap-2">
+                            <button onclick="filterOrders('pending')" id="filterPendBtn" class="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold">Pendientes</button>
+                            <button onclick="filterOrders('archived')" id="filterArchBtn" class="bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold">Archivados</button>
+                        </div>
+                    </div>
+                    <div id="ordersListContainer" class="space-y-4"></div>
+                </div>
             </div>
         </div>
     </main>
 
+    <!-- MODAL DE INICIO DE SESIÓN / CREAR CUENTA (ESTILO MICROSOFT) -->
+    <div id="clientAuthModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/30 w-full max-w-md rounded-2xl p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeClientAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- LOGOTIPO EN MODAL -->
+            <div class="space-y-2">
+                <h3 class="text-2xl font-bold text-slate-100" id="authModalTitle">Iniciar sesión</h3>
+                <p class="text-xs text-slate-400" id="authModalSubtitle">Usa tu número de teléfono o usuario registrado para acceder al catálogo de mayoreo.</p>
+            </div>
+
+            <!-- PASO 1: IDENTIFICADOR (TELÉFONO / USUARIO) -->
+            <div id="authStep1" class="space-y-4">
+                <div>
+                    <input type="text" id="authIdentifier" placeholder="Teléfono, usuario o nombre..." class="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all">
+                </div>
+                <div class="text-xs space-y-2">
+                    <a href="#" onclick="switchAuthMode('register'); return false;" class="text-amber-400 hover:underline block">¿No tiene una cuenta? Cree una.</a>
+                </div>
+                <div class="pt-4 flex justify-end">
+                    <button onclick="processAuthStep1()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg">Siguiente</button>
+                </div>
+            </div>
+
+            <!-- PASO 2: FORMULARIO DE REGISTRO / COMPLETAR DATOS -->
+            <div id="authStepRegister" class="space-y-3 hidden">
+                <input type="text" id="regName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <input type="tel" id="regPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <input type="text" id="regAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+                <textarea id="regNotes" placeholder="Notas de entrega (opcional)..." rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+                
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="switchAuthMode('login')" class="text-xs text-slate-400 hover:text-amber-400 underline">← Volver a Iniciar Sesión</button>
+                    <button onclick="registerNewClient()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg">Registrarme</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO / PEDIDO -->
+    <div id="cartModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800">
+                <h3 class="font-bold text-lg text-amber-400">Tu Pedido en Curso</h3>
+                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-200 p-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div id="cartItemsList" class="flex-1 overflow-y-auto py-4 space-y-3 divide-y divide-slate-800/50"></div>
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="flex justify-between items-center text-lg font-bold"><span>Total Estimado:</span><span id="cartTotalPrice" class="text-amber-400">$0 MXN</span></div>
+                <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center"><p class="text-xs font-semibold text-slate-300 uppercase">Datos de Entrega</p><button onclick="openClientAuthModal()" class="text-xs text-amber-400 hover:underline">Modificar mis datos</button></div>
+                    <input type="text" id="clientName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <input type="tel" id="clientPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <input type="text" id="clientAddress" placeholder="Dirección de Entrega *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100">
+                    <textarea id="clientNotes" placeholder="Notas adicionales..." rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100"></textarea>
+                </div>
+                <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg">Generar y Enviar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXITO / WHATSAPP -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 text-center space-y-4 shadow-2xl">
+            <h3 class="text-xl font-bold text-slate-100">¡Pedido Registrado con Éxito!</h3>
+            <a id="whatsappBtnLink" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg">Enviar Notificación por WhatsApp</a>
+            <button onclick="closeSuccessModal()" class="text-slate-400 hover:text-slate-200 text-sm font-medium py-2">Volver al Catálogo</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGICA -->
     <script>
-        function showView(view) {
-            document.getElementById('view-catalogo').classList.add('hidden');
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('view-admin').classList.add('hidden');
-            document.getElementById('view-' + view).classList.remove('hidden');
+        const ADMIN_PASS = "pomelero2026";
+        const defaultSvgLogo = `<svg viewBox="0 0 500 500" class="w-full h-full object-cover"><circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/><path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/><text x="250" y="445" font-family="Outfit, sans-serif" font-size="42" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="4">POMELERO</text><text x="250" y="475" font-family="Outfit, sans-serif" font-size="20" font-weight="400" fill="#d97706" text-anchor="middle" letter-spacing="6">LICORERÍAS</text></svg>`;
+
+        const initialMockData = [
+            { sku: "BRN-AZT-750", name: "Azteca de Oro 750ml", category: "Brandy", price: 175, capacity: "750ml", image: "" },
+            { sku: "BRN-TRS-5", name: "Torres 5 700ml", category: "Brandy", price: 189, capacity: "700ml", image: "" },
+            { sku: "TEQ-DJL-70", name: "Don Julio 70", category: "Tequila", price: 720, capacity: "750ml", image: "" },
+            { sku: "WSK-JCK-700", name: "Jack Daniels", category: "Wisky", price: 400, capacity: "700ml", image: "" }
+        ];
+
+        let products = [];
+        let cart = [];
+        let currentCategory = "TODOS";
+        let parsedExcelData = null;
+
+        function initApp() {
+            const saved = localStorage.getItem('pomelero_products');
+            products = saved ? JSON.parse(saved) : initialMockData;
+            if(!saved) localStorage.setItem('pomelero_products', JSON.stringify(products));
+            loadStoredLogo();
+            loadClientProfileToUI();
+            checkWeeklyAlert();
+            renderCategories();
+            renderProducts();
+            loadOrders();
+            loadClientsList();
         }
 
-        function checkAdmin() {
-            if(document.getElementById('adminPass').value === "pomelero2026") {
-                document.getElementById('adminLogin').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                renderUsers();
-            } else alert("Clave incorrecta");
+        function getBusinessPhone() { return localStorage.getItem('pomelero_phone') || "523781211112"; }
+        function saveAdminPhone() {
+            const phone = document.getElementById('adminPhoneInput').value.trim();
+            if(!phone) { alert("Ingresa un número válido"); return; }
+            localStorage.setItem('pomelero_phone', phone);
+            alert("¡Teléfono de WhatsApp actualizado con éxito!");
         }
 
-        function renderUsers() {
-            const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            const container = document.getElementById('userList');
-            if(users.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-sm">No hay usuarios registrados.</p>`;
-                return;
+        function loadStoredLogo() {
+            const savedLogo = localStorage.getItem('pomelero_store_logo');
+            const container = document.getElementById('headerLogoContainer');
+            const preview = document.getElementById('previewLogoBox');
+            if (savedLogo) {
+                container.innerHTML = `<img src="${savedLogo}" class="w-full h-full object-cover">`;
+                if (preview) preview.innerHTML = `<img src="${savedLogo}" class="w-full h-full object-cover">`;
+            } else {
+                container.innerHTML = defaultSvgLogo;
+                if (preview) preview.innerHTML = defaultSvgLogo;
             }
-            container.innerHTML = users.map(u => `
-                <div class="bg-slate-900 p-3 rounded flex justify-between items-center border border-slate-800">
-                    <div>
-                        <h4 class="font-bold text-sm">${u.name}</h4>
-                        <p class="text-xs text-slate-400">Tel: ${u.phone} | Pass: ${u.password || 'N/A'}</p>
-                    </div>
-                    <button onclick="deleteUser('${u.phone}')" class="text-red-400 bg-red-950/40 px-3 py-1 rounded text-xs">Eliminar</button>
+        }
+
+        function updateStoreLogo() {
+            const fileInput = document.getElementById('logoFileInput');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('pomelero_store_logo', e.target.result);
+                    loadStoredLogo();
+                    alert("¡Logotipo actualizado!");
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else { alert("Selecciona una imagen primero."); }
+        }
+
+        function resetStoreLogo() {
+            localStorage.removeItem('pomelero_store_logo');
+            loadStoredLogo();
+            alert("Logotipo restablecido.");
+        }
+
+        // Gestión Estilo Microsoft de Iniciar Sesión / Registro
+        function openClientAuthModal() {
+            switchAuthMode('login');
+            document.getElementById('clientAuthModal').classList.remove('hidden');
+        }
+
+        function closeClientAuthModal() {
+            document.getElementById('clientAuthModal').classList.add('hidden');
+        }
+
+        function switchAuthMode(mode) {
+            const step1 = document.getElementById('authStep1');
+            const stepReg = document.getElementById('authStepRegister');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+
+            if (mode === 'login') {
+                step1.classList.remove('hidden');
+                stepReg.classList.add('hidden');
+                title.textContent = "Iniciar sesión";
+                subtitle.textContent = "Usa tu número de teléfono o usuario registrado para acceder al catálogo de mayoreo.";
+            } else {
+                step1.classList.add('hidden');
+                stepReg.classList.remove('hidden');
+                title.textContent = "Cree una cuenta";
+                subtitle.textContent = "Regístrese por primera vez para guardar sus datos de entrega en Pomelero.";
+            }
+        }
+
+        function processAuthStep1() {
+            const val = document.getElementById('authIdentifier').value.trim();
+            if(!val) { alert("Por favor ingresa tu teléfono o usuario."); return; }
+
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const found = regClients.find(c => c.phone === val || c.name.toLowerCase().includes(val.toLowerCase()));
+
+            if(found) {
+                localStorage.setItem('pomelero_client_profile', JSON.stringify(found));
+                loadClientProfileToUI();
+                closeClientAuthModal();
+                alert(`¡Bienvenido de nuevo, ${found.name}! Sesión iniciada correctamente.`);
+            } else {
+                alert("No se encontró ninguna cuenta con ese dato. Por favor, regístrese.");
+                switchAuthMode('register');
+                document.getElementById('regPhone').value = val;
+            }
+        }
+
+        function registerNewClient() {
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const address = document.getElementById('regAddress').value.trim();
+            const notes = document.getElementById('regNotes').value.trim();
+
+            if(!name || !phone || !address) { alert("Completa los campos obligatorios (*)."); return; }
+
+            const profile = { name, phone, address, notes, registeredDate: new Date().toLocaleString() };
+            localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
+
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const idx = regClients.findIndex(c => c.phone === phone);
+            if(idx >= 0) regClients[idx] = profile; else regClients.push(profile);
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(regClients));
+
+            loadClientProfileToUI();
+            closeClientAuthModal();
+            alert("¡Cuenta creada y guardada con éxito!");
+        }
+
+        function loadClientProfileToUI() {
+            const profile = JSON.parse(localStorage.getItem('pomelero_client_profile') || 'null');
+            if (profile && profile.name) {
+                document.getElementById('clientNavName').textContent = profile.name.split(' ')[0];
+                ['clientName', 'clientPhone', 'clientAddress', 'clientNotes'].forEach((id, idx) => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = [profile.name, profile.phone, profile.address, profile.notes][idx] || '';
+                });
+            }
+        }
+
+        // Alerta Semanal
+        function checkWeeklyAlert() {
+            const lastVisit = localStorage.getItem('pomelero_last_visit_date');
+            const now = new Date().getTime();
+            if(!lastVisit) localStorage.setItem('pomelero_last_visit_date', now);
+            else if((now - parseInt(lastVisit)) / (1000 * 60 * 60 * 24) >= 7) document.getElementById('weeklyAlertBanner').classList.remove('hidden');
+        }
+        function dismissWeeklyAlert() {
+            localStorage.setItem('pomelero_last_visit_date', new Date().getTime());
+            document.getElementById('weeklyAlertBanner').classList.add('hidden');
+        }
+
+        function loadClientsList() {
+            const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            document.getElementById('clientsCount').textContent = clients.length;
+            const container = document.getElementById('clientsListContainer');
+            if(clients.length === 0) { container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay clientes registrados todavía.</div>`; return; }
+            container.innerHTML = clients.map(c => `
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center text-sm">
+                    <div><h4 class="font-bold text-amber-400">${c.name}</h4><p class="text-xs text-slate-300">📞 ${c.phone} | 📍 ${c.address}</p></div>
+                    <span class="text-[10px] text-slate-500">Registro: ${c.registeredDate || 'N/A'}</span>
                 </div>
             `).join('');
         }
 
-        function deleteUser(phone) {
-            if(confirm("¿Seguro que quieres borrar este usuario?")) {
-                let users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-                localStorage.setItem('pomelero_registered_clients', JSON.stringify(users.filter(u => u.phone !== phone)));
-                renderUsers();
-            }
+        function downloadClientsExcel() {
+            const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            if(clients.length === 0) { alert("No hay clientes."); return; }
+            const ws = XLSX.utils.aoa_to_sheet([["Nombre", "Telefono", "Direccion", "Notas", "FechaRegistro"], ...clients.map(c => [c.name, c.phone, c.address, c.notes || "", c.registeredDate || ""])]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Clientes"); XLSX.writeFile(wb, "Clientes_Pomelero.xlsx");
         }
 
-        function loginUser() {
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
-            const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            const found = users.find(u => u.phone === user && u.password === pass);
-            if(found) {
-                alert(`¡Bienvenido de nuevo, ${found.name}!`);
-                showView('catalogo');
-            } else {
-                alert("Usuario o contraseña incorrectos.");
-            }
+        // Navegación
+        function switchTab(tab) {
+            document.getElementById('view-catalogo').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            if (tab === 'catalogo') document.getElementById('view-catalogo').classList.remove('hidden');
+            if (tab === 'admin') document.getElementById('view-admin').classList.remove('hidden');
         }
 
-        // Cargar Catálogo Completo Real
-        const initialProducts = [
-            { name: "Azteca de Oro 200ml", price: 49 },
-            { name: "Azteca de Oro 750ml", price: 168 },
-            { name: "Torres 5 700ml", price: 189 },
-            { name: "Torres 10 700ml", price: 254 },
-            { name: "Torres 15 700ml", price: 500 },
-            { name: "torres mazapan 700 ml", price: 385 },
-            { name: "Torres 20 700ml", price: 990 },
-            { name: "Don pedro Gran Reserva 1lt", price: 185 },
-            { name: "Presidente 200 ml", price: 40 },
-            { name: "Presidente 700 ml", price: 125 },
-            { name: "Presidente 940 ml", price: 130 },
-            { name: "Don Predo Gran reserva 200ml", price: 41 },
-            { name: "Don Predo Clasico 200ml", price: 38 },
-            { name: "don pedro clasico 1 lit", price: 185 },
-            { name: "Don Predo Clasico 750ml", price: 162 },
-            { name: "cocacola 500 ml vidrio taparrosca caja con 24 pzas", price: 420 },
-            { name: "CORONA MEDIA AMBAR", price: 375 },
-            { name: "CORONA MEDIA CLARA", price: 365 },
-            { name: "pacifico lata 355 l", price: 385 },
-            { name: "pacifico media 355 ml", price: 385 }
-        ];
-        
-        const prods = JSON.parse(localStorage.getItem('pomelero_products') || JSON.stringify(initialProducts));
-        document.getElementById('productsGrid').innerHTML = prods.map(p => `
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col justify-between shadow-md">
-                <h4 class="font-semibold text-sm text-slate-200">${p.name}</h4>
-                <p class="text-amber-400 font-bold text-lg mt-3">$${p.price} <small class="text-xs text-slate-400 font-normal">MXN</small></p>
-            </div>
-        `).join('');
+        function switchAdminTab(subtab) {
+            ['Sync', 'Clients', 'Config', 'Orders'].forEach(s => {
+                document.getElementById(`admin${s}Section`).classList.add('hidden');
+                document.getElementById(`tab${s}Btn`).className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all";
+            });
+            document.getElementById(`admin${subtab.charAt(0).toUpperCase() + subtab.slice(1)}Section`).classList.remove('hidden');
+            document.getElementById(`tab${subtab.charAt(0).toUpperCase() + subtab.slice(1)}Btn`).className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all";
+            if(subtab === 'clients') loadClientsList();
+            if(subtab === 'config') { document.getElementById('adminPhoneInput').value = getBusinessPhone(); loadStoredLogo(); }
+            if(subtab === 'orders') renderOrdersList();
+        }
 
-        showView('catalogo');
+        function verifyAdminPassword() {
+            if (document.getElementById('adminPasswordInput').value === ADMIN_PASS) {
+                document.getElementById('adminLoginBox').classList.add('hidden');
+                document.getElementById('adminPanelContent').classList.remove('hidden');
+            } else alert("Contraseña incorrecta.");
+        }
+
+        // Renderizado Catálogo
+        function renderCategories() {
+            const cats = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
+            document.getElementById('categoryFilters').innerHTML = cats.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${currentCategory === cat ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-900 text-slate-300 border border-slate-800'}">${cat}</button>
+            `).join('');
+        }
+
+        function filterCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
+        function filterProducts() { renderProducts(); }
+
+        function renderProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => (currentCategory === 'TODOS' || p.category === currentCategory) && (p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)));
+            const grid = document.getElementById('productsGrid');
+            if (filtered.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No se encontraron productos.</div>`; return; }
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="h-36 bg-slate-950/60 rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-800 relative">
+                            ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-amber-500/60">${p.category}</span>`}
+                            <span class="absolute top-2 right-2 bg-slate-950/80 text-[10px] text-amber-400 px-2 py-0.5 rounded border border-slate-800">${p.sku}</span>
+                        </div>
+                        <span class="text-xs text-amber-500 font-semibold uppercase">${p.category}</span>
+                        <h4 class="font-semibold text-slate-100 text-sm mt-0.5">${p.name}</h4>
+                        <p class="text-xs text-slate-400 mt-1">${p.capacity || ''}</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs font-normal text-slate-400">MXN</small></span>
+                        <button onclick='addToCart(${JSON.stringify(p)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Carrito y Pedidos
+        function addToCart(product) {
+            const existing = cart.find(item => item.sku === product.sku);
+            if (existing) existing.qty += 1; else cart.push({ ...product, qty: 1 });
+            updateCartBadge(); openCart();
+        }
+
+        function updateCartItemQty(sku, change) {
+            const item = cart.find(i => i.sku === sku);
+            if (item) { item.qty += change; if (item.qty <= 0) cart = cart.filter(i => i.sku !== sku); }
+            updateCartBadge(); renderCartItems();
+        }
+
+        function updateCartBadge() {
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            const badge = document.getElementById('cartBadge');
+            if (totalQty > 0) { badge.textContent = totalQty; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+        }
+
+        function openCart() { loadClientProfileToUI(); document.getElementById('cartModal').classList.remove('hidden'); renderCartItems(); }
+        function closeCart() { document.getElementById('cartModal').classList.add('hidden'); }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsList');
+            if (cart.length === 0) { container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">Tu carrito está vacío.</div>`; document.getElementById('cartTotalPrice').textContent = "$0 MXN"; return; }
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price * item.qty;
+                return `<div class="py-3 flex justify-between items-center gap-3"><div class="flex-1"><h5 class="text-sm font-semibold text-slate-200">${item.name}</h5><span class="text-xs text-amber-400">$${item.price} c/u</span></div><div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1"><button onclick="updateCartItemQty('${item.sku}', -1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300">-</button><span class="text-sm font-semibold w-6 text-center">${item.qty}</span><button onclick="updateCartItemQty('${item.sku}', 1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300">+</button></div></div>`;
+            }).join('');
+            document.getElementById('cartTotalPrice').textContent = `$${total} MXN`;
+        }
+
+        function submitOrder() {
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const address = document.getElementById('clientAddress').value.trim();
+            const notes = document.getElementById('clientNotes').value.trim();
+
+            if (!name || !phone || !address) { alert("Completa los campos obligatorios (*)."); return; }
+            if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
+
+            const profile = { name, phone, address, notes, registeredDate: new Date().toLocaleString() };
+            localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
+            
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            if(!regClients.some(c => c.phone === phone)) { regClients.push(profile); localStorage.setItem('pomelero_registered_clients', JSON.stringify(regClients)); }
+
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+            let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
+            orders.unshift({ id: orderId, date: new Date().toLocaleString(), client: { name, phone, address, notes }, items: cart, total, status: 'pending' });
+            localStorage.setItem('pomelero_orders', JSON.stringify(orders));
+
+            let waText = `*NUEVO PEDIDO - POMELERO* 🛒%0A*Folio:* ${orderId}%0A*Cliente:* ${name}%0A*Teléfono:* ${phone}%0A*Dirección:* ${address}%0A`;
+            if(notes) waText += `*Notas:* ${notes}%0A`;
+            waText += `%0A*PRODUCTOS:*%0A`;
+            cart.forEach(i => { waText += `- ${i.qty}x ${i.name} ($${i.price * i.qty})%0A`; });
+            waText += `%0A*TOTAL:* $${total} MXN`;
+
+            document.getElementById('whatsappBtnLink').href = `https://wa.me/${getBusinessPhone()}?text=${waText}`;
+            cart = []; updateCartBadge(); closeCart();
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
+
+        // Excel Sync
+        function downloadExcelTemplate() {
+            const ws = XLSX.utils.aoa_to_sheet([["Codigo", "Nombre", "Categoria", "Precio", "Capacidad", "Imagen"], ...products.map(p => [p.sku, p.name, p.category, p.price, p.capacity, p.image])]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventario"); XLSX.writeFile(wb, "Plantilla_Pomelero.xlsx");
+        }
+        function clearEntireDatabase() {
+            if (confirm("⚠️ ¿Borrar todo el catálogo?")) { products = []; localStorage.removeItem('pomelero_products'); renderCategories(); renderProducts(); alert("Catálogo borrado."); }
+        }
+        function handleFileSelect(e) { processExcelFile(e.target.files[0]); }
+        function handleFileDrop(e) { e.preventDefault(); processExcelFile(e.dataTransfer.files[0]); }
+        function processExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const json = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), { type: 'array' }).Sheets[XLSX.read(new Uint8Array(e.target.result), { type: 'array' }).SheetNames[0]]);
+                parsedExcelData = json.map(row => {
+                    const r = {}; Object.keys(row).forEach(k => r[k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()] = row[k]);
+                    return { sku: String(r['codigo'] || r['sku'] || 'SKU-'+Math.random().toString(36).substr(2,6)), name: String(r['nombre']||'Sin nombre'), category: String(r['categoria']||'General'), price: parseFloat(r['precio']||0), capacity: String(r['capacidad']||''), image: String(r['imagen']||'') };
+                });
+                document.getElementById('syncStatusText').textContent = `Procesados: ${parsedExcelData.length} productos listos.`;
+                document.getElementById('syncPreviewContainer').classList.remove('hidden');
+            }; reader.readAsArrayBuffer(file);
+        }
+        function executeSync() {
+            parsedExcelData.forEach(newP => {
+                const idx = products.findIndex(p => p.sku.toLowerCase() === newP.sku.toLowerCase());
+                if(idx >= 0) products[idx] = { ...products[idx], ...newP }; else products.push(newP);
+            });
+            saveProductsToStorage(); renderCategories(); renderProducts(); document.getElementById('syncPreviewContainer').classList.add('hidden');
+            alert("Sincronización por SKU completada."); switchTab('catalogo');
+        }
+        function saveProductsToStorage() { localStorage.setItem('pomelero_products', JSON.stringify(products)); }
+
+        let currentOrderFilter = 'pending';
+        function loadOrders() { document.getElementById('ordersCount').textContent = JSON.parse(localStorage.getItem('pomelero_orders') || '[]').filter(o => o.status === 'pending').length; }
+        function filterOrders(st) { currentOrderFilter = st; renderOrdersList(); }
+        function renderOrdersList() {
+            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]').filter(o => o.status === currentOrderFilter);
+            document.getElementById('ordersListContainer').innerHTML = orders.length === 0 ? `<div class="py-12 text-center text-slate-500 text-sm">No hay pedidos aquí.</div>` : orders.map(ord => `
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between"><div><span class="text-xs text-amber-400">${ord.id}</span><h4 class="font-bold text-slate-100">${ord.client.name}</h4><p class="text-xs text-slate-400">📞 ${ord.client.phone} | 📍 ${ord.client.address}</p></div><span class="font-bold text-amber-400">$${ord.total} MXN</span></div>
+                    <div class="flex justify-end gap-2"><button onclick="updateOrderStatus('${ord.id}', '${ord.status==='pending'?'archived':'pending'}')" class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-xl text-xs">${ord.status==='pending'?'Archivar':'Restaurar'}</button><button onclick="deleteOrder('${ord.id}')" class="bg-rose-950/40 text-rose-400 px-3 py-1.5 rounded-xl text-xs">Eliminar</button></div>
+                </div>
+            `).join('');
+        }
+        function updateOrderStatus(id, st) {
+            let o = JSON.parse(localStorage.getItem('pomelero_orders') || '[]'); localStorage.setItem('pomelero_orders', JSON.stringify(o.map(x => x.id === id ? {...x, status: st} : x))); renderOrdersList(); loadOrders();
+        }
+        function deleteOrder(id) {
+            if(confirm("¿Eliminar pedido?")) { let o = JSON.parse(localStorage.getItem('pomelero_orders') || '[]'); localStorage.setItem('pomelero_orders', JSON.stringify(o.filter(x => x.id !== id))); renderOrdersList(); loadOrders(); }
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
