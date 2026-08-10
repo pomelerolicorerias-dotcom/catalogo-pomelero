@@ -3,138 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomelero Licorerías - Catálogo de Mayoreo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Pomelero Licorerías</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Outfit', sans-serif; }
-    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
-
-    <!-- HEADER / NAVEGACIÓN -->
-    <header class="bg-slate-900/90 border-b border-amber-500/30 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('catalogo')">
-                <div id="headerLogoContainer" class="w-12 h-12 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/10"></div>
-                <div>
-                    <h1 class="text-xl font-bold text-amber-400 tracking-wider">POMELERO</h1>
-                    <p class="text-xs text-slate-400 uppercase tracking-widest font-medium">Catálogo de Mayoreo</p>
-                </div>
-            </div>
-            <div class="flex-1 max-w-md mx-2">
-                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/60 transition-all">
-            </div>
-            <div class="flex items-center gap-3">
-                <button onclick="openClientProfileModal()" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5">
-                    <span id="clientNavName">Usuario</span>
-                </button>
-                <button onclick="openCart()" class="relative bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
-                    Pedido <span id="cartBadge" class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
-                </button>
-                <button onclick="switchTab('admin')" class="bg-slate-900 border border-slate-800 text-slate-300 px-3 py-2 rounded-xl text-sm font-medium">Administrar</button>
-            </div>
+<body class="bg-slate-950 text-slate-100">
+    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
+        <div class="flex gap-4">
+            <button onclick="switchTab('catalogo')" class="text-sm">Catálogo</button>
+            <button onclick="switchTab('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
         </div>
-    </header>
+    </nav>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
-        <!-- VISTAS -->
-        <div id="view-catalogo" class="space-y-6"><div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div></div>
-        
-        <!-- ADMINISTRADOR -->
-        <div id="view-admin" class="hidden max-w-5xl mx-auto space-y-6">
-            <div id="adminLoginBox" class="bg-slate-900 p-8 rounded-2xl text-center space-y-4">
-                <input type="password" id="adminPasswordInput" placeholder="Contraseña Admin" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                <button onclick="verifyAdminPassword()" class="bg-amber-500 text-slate-950 font-bold py-2.5 px-8 rounded-xl">Acceder</button>
+    <main id="main-content" class="p-6">
+        <!-- VISTA CATALOGO -->
+        <div id="view-catalogo">
+            <h2 class="text-2xl font-bold mb-4">Productos</h2>
+            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- VISTA ADMIN -->
+        <div id="view-admin" class="hidden">
+            <div id="loginArea" class="max-w-sm mx-auto bg-slate-900 p-6 rounded-xl">
+                <input type="password" id="adminPass" placeholder="Contraseña Admin" class="w-full bg-slate-950 p-2 rounded mb-3">
+                <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar</button>
             </div>
-            <div id="adminPanelContent" class="hidden space-y-6">
-                <div class="flex gap-4 border-b border-slate-800 pb-2">
-                    <button onclick="switchAdminTab('clients')" class="text-sm font-bold text-slate-300">Clientes Registrados</button>
-                    <button onclick="switchAdminTab('orders')" class="text-sm font-bold text-slate-300">Pedidos</button>
+            <div id="adminArea" class="hidden space-y-6">
+                <div class="flex gap-4 border-b border-slate-700 pb-2">
+                    <button onclick="showAdmin('clients')">Clientes</button>
+                    <button onclick="showAdmin('config')">Configuración</button>
                 </div>
-                <div id="adminClientsSection" class="hidden space-y-4">
-                    <h3 class="font-bold">Base de Datos de Clientes</h3>
-                    <div id="clientsListContainer" class="space-y-3"></div>
+                <div id="admin-clients" class="hidden">
+                    <h3 class="font-bold mb-3">Clientes Registrados</h3>
+                    <div id="clientsList" class="space-y-2"></div>
                 </div>
-                <div id="adminOrdersSection" class="hidden space-y-4">
-                    <h3 class="font-bold">Pedidos</h3>
-                    <div id="ordersListContainer" class="space-y-3"></div>
+                <div id="admin-config" class="hidden">
+                    <input type="text" id="newPhone" placeholder="Nuevo Teléfono WhatsApp" class="bg-slate-900 p-2 w-full rounded">
+                    <button onclick="savePhone()" class="bg-amber-500 text-black px-4 py-2 mt-2 rounded">Guardar WhatsApp</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL PERFIL -->
-    <div id="clientProfileModal" class="fixed inset-0 bg-slate-950/90 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 p-6 rounded-2xl w-full max-w-md space-y-4">
-            <h3 class="font-bold text-lg text-amber-400">Mis Datos</h3>
-            <input type="text" id="profileName" placeholder="Nombre" class="w-full bg-slate-950 p-2 rounded">
-            <input type="text" id="profilePhone" placeholder="Teléfono" class="w-full bg-slate-950 p-2 rounded">
-            <div class="flex gap-2">
-                <button onclick="saveClientProfile()" class="bg-amber-500 text-slate-950 px-4 py-2 rounded">Guardar</button>
-                <button onclick="requestAccountDeletion()" class="bg-rose-900 text-white px-4 py-2 rounded">Solicitar Borrar Cuenta</button>
-                <button onclick="closeClientProfileModal()" class="bg-slate-700 px-4 py-2 rounded">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Funciones auxiliares
-        const ADMIN_PASS = "pomelero2026";
-        const getPhone = () => localStorage.getItem('pomelero_phone') || "523781211112";
-
-        function openClientProfileModal() { document.getElementById('clientProfileModal').classList.remove('hidden'); loadProfileUI(); }
-        function closeClientProfileModal() { document.getElementById('clientProfileModal').classList.add('hidden'); }
-
-        function saveClientProfile() {
-            const profile = { 
-                name: document.getElementById('profileName').value, 
-                phone: document.getElementById('profilePhone').value 
-            };
-            localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
-            
-            // Sincronizar en DB de clientes
-            let clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            const idx = clients.findIndex(c => c.phone === profile.phone);
-            if(idx >= 0) clients[idx] = profile; else clients.push(profile);
-            localStorage.setItem('pomelero_registered_clients', JSON.stringify(clients));
-            
-            alert("Guardado");
-            closeClientProfileModal();
+        // Lógica Básica
+        function switchTab(tab) {
+            document.getElementById('view-catalogo').classList.toggle('hidden', tab !== 'catalogo');
+            document.getElementById('view-admin').classList.toggle('hidden', tab !== 'admin');
         }
 
-        function requestAccountDeletion() {
-            const profile = JSON.parse(localStorage.getItem('pomelero_client_profile'));
-            const waText = `⚠️ *SOLICITUD DE ELIMINACIÓN DE CUENTA*%0A%0AEl cliente *${profile.name}* (Tel: ${profile.phone}) solicita borrar su cuenta de forma permanente.`;
-            window.open(`https://wa.me/${getPhone()}?text=${waText}`, '_blank');
+        function checkAdmin() {
+            if(document.getElementById('adminPass').value === "pomelero2026") {
+                document.getElementById('loginArea').classList.add('hidden');
+                document.getElementById('adminArea').classList.remove('hidden');
+            } else alert("Contraseña incorrecta");
         }
 
-        function deleteClient(phone) {
-            if(confirm("¿Borrar permanentemente este usuario?")) {
-                let clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-                clients = clients.filter(c => c.phone !== phone);
-                localStorage.setItem('pomelero_registered_clients', JSON.stringify(clients));
-                loadClientsList();
-            }
+        function showAdmin(sec) {
+            document.getElementById('admin-clients').classList.toggle('hidden', sec !== 'clients');
+            document.getElementById('admin-config').classList.toggle('hidden', sec !== 'config');
+            if(sec === 'clients') renderClients();
         }
 
-        function loadClientsList() {
+        function savePhone() {
+            localStorage.setItem('pomelero_phone', document.getElementById('newPhone').value);
+            alert("Teléfono guardado");
+        }
+
+        function renderClients() {
             const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            document.getElementById('clientsListContainer').innerHTML = clients.map(c => `
-                <div class="bg-slate-800 p-3 flex justify-between rounded">
-                    <span>${c.name} (${c.phone})</span>
-                    <button onclick="deleteClient('${c.phone}')" class="text-rose-400">Eliminar</button>
+            document.getElementById('clientsList').innerHTML = clients.map(c => `
+                <div class="bg-slate-900 p-3 rounded flex justify-between">
+                    <span>${c.name} - ${c.phone}</span>
+                    <button onclick="deleteClient('${c.phone}')" class="text-red-400">Borrar</button>
                 </div>
             `).join('');
         }
 
-        // Carga Inicial
-        function initApp() {
-            loadClientsList();
-            // ... resto de lógica igual ...
+        function deleteClient(phone) {
+            let clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            clients = clients.filter(c => c.phone !== phone);
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(clients));
+            renderClients();
         }
-        window.onload = initApp;
+
+        // Carga inicial de productos de ejemplo
+        const initialProducts = [
+            { sku: "BRN-001", name: "Azteca de Oro 750ml", price: 175, category: "Brandy" },
+            { sku: "TEQ-001", name: "Don Julio 70 750ml", price: 720, category: "Tequila" }
+        ];
+        if(!localStorage.getItem('pomelero_products')) localStorage.setItem('pomelero_products', JSON.stringify(initialProducts));
+        
+        // Render inicial
+        const prods = JSON.parse(localStorage.getItem('pomelero_products'));
+        document.getElementById('productsGrid').innerHTML = prods.map(p => `
+            <div class="bg-slate-900 p-4 rounded-xl">
+                <h4 class="font-bold">${p.name}</h4>
+                <p class="text-amber-400">$${p.price}</p>
+            </div>
+        `).join('');
     </script>
 </body>
 </html>
