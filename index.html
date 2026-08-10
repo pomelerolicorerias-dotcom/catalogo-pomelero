@@ -21,7 +21,6 @@
             <!-- LOGO E IDENTIDAD -->
             <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('catalogo')">
                 <div id="headerLogoContainer" class="w-12 h-12 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/10">
-                    <!-- LOGOTIPO DINÁMICO -->
                     <svg id="defaultLogoSvg" viewBox="0 0 500 500" class="w-full h-full object-cover">
                         <circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/>
                         <path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/>
@@ -46,9 +45,9 @@
 
             <!-- BOTONES SUPERIORES -->
             <div class="flex items-center gap-3">
-                <button onclick="openClientProfileModal()" class="bg-slate-900 border border-slate-800 hover:border-amber-500/50 text-slate-300 px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5" title="Mis Datos de Usuario">
+                <button onclick="openClientProfileModal()" class="bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5" title="Ingresar o Crear Usuario">
                     <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    <span class="hidden sm:inline" id="clientNavName">Mi Usuario</span>
+                    <span id="clientNavName">Ingresar o Crear</span>
                 </button>
                 <button onclick="openCart()" class="relative bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -63,64 +62,68 @@
         </div>
     </header>
 
+    <!-- ALERTA SEMANAL / REQUISICION -->
+    <div id="weeklyAlertBanner" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-4 py-3 text-center text-xs sm:text-sm text-amber-300 flex items-center justify-center gap-3">
+        <span>👋 ¡Hola! Han pasado más de 7 días desde tu última visita. ¿Deseas armar tu pedido de mayoreo para esta semana?</span>
+        <button onclick="dismissWeeklyAlert()" class="bg-amber-500 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs">Cerrar</button>
+    </div>
+
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
 
         <!-- VISTA CATALOGO -->
         <div id="view-catalogo" class="space-y-6">
-            <!-- FILTROS DE CATEGORIA -->
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="categoryFilters">
                 <button onclick="filterCategory('TODOS')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/20">Todos</button>
             </div>
-
-            <!-- CONTENEDOR DE PRODUCTOS -->
-            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <!-- Se llena con JS -->
-            </div>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </div>
 
         <!-- VISTA ADMINISTRADOR -->
         <div id="view-admin" class="hidden max-w-4xl mx-auto space-y-6">
-            <!-- PANTALLA DE LOGIN ADMIN -->
             <div id="adminLoginBox" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl max-w-md mx-auto text-center space-y-4">
                 <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-400">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h2 class="text-xl font-bold text-slate-100">Panel de Administración</h2>
-                <p class="text-sm text-slate-400">Ingresa la contraseña para gestionar precios, logotipo, WhatsApp y pedidos.</p>
+                <p class="text-sm text-slate-400">Ingresa la contraseña para gestionar base de datos, clientes registrados y pedidos.</p>
                 <input type="password" id="adminPasswordInput" placeholder="Contraseña..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-center text-slate-100 focus:outline-none focus:border-amber-500">
                 <button onclick="verifyAdminPassword()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-xl transition-all">Acceder al Panel</button>
             </div>
 
             <!-- PANEL DE ADMIN DESBLOQUEADO -->
             <div id="adminPanelContent" class="hidden space-y-6">
-                <!-- PESTAÑAS ADMIN -->
                 <div class="flex border-b border-slate-800 gap-4 overflow-x-auto">
                     <button onclick="switchAdminTab('sync')" id="tabSyncBtn" class="pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all">Sincronizar Excel y SKU</button>
+                    <button onclick="switchAdminTab('clients')" id="tabClientsBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Clientes Registrados (<span id="clientsCount">0</span>)</button>
                     <button onclick="switchAdminTab('config')" id="tabConfigBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Configurar WhatsApp y Logo</button>
                     <button onclick="switchAdminTab('orders')" id="tabOrdersBtn" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all">Ver Pedidos (<span id="ordersCount">0</span>)</button>
                 </div>
 
+                <!-- SECCION CLIENTES REGISTRADOS -->
+                <div id="adminClientsSection" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-slate-200">Base de Datos de Clientes Registrados</h3>
+                        <button onclick="downloadClientsExcel()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold">Descargar Excel de Clientes</button>
+                    </div>
+                    <div id="clientsListContainer" class="space-y-4"></div>
+                </div>
+
                 <!-- SECCION CONFIGURAR WHATSAPP Y LOGOTIPO -->
                 <div id="adminConfigSection" class="hidden space-y-6">
-                    <!-- CAMBIAR TELÉFONO WHATSAPP -->
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
                         <h3 class="font-bold text-lg text-slate-200">Número de WhatsApp para Pedidos</h3>
-                        <p class="text-xs text-slate-400">Configura el número a donde los clientes enviarán sus pedidos (incluye código de país, ej: 523781211112).</p>
                         <div class="flex gap-3">
                             <input type="text" id="adminPhoneInput" placeholder="Ej. 523781211112" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
                             <button onclick="saveAdminPhone()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap">Guardar Teléfono</button>
                         </div>
                     </div>
-
-                    <!-- CAMBIAR LOGOTIPO -->
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-4">
                         <h3 class="font-bold text-lg text-slate-200">Personalizar Logotipo de la Tienda</h3>
-                        <p class="text-xs text-slate-400">Sube una nueva imagen desde tu equipo para cambiar el logotipo que aparece en la parte superior izquierda de todo el catálogo.</p>
                         <div class="flex items-center gap-6">
                             <div id="previewLogoBox" class="w-20 h-20 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center shadow-lg"></div>
                             <div class="flex-1 space-y-3">
-                                <input type="file" id="logoFileInput" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
+                                <input type="file" id="logoFileInput" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300">
                                 <button onclick="updateStoreLogo()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2 rounded-xl text-sm transition-all">Guardar Nuevo Logotipo</button>
                                 <button onclick="resetStoreLogo()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm ml-2 transition-all">Restaurar Original</button>
                             </div>
@@ -134,53 +137,30 @@
                         <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between space-y-3">
                             <div>
                                 <h3 class="font-bold text-slate-200">Plantilla de Inventario con SKU</h3>
-                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos para evitar duplicar productos al actualizar precios.</p>
+                                <p class="text-xs text-slate-400 mt-1">Descarga el Excel actual estructurado con códigos únicos para evitar duplicar productos.</p>
                             </div>
-                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Descargar Plantilla Base
-                            </button>
+                            <button onclick="downloadExcelTemplate()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">Descargar Plantilla Base</button>
                         </div>
                         <div class="bg-rose-950/20 border border-rose-900/40 p-5 rounded-2xl flex flex-col justify-between space-y-3">
                             <div>
                                 <h3 class="font-bold text-rose-300">Zona de Peligro</h3>
-                                <p class="text-xs text-rose-400/80 mt-1">¿Cometiste muchos errores? Borra absolutamente todo el catálogo actual para iniciar completamente desde cero.</p>
+                                <p class="text-xs text-rose-400/80 mt-1">Borra absolutamente todo el catálogo actual para iniciar desde cero.</p>
                             </div>
-                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                Borrar Catálogo Completo
-                            </button>
+                            <button onclick="clearEntireDatabase()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">Borrar Catálogo Completo</button>
                         </div>
                     </div>
-
-                    <!-- CAJA DE CARGA DE EXCEL -->
                     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl space-y-6">
-                        <div class="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-8 text-center transition-all cursor-pointer bg-slate-950/50 relative"
-                             ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                        <div class="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-8 text-center transition-all cursor-pointer bg-slate-950/50 relative" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
                             <input type="file" id="excelFile" accept=".xlsx, .xls" onchange="handleFileSelect(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
                             <div class="space-y-3">
-                                <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                </div>
                                 <h3 class="font-semibold text-slate-200">Arrastra tu archivo Excel aquí o haz clic</h3>
-                                <p class="text-xs text-slate-400">El sistema actualizará precios basándose en el <b>Código (SKU)</b> o agregará nuevos productos si no existen.</p>
+                                <p class="text-xs text-slate-400">El sistema actualizará precios basándose en el <b>Código (SKU)</b>.</p>
                             </div>
                         </div>
-
-                        <!-- INSTRUCCIONES DE USO -->
-                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs text-slate-400 space-y-2">
-                            <p class="font-semibold text-slate-300">💡 Instrucciones para actualizar tu Excel:</p>
-                            <ul class="list-disc list-inside space-y-1 text-slate-400">
-                                <li class="text-slate-400">Usa la plantilla descargable para mantener las columnas correctas (Codigo, Nombre, Categoria, Precio, Capacidad, Imagen).</li>
-                                <li class="text-slate-400">Si cambias la descripción de un producto pero conservas su <b>Código (SKU)</b> original, el sistema actualizará los datos sin duplicarlo.</li>
-                                <li class="text-slate-400">Si dejas el código en blanco o pones uno nuevo, se agregará como un artículo independiente.</li>
-                            </ul>
-                        </div>
-
                         <div id="syncPreviewContainer" class="hidden space-y-4 pt-4 border-t border-slate-800">
                             <div class="flex justify-between items-center">
                                 <span id="syncStatusText" class="text-sm font-medium text-amber-400">Archivo cargado con éxito</span>
-                                <button onclick="executeSync()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20">Sincronizar a Base de Datos</button>
+                                <button onclick="executeSync()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-6 py-2.5 rounded-xl text-sm transition-all">Sincronizar a Base de Datos</button>
                             </div>
                         </div>
                     </div>
@@ -199,19 +179,18 @@
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- MODAL PERFIL DE CLIENTE -->
+    <!-- MODAL PERFIL DE CLIENTE (INGRESAR O CREAR) -->
     <div id="clientProfileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
-                <h3 class="font-bold text-lg text-amber-400">Tus Datos de Usuario</h3>
+                <h3 class="font-bold text-lg text-amber-400">Ingresar o Crear Usuario</h3>
                 <button onclick="closeClientProfileModal()" class="text-slate-400 hover:text-slate-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p class="text-xs text-slate-400">Guarda tu información una sola vez para que aparezca automáticamente cada vez que realices un pedido. Puedes modificarla cuando quieras.</p>
+            <p class="text-xs text-slate-400">Regístrate o actualiza tus datos. Esto quedará guardado para autocompletar tus pedidos al instante y se sincronizará con el sistema del negocio.</p>
             
             <div class="space-y-3">
                 <div>
@@ -232,7 +211,7 @@
                 </div>
             </div>
 
-            <button onclick="saveClientProfile()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20">Guardar Mis Datos</button>
+            <button onclick="saveClientProfile()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20">Guardar y Registrarse</button>
         </div>
     </div>
 
@@ -254,11 +233,10 @@
                     <span id="cartTotalPrice" class="text-amber-400">$0 MXN</span>
                 </div>
 
-                <!-- FORMULARIO CLIENTE AUTO-RELLENADO -->
                 <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
                     <div class="flex justify-between items-center">
                         <p class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Datos de Entrega</p>
-                        <button onclick="openClientProfileModal()" class="text-xs text-amber-400 hover:underline">Editar mis datos</button>
+                        <button onclick="openClientProfileModal()" class="text-xs text-amber-400 hover:underline">Modificar mis datos</button>
                     </div>
                     <input type="text" id="clientName" placeholder="Tu Nombre o Negocio *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
                     <input type="tel" id="clientPhone" placeholder="Teléfono / WhatsApp *" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
@@ -267,7 +245,6 @@
                 </div>
 
                 <button onclick="submitOrder()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     <span>Generar y Enviar Pedido</span>
                 </button>
             </div>
@@ -277,17 +254,9 @@
     <!-- MODAL EXITO / WHATSAPP -->
     <div id="successModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-amber-500/40 w-full max-w-md rounded-2xl p-6 text-center space-y-4 shadow-2xl">
-            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            </div>
             <h3 class="text-xl font-bold text-slate-100">¡Pedido Registrado con Éxito!</h3>
-            <p class="text-sm text-slate-400">Tu orden se ha guardado en el sistema y se ha enviado al panel del administrador. Haz clic abajo para notificar por WhatsApp al negocio:</p>
-            
-            <a id="whatsappBtnLink" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                <span>Enviar Notificación por WhatsApp</span>
-            </a>
-
+            <p class="text-sm text-slate-400">Haz clic abajo para notificar por WhatsApp al negocio:</p>
+            <a id="whatsappBtnLink" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg">Enviar Notificación por WhatsApp</a>
             <button onclick="closeSuccessModal()" class="text-slate-400 hover:text-slate-200 text-sm font-medium py-2">Volver al Catálogo</button>
         </div>
     </div>
@@ -295,57 +264,12 @@
     <!-- SCRIPT LOGICA -->
     <script>
         const ADMIN_PASS = "pomelero2026";
-
-        const defaultSvgLogo = `
-            <svg viewBox="0 0 500 500" class="w-full h-full object-cover">
-                <circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/>
-                <path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/>
-                <text x="250" y="445" font-family="Outfit, sans-serif" font-size="42" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="4">POMELERO</text>
-                <text x="250" y="475" font-family="Outfit, sans-serif" font-size="20" font-weight="400" fill="#d97706" text-anchor="middle" letter-spacing="6">LICORERÍAS</text>
-            </svg>
-        `;
+        const defaultSvgLogo = `<svg viewBox="0 0 500 500" class="w-full h-full object-cover"><circle cx="250" cy="250" r="240" fill="#0b1120" stroke="#d97706" stroke-width="10"/><path d="M250 80 Q260 140 230 180 Q210 210 240 250 Q260 270 230 320 Q200 370 270 410 Q250 360 280 330 Q300 300 270 260 Q250 230 270 190 Q290 140 250 80 Z" fill="#ffffff" opacity="0.9"/><text x="250" y="445" font-family="Outfit, sans-serif" font-size="42" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="4">POMELERO</text><text x="250" y="475" font-family="Outfit, sans-serif" font-size="20" font-weight="400" fill="#d97706" text-anchor="middle" letter-spacing="6">LICORERÍAS</text></svg>`;
 
         const initialMockData = [
-            { sku: "BRN-AZT-200", name: "Azteca de Oro 200ml", category: "Brandy", price: 49, capacity: "200ml", image: "" },
             { sku: "BRN-AZT-750", name: "Azteca de Oro 750ml", category: "Brandy", price: 175, capacity: "750ml", image: "" },
             { sku: "BRN-TRS-5", name: "Torres 5 700ml", category: "Brandy", price: 189, capacity: "700ml", image: "" },
-            { sku: "BRN-TRS-10", name: "Torres 10 700ml", category: "Brandy", price: 210, capacity: "700ml", image: "" },
-            { sku: "BRN-TRS-15", name: "Torres 15 700ml", category: "Brandy", price: 500, capacity: "700ml", image: "" },
-            { sku: "BRN-TRS-MAZ", name: "Torres Mazapan 700ml", category: "Brandy", price: 385, capacity: "700ml", image: "" },
-            { sku: "BRN-TRS-20", name: "Torres 20 700ml", category: "Brandy", price: 990, capacity: "700ml", image: "" },
-            { sku: "BRN-DPR-1LT", name: "Don Pedro Gran Reserva 1lt", category: "Brandy", price: 185, capacity: "1lt", image: "" },
-            { sku: "BRN-DPR-200", name: "Don Pedro Gran Reserva 200ml", category: "Brandy", price: 41, capacity: "200ml", image: "" },
-            { sku: "BRN-DPR-CLS200", name: "Don Pedro Clasico 200ml", category: "Brandy", price: 38, capacity: "200ml", image: "" },
-            { sku: "BRN-DPR-CLS750", name: "Don Pedro Clasico 750ml", category: "Brandy", price: 162, capacity: "750ml", image: "" },
-            { sku: "BRN-PRS-200", name: "Presidente 200ml", category: "Brandy", price: 40, capacity: "200ml", image: "" },
-            { sku: "BRN-PRS-700", name: "Presidente 700ml", category: "Brandy", price: 125, capacity: "700ml", image: "" },
-            { sku: "BRN-PRS-940", name: "Presidente 940ml", category: "Brandy", price: 130, capacity: "940ml", image: "" },
-            { sku: "CER-CRN-AMB", name: "Corona Media Ambar", category: "Cerveza", price: 375, capacity: "355ml", image: "" },
-            { sku: "CER-CRN-CLR", name: "Corona Media Clara", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
-            { sku: "CER-PCF-LTA", name: "Pacifico Lata", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
-            { sku: "CER-EST-MGA", name: "Estrella Mega", category: "Cerveza", price: 495, capacity: "1.2Lt", image: "" },
-            { sku: "CER-HNK-00", name: "Heineken 0.0", category: "Cerveza", price: 360, capacity: "355ml", image: "" },
-            { sku: "CHP-MET-ICE", name: "Moet & Chandon Ice", category: "Chanpang", price: 1590, capacity: "750ml", image: "" },
-            { sku: "CHP-MET-ROS", name: "Moet & Chandon Nectar Imperial Rosa", category: "Chanpang", price: 1580, capacity: "750ml", image: "" },
-            { sku: "CGN-HNS-XO", name: "Hennessy X.O", category: "Cognac", price: 4700, capacity: "700ml", image: "" },
-            { sku: "CGN-HNS-VS", name: "Hennessy V.S", category: "Cognac", price: 700, capacity: "700ml", image: "" },
-            { sku: "GIN-BEE-750", name: "Beefeater", category: "Ginebra", price: 380, capacity: "750ml", image: "" },
-            { sku: "GIN-BMB-375", name: "Bombay Sapphire", category: "Ginebra", price: 380, capacity: "375ml", image: "" },
-            { sku: "JRB-DLZ-NAT", name: "Dolzura Natural", category: "Jarabe", price: 49, capacity: "1lt", image: "" },
-            { sku: "JRB-DLZ-CUR", name: "Dolzura Curacao Azul", category: "Jarabe", price: 65, capacity: "1lt", image: "" },
-            { sku: "LCR-DIS-700", name: "Amaretto Disaronno", category: "Licor", price: 435, capacity: "700ml", image: "" },
-            { sku: "LCR-BAI-750", name: "Baileys", category: "Licor", price: 345, capacity: "750ml", image: "" },
-            { sku: "MEZ-UNI-700", name: "Union Joven", category: "Mezcal", price: 445, capacity: "700ml", image: "" },
-            { sku: "MEZ-400-ESP", name: "400 Conejos Joven Espadin", category: "Mezcal", price: 410, capacity: "750ml", image: "" },
-            { sku: "RON-APP-8", name: "Appleton 8", category: "Ron", price: 313, capacity: "750ml", image: "" },
-            { sku: "RON-BCR-ANJ", name: "Bacardi Añejo", category: "Ron", price: 220, capacity: "1lt", image: "" },
-            { sku: "TEQ-1800-ANJ", name: "1800 Añejo", category: "Tequila", price: 650, capacity: "700ml", image: "" },
-            { sku: "TEQ-1800-BLC", name: "1800 Blanco", category: "Tequila", price: 461, capacity: "700ml", image: "" },
             { sku: "TEQ-DJL-70", name: "Don Julio 70", category: "Tequila", price: 720, capacity: "750ml", image: "" },
-            { sku: "TEQ-DJL-1942", name: "Don Julio 1942", category: "Tequila", price: 2940, capacity: "750ml", image: "" },
-            { sku: "VIN-MTR-CRN", name: "Matarromera Crianza", category: "Vino", price: 800, capacity: "750ml", image: "" },
-            { sku: "VOD-ABS-750", name: "Absolut Vodka", category: "Vodka", price: 184, capacity: "750ml", image: "" },
-            { sku: "WSK-JHW-BLCK", name: "Johnnie Walker Black Label", category: "Wisky", price: 815, capacity: "750ml", image: "" },
             { sku: "WSK-JCK-700", name: "Jack Daniels", category: "Wisky", price: 400, capacity: "700ml", image: "" }
         ];
 
@@ -356,23 +280,18 @@
 
         function initApp() {
             const saved = localStorage.getItem('pomelero_products');
-            if (saved) {
-                try { products = JSON.parse(saved); } catch(e) { products = initialMockData; }
-            } else {
-                products = initialMockData;
-                localStorage.setItem('pomelero_products', JSON.stringify(products));
-            }
+            products = saved ? JSON.parse(saved) : initialMockData;
+            if(!saved) localStorage.setItem('pomelero_products', JSON.stringify(products));
             loadStoredLogo();
             loadClientProfileToUI();
+            checkWeeklyAlert();
             renderCategories();
             renderProducts();
             loadOrders();
+            loadClientsList();
         }
 
-        function getBusinessPhone() {
-            return localStorage.getItem('pomelero_phone') || "523781211112";
-        }
-
+        function getBusinessPhone() { return localStorage.getItem('pomelero_phone') || "523781211112"; }
         function saveAdminPhone() {
             const phone = document.getElementById('adminPhoneInput').value.trim();
             if(!phone) { alert("Ingresa un número válido"); return; }
@@ -380,11 +299,6 @@
             alert("¡Teléfono de WhatsApp actualizado con éxito!");
         }
 
-        function saveProductsToStorage() {
-            localStorage.setItem('pomelero_products', JSON.stringify(products));
-        }
-
-        // Gestión de Logotipo
         function loadStoredLogo() {
             const savedLogo = localStorage.getItem('pomelero_store_logo');
             const container = document.getElementById('headerLogoContainer');
@@ -403,26 +317,21 @@
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const base64Img = e.target.result;
-                    localStorage.setItem('pomelero_store_logo', base64Img);
+                    localStorage.setItem('pomelero_store_logo', e.target.result);
                     loadStoredLogo();
-                    alert("¡Logotipo actualizado con éxito!");
+                    alert("¡Logotipo actualizado!");
                 };
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                alert("Por favor selecciona una imagen primero.");
-            }
+            } else { alert("Selecciona una imagen primero."); }
         }
 
         function resetStoreLogo() {
-            if (confirm("¿Deseas restaurar el logotipo original?")) {
-                localStorage.removeItem('pomelero_store_logo');
-                loadStoredLogo();
-                alert("Logotipo restablecido.");
-            }
+            localStorage.removeItem('pomelero_store_logo');
+            loadStoredLogo();
+            alert("Logotipo restablecido.");
         }
 
-        // Gestión de Perfil de Cliente
+        // Gestión de Perfil de Cliente y Base de Datos de Clientes
         function openClientProfileModal() {
             const profile = JSON.parse(localStorage.getItem('pomelero_client_profile') || '{}');
             document.getElementById('profileName').value = profile.name || '';
@@ -432,9 +341,7 @@
             document.getElementById('clientProfileModal').classList.remove('hidden');
         }
 
-        function closeClientProfileModal() {
-            document.getElementById('clientProfileModal').classList.add('hidden');
-        }
+        function closeClientProfileModal() { document.getElementById('clientProfileModal').classList.add('hidden'); }
 
         function saveClientProfile() {
             const name = document.getElementById('profileName').value.trim();
@@ -442,34 +349,90 @@
             const address = document.getElementById('profileAddress').value.trim();
             const notes = document.getElementById('profileNotes').value.trim();
 
-            if(!name || !phone || !address) {
-                alert("Por favor completa los campos obligatorios (* Nombre, Teléfono y Dirección).");
-                return;
-            }
+            if(!name || !phone || !address) { alert("Completa los campos obligatorios (*)."); return; }
 
-            const profile = { name, phone, address, notes };
+            const profile = { name, phone, address, notes, registeredDate: new Date().toLocaleString() };
             localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
+
+            // Guardar en la Base de Datos general de Clientes Registrados
+            let registeredClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            const existingIndex = registeredClients.findIndex(c => c.phone === phone);
+            if(existingIndex >= 0) {
+                registeredClients[existingIndex] = profile; // Actualizar si ya existe por teléfono
+            } else {
+                registeredClients.push(profile); // Crear nuevo registro
+            }
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(registeredClients));
+
             loadClientProfileToUI();
             closeClientProfileModal();
-            alert("¡Tus datos de usuario se han guardado correctamente!");
+            alert("¡Usuario registrado/actualizado con éxito!");
         }
 
         function loadClientProfileToUI() {
             const profile = JSON.parse(localStorage.getItem('pomelero_client_profile') || 'null');
             if (profile && profile.name) {
                 document.getElementById('clientNavName').textContent = profile.name.split(' ')[0];
-                const cName = document.getElementById('clientName');
-                const cPhone = document.getElementById('clientPhone');
-                const cAddr = document.getElementById('clientAddress');
-                const cNotes = document.getElementById('clientNotes');
-                if(cName) cName.value = profile.name;
-                if(cPhone) cPhone.value = profile.phone;
-                if(cAddr) cAddr.value = profile.address;
-                if(cNotes) cNotes.value = profile.notes || '';
+                ['clientName', 'clientPhone', 'clientAddress', 'clientNotes'].forEach((id, idx) => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = [profile.name, profile.phone, profile.address, profile.notes][idx] || '';
+                });
             }
         }
 
-        // Navegación de pestañas principales
+        // Alerta Semanal (7 días)
+        function checkWeeklyAlert() {
+            const lastVisit = localStorage.getItem('pomelero_last_visit_date');
+            const now = new Date().getTime();
+            if(!lastVisit) {
+                localStorage.setItem('pomelero_last_visit_date', now);
+            } else {
+                const diffDays = (now - parseInt(lastVisit)) / (1000 * 60 * 60 * 24);
+                if(diffDays >= 7) {
+                    document.getElementById('weeklyAlertBanner').classList.remove('hidden');
+                }
+            }
+        }
+
+        function dismissWeeklyAlert() {
+            localStorage.setItem('pomelero_last_visit_date', new Date().getTime());
+            document.getElementById('weeklyAlertBanner').classList.add('hidden');
+        }
+
+        function loadClientsList() {
+            const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            document.getElementById('clientsCount').textContent = clients.length;
+            const container = document.getElementById('clientsListContainer');
+            if(clients.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay clientes registrados todavía.</div>`;
+                return;
+            }
+            container.innerHTML = clients.map(c => `
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex justify-between items-center text-sm">
+                    <div>
+                        <h4 class="font-bold text-amber-400">${c.name}</h4>
+                        <p class="text-xs text-slate-300">📞 ${c.phone} | 📍 ${c.address}</p>
+                        ${c.notes ? `<p class="text-xs text-slate-400 mt-1">Notas: ${c.notes}</p>` : ''}
+                    </div>
+                    <span class="text-[10px] text-slate-500">Registro: ${c.registeredDate || 'N/A'}</span>
+                </div>
+            `).join('');
+        }
+
+        function downloadClientsExcel() {
+            const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            if(clients.length === 0) { alert("No hay clientes para exportar."); return; }
+            const wsData = [
+                ["Nombre", "Telefono", "Direccion", "Notas", "FechaRegistro"],
+                ...clients.map(c => [c.name, c.phone, c.address, c.notes || "", c.registeredDate || ""])
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "ClientesPomelero");
+            XLSX.writeFile(wb, "BaseDeDatos_Clientes_Pomelero.xlsx");
+        }
+
+        // Navegación Admin
         function switchTab(tab) {
             document.getElementById('view-catalogo').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
@@ -478,176 +441,90 @@
         }
 
         function switchAdminTab(subtab) {
-            document.getElementById('adminSyncSection').classList.add('hidden');
-            document.getElementById('adminConfigSection').classList.add('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
-            document.getElementById('tabSyncBtn').className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all";
-            document.getElementById('tabConfigBtn').className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all";
-            document.getElementById('tabOrdersBtn').className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all";
-
-            if (subtab === 'sync') {
-                document.getElementById('adminSyncSection').classList.remove('hidden');
-                document.getElementById('tabSyncBtn').className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all";
-            } else if (subtab === 'config') {
-                document.getElementById('adminConfigSection').classList.remove('hidden');
-                document.getElementById('tabConfigBtn').className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all";
-                document.getElementById('adminPhoneInput').value = getBusinessPhone();
-                loadStoredLogo();
-            } else {
-                document.getElementById('adminOrdersSection').classList.remove('hidden');
-                document.getElementById('tabOrdersBtn').className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all";
-                renderOrdersList();
-            }
+            ['Sync', 'Clients', 'Config', 'Orders'].forEach(s => {
+                document.getElementById(`admin${s}Section`).classList.add('hidden');
+                document.getElementById(`tab${s}Btn`).className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition-all";
+            });
+            document.getElementById(`admin${subtab.charAt(0).toUpperCase() + subtab.slice(1)}Section`).classList.remove('hidden');
+            document.getElementById(`tab${subtab.charAt(0).toUpperCase() + subtab.slice(1)}Btn`).className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 whitespace-nowrap transition-all";
+            if(subtab === 'clients') loadClientsList();
+            if(subtab === 'config') { document.getElementById('adminPhoneInput').value = getBusinessPhone(); loadStoredLogo(); }
+            if(subtab === 'orders') renderOrdersList();
         }
 
         function verifyAdminPassword() {
-            const pass = document.getElementById('adminPasswordInput').value;
-            if (pass === ADMIN_PASS) {
+            if (document.getElementById('adminPasswordInput').value === ADMIN_PASS) {
                 document.getElementById('adminLoginBox').classList.add('hidden');
                 document.getElementById('adminPanelContent').classList.remove('hidden');
-            } else {
-                alert("Contraseña incorrecta.");
-            }
+            } else { alert("Contraseña incorrecta."); }
         }
 
-        // Renderizado del Catálogo
+        // Renderizado Catálogo
         function renderCategories() {
             const cats = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
-            const container = document.getElementById('categoryFilters');
-            container.innerHTML = cats.map(cat => `
-                <button onclick="filterCategory('${cat}')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${currentCategory === cat ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/20' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'}">${cat}</button>
+            document.getElementById('categoryFilters').innerHTML = cats.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="category-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${currentCategory === cat ? 'bg-amber-500 text-slate-950 font-semibold' : 'bg-slate-900 text-slate-300 border border-slate-800'}">${cat}</button>
             `).join('');
         }
 
-        function filterCategory(cat) {
-            currentCategory = cat;
-            renderCategories();
-            renderProducts();
-        }
-
-        function filterProducts() {
-            renderProducts();
-        }
+        function filterCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
+        function filterProducts() { renderProducts(); }
 
         function renderProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => (currentCategory === 'TODOS' || p.category === currentCategory) && (p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)));
             const grid = document.getElementById('productsGrid');
-
-            const filtered = products.filter(p => {
-                const matchCat = currentCategory === 'TODOS' || p.category === currentCategory;
-                const matchQuery = (p.name && p.name.toLowerCase().includes(query)) || (p.sku && p.sku.toLowerCase().includes(query)) || (p.capacity && p.capacity.toLowerCase().includes(query));
-                return matchCat && matchQuery;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No se encontraron productos.</div>`;
-                return;
-            }
-
+            if (filtered.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No se encontraron productos.</div>`; return; }
             grid.innerHTML = filtered.map(p => `
-                <div class="bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-4 flex flex-col justify-between transition-all group shadow-lg">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
                     <div>
-                        <div class="h-36 bg-slate-950/60 rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-800/80 relative">
-                            ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-all">` : `
-                                <div class="text-center p-2">
-                                    <span class="text-xs font-bold text-amber-500/60 tracking-wider">${p.category || 'LICOR'}</span>
-                                    <p class="text-xs text-slate-400 mt-1">${p.capacity || ''}</p>
-                                </div>
-                            `}
-                            <span class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-md text-[10px] text-amber-400 px-2 py-0.5 rounded-md border border-slate-800 font-mono">${p.sku || 'SKU'}</span>
+                        <div class="h-36 bg-slate-950/60 rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-800 relative">
+                            ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold text-amber-500/60">${p.category}</span>`}
+                            <span class="absolute top-2 right-2 bg-slate-950/80 text-[10px] text-amber-400 px-2 py-0.5 rounded border border-slate-800">${p.sku}</span>
                         </div>
-                        <span class="text-xs text-amber-500 font-semibold uppercase tracking-wider">${p.category}</span>
-                        <h4 class="font-semibold text-slate-100 text-sm mt-0.5 line-clamp-2">${p.name}</h4>
-                        <p class="text-xs text-slate-400 mt-1">${p.capacity || 'Estándar'}</p>
+                        <span class="text-xs text-amber-500 font-semibold uppercase">${p.category}</span>
+                        <h4 class="font-semibold text-slate-100 text-sm mt-0.5">${p.name}</h4>
+                        <p class="text-xs text-slate-400 mt-1">${p.capacity || ''}</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] text-slate-500 block">Precio Mayoreo</span>
-                            <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs font-normal text-slate-400">MXN</small></span>
-                        </div>
-                        <button onclick='addToCart(${JSON.stringify(p)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl transition-all shadow-md shadow-amber-500/10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        </button>
+                        <span class="text-lg font-bold text-amber-400">$${p.price} <small class="text-xs text-slate-400">MXN</small></span>
+                        <button onclick='addToCart(${JSON.stringify(p)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2.5 rounded-xl"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Carrito de Compras y Pedidos
+        // Carrito y Pedidos
         function addToCart(product) {
             const existing = cart.find(item => item.sku === product.sku);
-            if (existing) {
-                existing.qty += 1;
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
-            updateCartBadge();
-            openCart();
+            if (existing) existing.qty += 1; else cart.push({ ...product, qty: 1 });
+            updateCartBadge(); openCart();
         }
 
         function updateCartItemQty(sku, change) {
             const item = cart.find(i => i.sku === sku);
-            if (item) {
-                item.qty += change;
-                if (item.qty <= 0) {
-                    cart = cart.filter(i => i.sku !== sku);
-                }
-            }
-            updateCartBadge();
-            renderCartItems();
+            if (item) { item.qty += change; if (item.qty <= 0) cart = cart.filter(i => i.sku !== sku); }
+            updateCartBadge(); renderCartItems();
         }
 
         function updateCartBadge() {
-            const badge = document.getElementById('cartBadge');
             const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
-            if (totalQty > 0) {
-                badge.textContent = totalQty;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
+            const badge = document.getElementById('cartBadge');
+            if (totalQty > 0) { badge.textContent = totalQty; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
         }
 
-        function openCart() {
-            loadClientProfileToUI();
-            document.getElementById('cartModal').classList.remove('hidden');
-            renderCartItems();
-        }
-
-        function closeCart() {
-            document.getElementById('cartModal').classList.add('hidden');
-        }
+        function openCart() { loadClientProfileToUI(); document.getElementById('cartModal').classList.remove('hidden'); renderCartItems(); }
+        function closeCart() { document.getElementById('cartModal').classList.add('hidden'); }
 
         function renderCartItems() {
             const container = document.getElementById('cartItemsList');
-            const totalEl = document.getElementById('cartTotalPrice');
-
-            if (cart.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">Tu carrito está vacío.</div>`;
-                totalEl.textContent = "$0 MXN";
-                return;
-            }
-
+            if (cart.length === 0) { container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">Tu carrito está vacío.</div>`; document.getElementById('cartTotalPrice').textContent = "$0 MXN"; return; }
             let total = 0;
             container.innerHTML = cart.map(item => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                return `
-                    <div class="py-3 flex justify-between items-center gap-3">
-                        <div class="flex-1">
-                            <h5 class="text-sm font-semibold text-slate-200 line-clamp-1">${item.name}</h5>
-                            <span class="text-xs text-amber-400 font-bold">$${item.price} c/u</span>
-                        </div>
-                        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
-                            <button onclick="updateCartItemQty('${item.sku}', -1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300 hover:bg-slate-800 font-bold">-</button>
-                            <span class="text-sm font-semibold w-6 text-center">${item.qty}</span>
-                            <button onclick="updateCartItemQty('${item.sku}', 1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300 hover:bg-slate-800 font-bold">+</button>
-                        </div>
-                    </div>
-                `;
+                total += item.price * item.qty;
+                return `<div class="py-3 flex justify-between items-center gap-3"><div class="flex-1"><h5 class="text-sm font-semibold text-slate-200">${item.name}</h5><span class="text-xs text-amber-400">$${item.price} c/u</span></div><div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1"><button onclick="updateCartItemQty('${item.sku}', -1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300">-</button><span class="text-sm font-semibold w-6 text-center">${item.qty}</span><button onclick="updateCartItemQty('${item.sku}', 1)" class="w-7 h-7 bg-slate-900 rounded-lg text-slate-300">+</button></div></div>`;
             }).join('');
-
-            totalEl.textContent = `$${total} MXN`;
+            document.getElementById('cartTotalPrice').textContent = `$${total} MXN`;
         }
 
         function submitOrder() {
@@ -656,234 +533,83 @@
             const address = document.getElementById('clientAddress').value.trim();
             const notes = document.getElementById('clientNotes').value.trim();
 
-            if (!name || !phone || !address) {
-                alert("Por favor completa los campos obligatorios (* Nombre, Teléfono y Dirección).");
-                return;
-            }
+            if (!name || !phone || !address) { alert("Completa los campos obligatorios (*)."); return; }
+            if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
 
-            if (cart.length === 0) {
-                alert("Tu carrito está vacío.");
-                return;
-            }
-
-            // Guardar perfil automáticamente al hacer pedido si no estaba guardado
-            localStorage.setItem('pomelero_client_profile', JSON.stringify({ name, phone, address, notes }));
-            loadClientProfileToUI();
+            const profile = { name, phone, address, notes, registeredDate: new Date().toLocaleString() };
+            localStorage.setItem('pomelero_client_profile', JSON.stringify(profile));
+            
+            let regClients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            if(!regClients.some(c => c.phone === phone)) { regClients.push(profile); localStorage.setItem('pomelero_registered_clients', JSON.stringify(regClients)); }
 
             const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
             const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
-            const newOrder = {
-                id: orderId,
-                date: new Date().toLocaleString(),
-                client: { name, phone, address, notes },
-                items: cart,
-                total,
-                status: 'pending'
-            };
-
             let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
-            orders.unshift(newOrder);
+            orders.unshift({ id: orderId, date: new Date().toLocaleString(), client: { name, phone, address, notes }, items: cart, total, status: 'pending' });
             localStorage.setItem('pomelero_orders', JSON.stringify(orders));
 
-            let waText = `*NUEVO PEDIDO - POMELERO* 🛒%0A`;
-            waText += `*Folio:* ${orderId}%0A`;
-            waText += `*Cliente:* ${name}%0A`;
-            waText += `*Teléfono:* ${phone}%0A`;
-            waText += `*Dirección:* ${address}%0A`;
+            let waText = `*NUEVO PEDIDO - POMELERO* 🛒%0A*Folio:* ${orderId}%0A*Cliente:* ${name}%0A*Teléfono:* ${phone}%0A*Dirección:* ${address}%0A`;
             if(notes) waText += `*Notas:* ${notes}%0A`;
-            waText += `%0A*DETALLE DE PRODUCTOS:*%0A`;
-            cart.forEach(i => {
-                waText += `- ${i.qty}x ${i.name} ($${i.price * i.qty} MXN)%0A`;
-            });
-            waText += `%0A*TOTAL ESTIMADO:* $${total} MXN`;
+            waText += `%0A*PRODUCTOS:*%0A`;
+            cart.forEach(i => { waText += `- ${i.qty}x ${i.name} ($${i.price * i.qty})%0A`; });
+            waText += `%0A*TOTAL:* $${total} MXN`;
 
-            const activePhone = getBusinessPhone();
-            document.getElementById('whatsappBtnLink').href = `https://wa.me/${activePhone}?text=${waText}`;
-
-            cart = [];
-            updateCartBadge();
-            closeCart();
+            document.getElementById('whatsappBtnLink').href = `https://wa.me/${getBusinessPhone()}?text=${waText}`;
+            cart = []; updateCartBadge(); closeCart();
             document.getElementById('successModal').classList.remove('hidden');
         }
 
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-        }
+        function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
 
-        // Gestión de Excel y SKU
+        // Sincronización Excel
         function downloadExcelTemplate() {
-            const wsData = [
-                ["Codigo", "Nombre", "Categoria", "Precio", "Capacidad", "Imagen"],
-                ...products.map(p => [p.sku || "", p.name || "", p.category || "", p.price || 0, p.capacity || "", p.image || ""])
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "InventarioPomelero");
-            XLSX.writeFile(wb, "Plantilla_Inventario_Pomelero.xlsx");
+            const ws = XLSX.utils.aoa_to_sheet([["Codigo", "Nombre", "Categoria", "Precio", "Capacidad", "Imagen"], ...products.map(p => [p.sku, p.name, p.category, p.price, p.capacity, p.image])]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventario"); XLSX.writeFile(wb, "Plantilla_Pomelero.xlsx");
         }
-
         function clearEntireDatabase() {
-            if (confirm("⚠️ ¿Estás COMPLETAMENTE SEGURO de borrar todo el catálogo? Esta acción no se puede deshacer.")) {
-                products = [];
-                localStorage.removeItem('pomelero_products');
-                renderCategories();
-                renderProducts();
-                alert("Catálogo borrado exitosamente.");
-            }
+            if (confirm("⚠️ ¿Borrar todo el catálogo?")) { products = []; localStorage.removeItem('pomelero_products'); renderCategories(); renderProducts(); alert("Catálogo borrado."); }
         }
-
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (file) processExcelFile(file);
-        }
-
-        function handleFileDrop(e) {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file) processExcelFile(file);
-        }
-
+        function handleFileSelect(e) { processExcelFile(e.target.files[0]); }
+        function handleFileDrop(e) { e.preventDefault(); processExcelFile(e.dataTransfer.files[0]); }
         function processExcelFile(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-
-                    parsedExcelData = json.map(row => {
-                        const cleanRow = {};
-                        Object.keys(row).forEach(k => {
-                            const cleanKey = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                            cleanRow[cleanKey] = row[k];
-                        });
-
-                        return {
-                            sku: String(cleanRow['codigo'] || cleanRow['sku'] || ('SKU-' + Math.random().toString(36).substr(2, 6))).trim(),
-                            name: String(cleanRow['nombre'] || cleanRow['producto'] || 'Sin nombre').trim(),
-                            category: String(cleanRow['categoria'] || cleanRow['tipo'] || 'General').trim(),
-                            price: parseFloat(cleanRow['precio'] || cleanRow['mayoreo'] || 0),
-                            capacity: String(cleanRow['capacidad'] || cleanRow['volumen'] || '').trim(),
-                            image: String(cleanRow['imagen'] || cleanRow['url'] || '').trim()
-                        };
-                    });
-
-                    document.getElementById('syncStatusText').textContent = `Archivo procesado: ${parsedExcelData.length} productos listos para sincronizar por SKU.`;
-                    document.getElementById('syncPreviewContainer').classList.remove('hidden');
-                } catch (err) {
-                    alert("Error al leer el archivo Excel: " + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
+                const json = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), { type: 'array' }).Sheets[XLSX.read(new Uint8Array(e.target.result), { type: 'array' }).SheetNames[0]]);
+                parsedExcelData = json.map(row => {
+                    const r = {}; Object.keys(row).forEach(k => r[k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()] = row[k]);
+                    return { sku: String(r['codigo'] || r['sku'] || 'SKU-'+Math.random().toString(36).substr(2,6)), name: String(r['nombre']||'Sin nombre'), category: String(r['categoria']||'General'), price: parseFloat(r['precio']||0), capacity: String(r['capacidad']||''), image: String(r['imagen']||'') };
+                });
+                document.getElementById('syncStatusText').textContent = `Procesados: ${parsedExcelData.length} productos listos.`;
+                document.getElementById('syncPreviewContainer').classList.remove('hidden');
+            }; reader.readAsArrayBuffer(file);
         }
-
         function executeSync() {
-            if (!parsedExcelData || parsedExcelData.length === 0) return;
-
-            let updatedCount = 0;
-            let addedCount = 0;
-
             parsedExcelData.forEach(newP => {
-                const index = products.findIndex(p => p.sku && p.sku.toLowerCase() === newP.sku.toLowerCase());
-                if (index !== -1) {
-                    products[index] = {
-                        ...products[index],
-                        ...newP,
-                        image: newP.image ? newP.image : products[index].image
-                    };
-                    updatedCount++;
-                } else {
-                    products.push(newP);
-                    addedCount++;
-                }
+                const idx = products.findIndex(p => p.sku.toLowerCase() === newP.sku.toLowerCase());
+                if(idx >= 0) products[idx] = { ...products[idx], ...newP }; else products.push(newP);
             });
-
-            saveProductsToStorage();
-            renderCategories();
-            renderProducts();
-            document.getElementById('syncPreviewContainer').classList.add('hidden');
-            alert(`Sincronización completa.\n- Productos actualizados por SKU: ${updatedCount}\n- Productos nuevos agregados: ${addedCount}`);
-            switchTab('catalogo');
+            saveProductsToStorage(); renderCategories(); renderProducts(); document.getElementById('syncPreviewContainer').classList.add('hidden');
+            alert("Sincronización por SKU completada."); switchTab('catalogo');
         }
+        function saveProductsToStorage() { localStorage.setItem('pomelero_products', JSON.stringify(products)); }
 
-        // Panel de Pedidos Administrador
         let currentOrderFilter = 'pending';
-
-        function loadOrders() {
-            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
-            const pendingCount = orders.filter(o => o.status === 'pending').length;
-            document.getElementById('ordersCount').textContent = pendingCount;
-        }
-
-        function filterOrders(status) {
-            currentOrderFilter = status;
-            if (status === 'pending') {
-                document.getElementById('filterPendBtn').className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold";
-                document.getElementById('filterArchBtn').className = "bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold";
-            } else {
-                document.getElementById('filterArchBtn').className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-semibold";
-                document.getElementById('filterPendBtn').className = "bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold";
-            }
-            renderOrdersList();
-        }
-
+        function loadOrders() { document.getElementById('ordersCount').textContent = JSON.parse(localStorage.getItem('pomelero_orders') || '[]').filter(o => o.status === 'pending').length; }
+        function filterOrders(st) { currentOrderFilter = st; renderOrdersList(); }
         function renderOrdersList() {
-            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
-            const container = document.getElementById('ordersListContainer');
-            loadOrders();
-
-            const filtered = orders.filter(o => o.status === currentOrderFilter);
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-500 text-sm">No hay pedidos en esta sección.</div>`;
-                return;
-            }
-
-            container.innerHTML = filtered.map(ord => `
+            const orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]').filter(o => o.status === currentOrderFilter);
+            document.getElementById('ordersListContainer').innerHTML = orders.length === 0 ? `<div class="py-12 text-center text-slate-500 text-sm">No hay pedidos aquí.</div>` : orders.map(ord => `
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-mono text-amber-400">${ord.id}</span>
-                            <h4 class="font-bold text-slate-100 text-base">${ord.client.name}</h4>
-                            <p class="text-xs text-slate-400">📞 ${ord.client.phone} | 📍 ${ord.client.address}</p>
-                            ${ord.client.notes ? `<p class="text-xs text-amber-500/80 mt-1">Nota: ${ord.client.notes}</p>` : ''}
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-500 block">${ord.date}</span>
-                            <span class="text-base font-bold text-amber-400">$${ord.total} MXN</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1 text-xs">
-                        ${ord.items.map(i => `<div class="flex justify-between text-slate-300"><span>${i.qty}x ${i.name}</span> <span class="font-semibold">$${i.price * i.qty}</span></div>`).join('')}
-                    </div>
-                    <div class="flex justify-end gap-2 pt-2">
-                        ${ord.status === 'pending' ? `
-                            <button onclick="updateOrderStatus('${ord.id}', 'archived')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Marcar Atendido (Archivar)</button>
-                        ` : `
-                            <button onclick="updateOrderStatus('${ord.id}', 'pending')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Restaurar a Pendientes</button>
-                        `}
-                        <button onclick="deleteOrder('${ord.id}')" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">Eliminar</button>
-                    </div>
+                    <div class="flex justify-between"><div><span class="text-xs text-amber-400">${ord.id}</span><h4 class="font-bold text-slate-100">${ord.client.name}</h4><p class="text-xs text-slate-400">📞 ${ord.client.phone} | 📍 ${ord.client.address}</p></div><span class="font-bold text-amber-400">$${ord.total} MXN</span></div>
+                    <div class="flex justify-end gap-2"><button onclick="updateOrderStatus('${ord.id}', '${ord.status==='pending'?'archived':'pending'}')" class="bg-slate-800 text-slate-200 px-3 py-1.5 rounded-xl text-xs">${ord.status==='pending'?'Archivar':'Restaurar'}</button><button onclick="deleteOrder('${ord.id}')" class="bg-rose-950/40 text-rose-400 px-3 py-1.5 rounded-xl text-xs">Eliminar</button></div>
                 </div>
             `).join('');
         }
-
-        function updateOrderStatus(id, newStatus) {
-            let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
-            orders = orders.map(o => o.id === id ? { ...o, status: newStatus } : o);
-            localStorage.setItem('pomelero_orders', JSON.stringify(orders));
-            renderOrdersList();
+        function updateOrderStatus(id, st) {
+            let o = JSON.parse(localStorage.getItem('pomelero_orders') || '[]'); localStorage.setItem('pomelero_orders', JSON.stringify(o.map(x => x.id === id ? {...x, status: st} : x))); renderOrdersList(); loadOrders();
         }
-
         function deleteOrder(id) {
-            if (confirm("¿Estás seguro de eliminar este pedido permanentemente?")) {
-                let orders = JSON.parse(localStorage.getItem('pomelero_orders') || '[]');
-                orders = orders.filter(o => o.id !== id);
-                localStorage.setItem('pomelero_orders', JSON.stringify(orders));
-                renderOrdersList();
-            }
+            if(confirm("¿Eliminar pedido?")) { let o = JSON.parse(localStorage.getItem('pomelero_orders') || '[]'); localStorage.setItem('pomelero_orders', JSON.stringify(o.filter(x => x.id !== id))); renderOrdersList(); loadOrders(); }
         }
 
         window.onload = initApp;
