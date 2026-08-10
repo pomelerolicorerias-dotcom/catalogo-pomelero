@@ -2,107 +2,90 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomelero Licorerías</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100">
-    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center">
+    <!-- HEADER -->
+    <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900">
         <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
         <div class="flex gap-4">
             <button onclick="switchTab('catalogo')" class="text-sm">Catálogo</button>
+            <button onclick="switchTab('auth')" class="text-sm bg-amber-500 text-black px-3 py-1 rounded-lg font-bold">Ingresar</button>
             <button onclick="switchTab('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
         </div>
     </nav>
 
-    <main id="main-content" class="p-6">
-        <!-- VISTA CATALOGO -->
+    <main id="main-content" class="p-6 max-w-4xl mx-auto">
+        <!-- CATÁLOGO -->
         <div id="view-catalogo">
-            <h2 class="text-2xl font-bold mb-4">Productos</h2>
+            <h2 class="text-2xl font-bold mb-4">Catálogo de Productos</h2>
             <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
         </div>
 
-        <!-- VISTA ADMIN -->
+        <!-- AUTH (INGRESAR) -->
+        <div id="view-auth" class="hidden bg-slate-900 p-8 rounded-2xl max-w-sm mx-auto shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+            <input type="text" id="loginUser" placeholder="Usuario o Teléfono" class="w-full bg-slate-950 p-3 rounded-lg mb-3 border border-slate-800">
+            <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded-lg mb-4 border border-slate-800">
+            <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg mb-4">Entrar</button>
+            <div class="text-xs text-center space-y-2 text-slate-400">
+                <p><a href="#" onclick="requestDeletion()" class="hover:text-white">Solicitar borrar cuenta</a></p>
+                <p><a href="#" onclick="requestPassword()" class="hover:text-white">Recuperar contraseña</a></p>
+                <p><a href="#" onclick="alert('Registro disponible con el administrador')" class="hover:text-white">¿No tiene cuenta? Cree una</a></p>
+            </div>
+        </div>
+
+        <!-- ADMIN -->
         <div id="view-admin" class="hidden">
-            <div id="loginArea" class="max-w-sm mx-auto bg-slate-900 p-6 rounded-xl">
-                <input type="password" id="adminPass" placeholder="Contraseña Admin" class="w-full bg-slate-950 p-2 rounded mb-3">
+            <div id="loginAdmin" class="bg-slate-900 p-6 rounded-xl max-w-sm mx-auto">
+                <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded">
                 <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar</button>
             </div>
-            <div id="adminArea" class="hidden space-y-6">
-                <div class="flex gap-4 border-b border-slate-700 pb-2">
-                    <button onclick="showAdmin('clients')">Clientes</button>
-                    <button onclick="showAdmin('config')">Configuración</button>
-                </div>
-                <div id="admin-clients" class="hidden">
-                    <h3 class="font-bold mb-3">Clientes Registrados</h3>
-                    <div id="clientsList" class="space-y-2"></div>
-                </div>
-                <div id="admin-config" class="hidden">
-                    <input type="text" id="newPhone" placeholder="Nuevo Teléfono WhatsApp" class="bg-slate-900 p-2 w-full rounded">
-                    <button onclick="savePhone()" class="bg-amber-500 text-black px-4 py-2 mt-2 rounded">Guardar WhatsApp</button>
-                </div>
+            <div id="adminPanel" class="hidden">
+                <h3 class="font-bold text-lg mb-4">Base de Usuarios</h3>
+                <div id="userList" class="space-y-2"></div>
             </div>
         </div>
     </main>
 
     <script>
-        // Lógica Básica
         function switchTab(tab) {
             document.getElementById('view-catalogo').classList.toggle('hidden', tab !== 'catalogo');
+            document.getElementById('view-auth').classList.toggle('hidden', tab !== 'auth');
             document.getElementById('view-admin').classList.toggle('hidden', tab !== 'admin');
         }
 
+        function requestDeletion() { window.open(`https://wa.me/523781211112?text=Hola, solicito borrar mi cuenta de Pomelero.`); }
+        function requestPassword() { window.open(`https://wa.me/523781211112?text=Hola, olvidé mi contraseña. ¿Me ayudan a recuperarla?`); }
+        
         function checkAdmin() {
             if(document.getElementById('adminPass').value === "pomelero2026") {
-                document.getElementById('loginArea').classList.add('hidden');
-                document.getElementById('adminArea').classList.remove('hidden');
-            } else alert("Contraseña incorrecta");
+                document.getElementById('loginAdmin').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                renderUsers();
+            } else alert("Clave incorrecta");
         }
 
-        function showAdmin(sec) {
-            document.getElementById('admin-clients').classList.toggle('hidden', sec !== 'clients');
-            document.getElementById('admin-config').classList.toggle('hidden', sec !== 'config');
-            if(sec === 'clients') renderClients();
-        }
-
-        function savePhone() {
-            localStorage.setItem('pomelero_phone', document.getElementById('newPhone').value);
-            alert("Teléfono guardado");
-        }
-
-        function renderClients() {
-            const clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            document.getElementById('clientsList').innerHTML = clients.map(c => `
+        function renderUsers() {
+            const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            document.getElementById('userList').innerHTML = users.map(u => `
                 <div class="bg-slate-900 p-3 rounded flex justify-between">
-                    <span>${c.name} - ${c.phone}</span>
-                    <button onclick="deleteClient('${c.phone}')" class="text-red-400">Borrar</button>
+                    <span>${u.name} (Pass: ${u.password})</span>
+                    <button onclick="deleteUser('${u.phone}')" class="text-red-400">Eliminar</button>
                 </div>
             `).join('');
         }
 
-        function deleteClient(phone) {
-            let clients = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
-            clients = clients.filter(c => c.phone !== phone);
-            localStorage.setItem('pomelero_registered_clients', JSON.stringify(clients));
-            renderClients();
+        function deleteUser(phone) {
+            let users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(users.filter(u => u.phone !== phone)));
+            renderUsers();
         }
 
-        // Carga inicial de productos de ejemplo
-        const initialProducts = [
-            { sku: "BRN-001", name: "Azteca de Oro 750ml", price: 175, category: "Brandy" },
-            { sku: "TEQ-001", name: "Don Julio 70 750ml", price: 720, category: "Tequila" }
-        ];
-        if(!localStorage.getItem('pomelero_products')) localStorage.setItem('pomelero_products', JSON.stringify(initialProducts));
-        
-        // Render inicial
-        const prods = JSON.parse(localStorage.getItem('pomelero_products'));
-        document.getElementById('productsGrid').innerHTML = prods.map(p => `
-            <div class="bg-slate-900 p-4 rounded-xl">
-                <h4 class="font-bold">${p.name}</h4>
-                <p class="text-amber-400">$${p.price}</p>
-            </div>
-        `).join('');
+        // Render inicial productos
+        const prods = JSON.parse(localStorage.getItem('pomelero_products') || '[{"name":"Azteca","price":175}]');
+        document.getElementById('productsGrid').innerHTML = prods.map(p => `<div class="bg-slate-900 p-4 rounded-xl font-bold">${p.name} <br> <span class="text-amber-400">$${p.price}</span></div>`).join('');
     </script>
 </body>
 </html>
