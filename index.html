@@ -3,73 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomelero Licorerías</title>
+    <title>Pomelero Licorerías - Catálogo de Mayoreo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'); body { font-family: 'Outfit', sans-serif; }</style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
+    <!-- HEADER -->
     <nav class="p-4 border-b border-amber-500/30 flex justify-between items-center bg-slate-900 sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <div id="headerLogoContainer" class="w-10 h-10 rounded-full border border-amber-500 overflow-hidden"></div>
-            <h1 class="font-bold text-amber-400">POMELERO</h1>
+            <div id="headerLogoContainer" class="w-12 h-12 rounded-full border-2 border-amber-500 overflow-hidden bg-slate-950 flex items-center justify-center"></div>
+            <h1 class="text-xl font-bold text-amber-400">POMELERO</h1>
         </div>
         <div class="flex gap-2">
             <button onclick="showView('catalogo')" class="text-sm px-3 py-1">Catálogo</button>
-            <button onclick="openCart()" class="text-sm bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg">Carrito (<span id="cartCount">0</span>)</button>
+            <button onclick="openCart()" class="text-sm bg-amber-500/10 text-amber-400 px-3 py-1 rounded-lg">Carrito (<span id="cartCount">0</span>)</button>
             <button onclick="showView('auth')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg" id="loginBtn">Ingresar</button>
             <button onclick="showView('admin')" class="text-sm bg-slate-800 px-3 py-1 rounded-lg">Administrar</button>
         </div>
     </nav>
 
-    <main id="main-content" class="p-6 max-w-6xl mx-auto">
-        <div id="view-catalogo"><div id="productsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div>
-        
-        <!-- VISTA AUTH -->
-        <div id="view-auth" class="hidden max-w-sm mx-auto bg-slate-900 p-6 rounded-2xl">
-            <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
-            <input type="text" id="loginUser" placeholder="Teléfono" class="w-full bg-slate-950 p-2 mb-2 rounded border border-slate-700">
-            <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-2 mb-4 rounded border border-slate-700">
-            <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar</button>
-            <div class="text-xs mt-4 text-center space-y-2">
-                <a href="https://wa.me/523781211112?text=Solicito borrar cuenta" target="_blank" class="underline">Borrar cuenta</a>
-                <a href="#" class="block underline">¿No tiene cuenta? Cree una</a>
+    <main class="p-6 max-w-6xl mx-auto">
+        <!-- VISTA CATÁLOGO -->
+        <div id="view-catalogo">
+            <input type="text" id="searchInput" oninput="renderProducts()" placeholder="Buscar producto (SKU, Nombre)..." class="w-full bg-slate-900 p-3 rounded-xl mb-6 border border-slate-800">
+            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- VISTA AUTH / USUARIO -->
+        <div id="view-auth" class="hidden max-w-sm mx-auto bg-slate-900 p-8 rounded-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-center" id="authTitle">Iniciar Sesión</h2>
+            <div id="loginForm">
+                <input type="text" id="loginUser" placeholder="Teléfono" class="w-full bg-slate-950 p-3 rounded mb-3 border border-slate-800">
+                <input type="password" id="loginPass" placeholder="Contraseña" class="w-full bg-slate-950 p-3 rounded mb-4 border border-slate-800">
+                <button onclick="loginUser()" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg">Entrar</button>
+                <div class="text-xs text-center mt-4 space-y-2">
+                    <a href="https://wa.me/523781211112?text=Solicito borrar cuenta" target="_blank" class="underline">Borrar cuenta</a>
+                </div>
             </div>
         </div>
 
-        <!-- VISTA ADMIN -->
-        <div id="view-admin" class="hidden space-y-4">
-            <div id="adminLogin"><input type="password" id="adminPass" placeholder="Clave Admin" class="bg-slate-900 p-2 rounded"><button onclick="checkAdmin()" class="bg-amber-500 text-black px-4 py-2 rounded">Entrar</button></div>
+        <!-- VISTA ADMINISTRADOR -->
+        <div id="view-admin" class="hidden">
+            <div id="adminLogin" class="max-w-sm mx-auto bg-slate-900 p-6 rounded-xl">
+                <input type="password" id="adminPass" placeholder="Clave Admin" class="w-full bg-slate-950 p-2 mb-2 rounded border border-slate-700">
+                <button onclick="checkAdmin()" class="w-full bg-amber-500 text-black font-bold py-2 rounded">Entrar al Panel</button>
+            </div>
             <div id="adminPanel" class="hidden space-y-4">
-                <input type="text" id="adminPhoneInput" placeholder="Teléfono WhatsApp" class="bg-slate-900 p-2 rounded w-full">
-                <button onclick="saveAdminPhone()" class="bg-amber-500 text-black px-4 py-2 rounded">Guardar WhatsApp</button>
-                <input type="file" id="logoFileInput" class="block w-full text-sm">
-                <button onclick="updateStoreLogo()" class="bg-amber-500 text-black px-4 py-2 rounded">Actualizar Logo</button>
-                <div id="adminUsers"></div>
+                <h3 class="font-bold text-lg text-amber-400">Panel de Control</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="renderUsers()" class="bg-slate-800 p-2 rounded text-xs">Ver Usuarios</button>
+                    <button onclick="downloadExcelTemplate()" class="bg-slate-800 p-2 rounded text-xs">Descargar Plantilla</button>
+                </div>
+                <input type="file" id="excelFile" onchange="handleExcel(event)" class="bg-slate-900 p-2 w-full rounded">
+                <div id="adminList" class="space-y-2"></div>
             </div>
         </div>
     </main>
 
-    <!-- CARRITO -->
-    <div id="cartModal" class="fixed inset-0 bg-slate-950/90 hidden p-6">
+    <!-- MODAL CARRITO -->
+    <div id="cartModal" class="fixed inset-0 bg-slate-950/90 hidden p-6 overflow-y-auto">
         <div class="max-w-md mx-auto bg-slate-900 p-6 rounded-2xl">
-            <h3 class="font-bold mb-4">Mi Pedido</h3>
+            <h3 class="font-bold mb-4 text-amber-400">Mi Pedido</h3>
             <div id="cartItems" class="space-y-2"></div>
-            <button onclick="submitOrder()" class="w-full bg-amber-500 text-black font-bold py-3 mt-4 rounded-lg">Enviar Pedido</button>
+            <button onclick="submitOrder()" class="w-full bg-amber-500 text-black font-bold py-3 mt-6 rounded-lg">Enviar a WhatsApp</button>
             <button onclick="closeCart()" class="w-full mt-2 text-slate-500">Cerrar</button>
         </div>
     </div>
 
     <script>
+        // ESTADO GLOBAL
         let cart = [];
         let products = JSON.parse(localStorage.getItem('pomelero_products') || '[]');
         
+        // NAVEGACIÓN
         function showView(view) {
             ['catalogo', 'auth', 'admin'].forEach(v => document.getElementById('view-' + v).classList.add('hidden'));
             document.getElementById('view-' + view).classList.remove('hidden');
         }
 
-        // Carrito con + y -
+        // GESTIÓN DE PRODUCTOS Y EXCEL
+        function handleExcel(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const wb = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                products = json.map(r => ({ sku: r.Codigo, name: r.Nombre, price: r.Precio, category: r.Categoria, image: r.Imagen || '' }));
+                localStorage.setItem('pomelero_products', JSON.stringify(products));
+                renderProducts();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // CARRITO (CON + Y -)
         function addToCart(p) {
             const exists = cart.find(i => i.sku === p.sku);
             if(exists) exists.qty++; else cart.push({...p, qty: 1});
@@ -84,54 +112,69 @@
 
         function renderCart() {
             document.getElementById('cartItems').innerHTML = cart.map(i => `
-                <div class="flex justify-between items-center bg-slate-800 p-2 rounded">
+                <div class="flex justify-between items-center bg-slate-800 p-3 rounded">
                     <span>${i.name}</span>
-                    <div class="flex gap-2"><button onclick="updateCart('${i.sku}', -1)">-</button><span>${i.qty}</span><button onclick="updateCart('${i.sku}', 1)">+</button></div>
+                    <div class="flex gap-3 items-center">
+                        <button onclick="updateCart('${i.sku}', -1)" class="px-2 bg-slate-700 rounded">-</button>
+                        <span>${i.qty}</span>
+                        <button onclick="updateCart('${i.sku}', 1)" class="px-2 bg-slate-700 rounded">+</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         function submitOrder() {
-            const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
-            if(!user) { alert("¡Por favor ingresa o crea tu cuenta antes de enviar!"); showView('auth'); return; }
+            const user = JSON.parse(localStorage.getItem('pomelero_client_profile') || 'null');
+            if(!user) { alert("¡Inicia sesión para enviar tu pedido!"); showView('auth'); return; }
             let wa = `Pedido de ${user.name}: %0A` + cart.map(i => `${i.qty}x ${i.name}`).join('%0A');
-            window.open(`https://wa.me/${localStorage.getItem('pomelero_phone') || '523781211112'}?text=${wa}`, '_blank');
+            window.open(`https://wa.me/523781211112?text=${wa}`, '_blank');
         }
 
-        // Logo
-        function loadLogo() {
-            const saved = localStorage.getItem('pomelero_store_logo');
-            document.getElementById('headerLogoContainer').innerHTML = saved ? `<img src="${saved}" class="w-full h-full object-cover">` : '<div class="bg-amber-500 w-full h-full"></div>';
-        }
-
-        function updateStoreLogo() {
-            const file = document.getElementById('logoFileInput').files[0];
-            const reader = new FileReader();
-            reader.onload = e => { localStorage.setItem('pomelero_store_logo', e.target.result); loadLogo(); };
-            reader.readAsDataURL(file);
-        }
-
-        // Admin
+        // ADMIN Y USUARIOS
         function checkAdmin() {
             if(document.getElementById('adminPass').value === "pomelero2026") {
                 document.getElementById('adminLogin').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
-            }
+            } else alert("Clave errónea");
         }
 
-        function renderProducts() {
-            document.getElementById('productsGrid').innerHTML = products.map(p => `
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                    <img src="${p.image || 'https://via.placeholder.com/150'}" class="h-24 w-full object-cover mb-2 rounded">
-                    <h4 class="font-bold text-xs truncate">${p.name}</h4>
-                    <p class="text-amber-400">$${p.price}</p>
-                    <button onclick='addToCart(${JSON.stringify(p)})' class="w-full bg-slate-700 text-xs py-1 mt-2 rounded">Agregar</button>
+        function renderUsers() {
+            const users = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            document.getElementById('adminList').innerHTML = users.map(u => `
+                <div class="bg-slate-900 p-3 rounded flex justify-between items-center border border-slate-700">
+                    <span class="text-sm">${u.name} - ${u.phone}</span>
+                    <button onclick="deleteUser('${u.phone}')" class="text-red-400 text-xs">Eliminar</button>
                 </div>
             `).join('');
         }
 
-        loadLogo();
+        function deleteUser(phone) {
+            let u = JSON.parse(localStorage.getItem('pomelero_registered_clients') || '[]');
+            localStorage.setItem('pomelero_registered_clients', JSON.stringify(u.filter(x => x.phone !== phone)));
+            renderUsers();
+        }
+
+        function renderProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            document.getElementById('productsGrid').innerHTML = filtered.map(p => `
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                    <img src="${p.image || 'https://via.placeholder.com/150'}" class="h-24 w-full object-cover rounded mb-2">
+                    <h4 class="font-bold text-xs truncate">${p.name}</h4>
+                    <p class="text-amber-400 font-bold">$${p.price}</p>
+                    <button onclick='addToCart(${JSON.stringify(p)})' class="w-full bg-slate-700 text-xs py-1 mt-2 rounded hover:bg-amber-600">Agregar</button>
+                </div>
+            `).join('');
+        }
+
+        // INICIO
+        showView('catalogo');
         renderProducts();
+        loadStoredLogo();
+        function loadStoredLogo() {
+            const saved = localStorage.getItem('pomelero_store_logo');
+            document.getElementById('headerLogoContainer').innerHTML = saved ? `<img src="${saved}" class="w-full h-full object-cover">` : '<div class="bg-amber-500 w-full h-full"></div>';
+        }
     </script>
 </body>
 </html>
