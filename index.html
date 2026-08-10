@@ -270,48 +270,15 @@
         </div>
     </div>
 
-    <!-- Script Principal con los 679 productos ya integrados -->
+    <!-- Script Principal -->
     <script>
-        // Catálogo completo integrado con los 679 productos oficiales de tu Excel
+        // Estado Global
         let products = JSON.parse(localStorage.getItem('pomelero_products')) || [
-            { name: "Azteca de Oro 200ml", category: "Brandy", price: 49, stock: 10, image: "", sku: "BRA001" },
-            { name: "Azteca de Oro 750ml", category: "Brandy", price: 168, stock: 10, image: "", sku: "BRA002" },
-            { name: "Torres 5 700ml", category: "Brandy", price: 189, stock: 10, image: "", sku: "BRA003" },
-            { name: "Torres 10 700ml", category: "Brandy", price: 254, stock: 10, image: "", sku: "BRA004" },
-            { name: "Torres 15 700ml", category: "Brandy", price: 500, stock: 10, image: "", sku: "BRA005" },
-            { name: "torres mazapan 700 ml", category: "Brandy", price: 385, stock: 10, image: "", sku: "BRA006" },
-            { name: "Torres 20 700ml", category: "Brandy", price: 990, stock: 10, image: "", sku: "BRA007" },
-            { name: "Don pedro Gran Reserva 1lt", category: "Brandy", price: 185, stock: 10, image: "", sku: "BRA008" },
-            { name: "Presidente  200 ml", category: "Brandy", price: 40, stock: 10, image: "", sku: "BRA009" },
-            { name: "Presidente  700 ml", category: "Brandy", price: 125, stock: 10, image: "", sku: "BRA010" },
-            { name: "Presidente 1 lt", category: "Brandy", price: 165, stock: 10, image: "", sku: "BRA011" },
-            { name: "Presidente 1.200 lt", category: "Brandy", price: 215, stock: 10, image: "", sku: "BRA012" },
-            { name: "Fundador 700 ml", category: "Brandy", price: 195, stock: 10, image: "", sku: "BRA013" },
-            { name: "Terry Centenario 700ml", category: "Brandy", price: 220, stock: 10, image: "", sku: "BRA014" },
-            { name: "Maestro Tequilero Dobel Diamante 750ml", category: "Tequila", price: 0, stock: 10, image: "", sku: "TEQ349" },
-            { name: "reserva de la torre inmemorial", category: "Tequila", price: 0, stock: 10, image: "", sku: "TEQ379" },
-            { name: "Black and White Orange", category: "Wisky", price: 0, stock: 10, image: "", sku: "WIS570" },
-            { name: "macallan 12 triple", category: "Wisky", price: 0, stock: 10, image: "", sku: "WIS598" },
-            { name: "Red bull laton", category: "Bebidas Energetizantes", price: 0, stock: 10, image: "", sku: "BEB606" },
-            { name: "Red bull sandia 250 ml", category: "Bebidas Energetizantes", price: 0, stock: 10, image: "", sku: "BEB608" },
-            { name: "Amper 475ml", category: "Bebidas Energetizantes", price: 16, stock: 10, image: "", sku: "BEB614" },
-            { name: "Licor 43 50ml", category: "Miniaturas", price: 50, stock: 10, image: "", sku: "MIN664" },
-            { name: "chandon brut, rose, garden y delice 187 ml", category: "Miniaturas", price: 112, stock: 10, image: "", sku: "MIN665" },
-            { name: "la cetto blac de zinfandel 187 ml", category: "Miniaturas", price: 55, stock: 10, image: "", sku: "MIN666" },
-            { name: "black and white 500 ml", category: "Miniaturas", price: 155, stock: 10, image: "", sku: "MIN667" },
-            { name: "ballantimes 200 ml", category: "Miniaturas", price: 90, stock: 10, image: "", sku: "MIN668" },
-            { name: "oso negro 200 ml", category: "Miniaturas", price: 45, stock: 10, image: "", sku: "MIN669" },
-            { name: "Adictivo Colección 50ml", category: "Miniaturas", price: 766, stock: 10, image: "", sku: "MIN670" },
-            { name: "Lambrusco Rosado 187 ml", category: "Miniaturas", price: 55, stock: 10, image: "", sku: "MIN671" },
-            { name: "Lambrusco tinto 187 ml", category: "Miniaturas", price: 55, stock: 10, image: "", sku: "MIN672" },
-            { name: "don julio 1942 50 ml", category: "Miniaturas", price: 560, stock: 10, image: "", sku: "MIN673" },
-            { name: "don julio 1942 375 ml", category: "Miniaturas", price: 1700, stock: 10, image: "", sku: "MIN674" },
-            { name: "absolut rasberry 200 ml", category: "Miniaturas", price: 70, stock: 10, image: "", sku: "MIN675" },
-            { name: "centinela bco y rep 250 ml", category: "Miniaturas", price: 79, stock: 10, image: "", sku: "MIN676" },
-            { name: "smirnoft 200 ml tamarindo", category: "Miniaturas", price: 45, stock: 10, image: "", sku: "MIN677" },
-            { name: "chivas 13 200 ml", category: "Miniaturas", price: 162, stock: 10, image: "", sku: "MIN678" }
+            { name: "Tequila Tradicional Reposado 950ml", category: "Tequila", price: 320, stock: 15, image: "", sku: "TEQ001" },
+            { name: "Whisky Black Label 750ml", category: "Whisky", price: 850, stock: 8, image: "", sku: "WHI001" },
+            { name: "Ron Bacardi Blanco 980ml", category: "Ron", price: 260, stock: 20, image: "", sku: "RON001" },
+            { name: "Vodka Smirnoff 750ml", category: "Vodka", price: 240, stock: 12, image: "", sku: "VOD001" }
         ];
-
         let cart = [];
         let currentCategory = 'TODOS';
         let whatsappNumber = localStorage.getItem('pomelero_whatsapp') || '523780000000';
@@ -849,23 +816,25 @@
                         return;
                     }
 
-                    products = json.map(row => {
-                        const name = row.Nombre || row.nombre || row.DESCRIPCION || row.Descripcion || row.descripcion || row.ARTICULO || row.Articulo || row.articulo || row.PRODUCTO || row.Producto || row.producto || 'Sin Nombre';
+                    // Mapeo flexible para leer cualquier columna que use el usuario
+                    const newProducts = json.map(row => {
+                        const name = row.Nombre || row.nombre || row.DESCRIPCION || row.Descripcion || row.descripcion || row.ARTICULO || row.Articulo || row.articulo || 'Sin Nombre';
                         const category = row.Categoria || row.categoria || row.CATEGORIA || row.TIPO || row.Tipo || row.tipo || 'General';
                         const price = Number(row.Precio || row.precio || row.PRECIO || row.COSTO || row.Costo || row.costo || 0);
-                        const stock = Number(row.Stock || row.stock || row.STOCK || row.EXISTENCIA || row.Existencia || row.existencia || 10);
+                        const stock = Number(row.Stock || row.stock || row.STOCK || row.EXISTENCIA || row.Existencia || row.existencia || 0);
                         const image = row.Imagen || row.imagen || row.IMAGEN || row.FOTO || row.Foto || row.foto || '';
                         const sku = String(row.SKU || row.sku || row.Codigo || row.codigo || row.CODIGO || ('SKU-' + Math.floor(Math.random()*10000)));
 
                         return { name, category, price, stock, image, sku };
                     });
 
+                    products = newProducts;
                     localStorage.setItem('pomelero_products', JSON.stringify(products));
                     renderCategories();
                     renderProducts();
                     alert(`¡Catálogo cargado con éxito! Se importaron ${products.length} productos.`);
                 } catch (err) {
-                    alert("Error al leer el archivo Excel.");
+                    alert("Error al leer el archivo Excel. Asegúrate de que sea un archivo .xlsx válido.");
                 }
             };
             reader.readAsArrayBuffer(file);
