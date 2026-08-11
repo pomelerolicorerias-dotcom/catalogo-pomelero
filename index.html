@@ -80,7 +80,6 @@
 
         <!-- VISTA 1: CATÁLOGO -->
         <div id="view-catalogo" class="space-y-6">
-            <!-- Buscador y Filtros -->
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-lg">
                 <div class="relative w-full md:w-96">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
@@ -88,16 +87,13 @@
                     </span>
                     <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition">
                 </div>
-                <!-- Pestañas de Categorías Dinámicas -->
                 <div id="categoriesContainer" class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
                     <button onclick="filterByCategory('TODOS')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition bg-pomelero-gold text-pomelero-dark shadow">TODOS</button>
                 </div>
             </div>
 
             <!-- Cuadrícula de Productos -->
-            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Se inyecta dinámicamente -->
-            </div>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             
             <div id="loadingCatalog" class="text-center py-20 bg-pomelero-card rounded-2xl border border-slate-800">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pomelero-gold mb-4"></div>
@@ -111,6 +107,7 @@
 
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
+            
             <!-- Panel de Login / Registro -->
             <div id="loginFormContainer" class="bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
                 <div class="text-center space-y-2">
@@ -122,6 +119,10 @@
                         <label class="text-xs font-semibold text-slate-300">Nombre Completo</label>
                         <input type="text" id="regName" placeholder="Tu nombre" class="w-full bg-pomelero-dark border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
                     </div>
+                    <div id="addressFieldContainer" class="hidden space-y-1">
+                        <label class="text-xs font-semibold text-slate-300">Dirección de Entrega</label>
+                        <input type="text" id="regAddress" placeholder="Calle, Número, Colonia, Ciudad" class="w-full bg-pomelero-dark border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                    </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-300">Teléfono (10 dígitos)</label>
                         <input type="tel" id="regPhone" required placeholder="3781234567" class="w-full bg-pomelero-dark border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
@@ -132,8 +133,9 @@
                     </div>
                     <button type="submit" id="authSubmitBtn" class="w-full bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark font-bold py-3 rounded-xl transition shadow-lg text-sm">Iniciar Sesión</button>
                 </form>
-                <div class="text-center pt-2">
+                <div class="text-center pt-2 flex flex-col space-y-3">
                     <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-xs text-pomelero-gold hover:underline font-medium">¿No tienes cuenta? Regístrate aquí</button>
+                    <button type="button" onclick="forgotPassword()" class="text-[10px] text-slate-400 hover:text-slate-200 hover:underline">¿Olvidaste tu contraseña?</button>
                 </div>
             </div>
 
@@ -143,7 +145,8 @@
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
                     <div>
                         <h2 id="activeUserName" class="text-lg font-bold text-slate-100">Nombre de Usuario</h2>
-                        <p id="activeUserPhone" class="text-xs text-slate-400">3780000000</p>
+                        <p id="activeUserPhone" class="text-xs text-slate-400 font-bold mt-1">Tel: <span class="font-normal">3780000000</span></p>
+                        <p id="activeUserAddress" class="text-xs text-slate-400 font-bold">Dirección: <span class="font-normal">Sin dirección registrada</span></p>
                     </div>
                 </div>
 
@@ -157,9 +160,14 @@
                     </div>
                 </div>
 
-                <button onclick="logoutUser()" class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
-                    Cerrar Sesión Segura
-                </button>
+                <div class="space-y-3 border-t border-slate-800 pt-4">
+                    <button onclick="logoutUser()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        Cerrar Sesión Segura
+                    </button>
+                    <button onclick="requestAccountDeletion()" class="w-full text-rose-500 hover:text-rose-400 hover:underline font-bold py-1 transition text-xs flex items-center justify-center">
+                        Eliminar mi cuenta
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -271,13 +279,12 @@
     <script>
         // 👇 AQUÍ PEGARÁS LOS DATOS DE TU PROYECTO FIREBASE 👇
         const firebaseConfig = {
-            apiKey: "AIzaSyCsGCrX127uCkMq3Uzu4A9UkLmOvBbSeic",
-            authDomain: "catalogo-mayoreo-fd8c9.firebaseapp.com",
-            projectId: "catalogo-mayoreo-fd8c9",
-            storageBucket: "catalogo-mayoreo-fd8c9.firebasestorage.app",
-            messagingSenderId: "263095057262",
-            appId: "1:263095057262:web:e9b607c569c2c7a83f9f7f",
-            measurementId: "G-L5HC40XPG8"
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_AUTH_DOMAIN",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
         };
         // 👆 ------------------------------------------------ 👇
 
@@ -286,10 +293,8 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Autenticación de Invitado (Obligatoria para leer datos)
         auth.signInAnonymously().catch(err => console.error("Aviso Auth:", err));
 
-        // VARIABLES GLOBALES
         let products = [];
         let cart = [];
         let currentCategory = 'TODOS';
@@ -298,11 +303,9 @@
         let currentTheme = 'classic';
         let isRegistering = false;
 
-        // AL CARGAR LA PÁGINA
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
             
-            // Sincronizar Configuración Global
             db.collection("config").doc("global").onSnapshot(doc => {
                 if(doc.exists) {
                     const data = doc.data();
@@ -314,27 +317,19 @@
                 }
             });
 
-            // Sincronizar Productos en Tiempo Real
             db.collection("pomelero_products").onSnapshot(snapshot => {
                 document.getElementById("loadingCatalog").classList.add("hidden");
                 document.getElementById("cloudStatus").classList.remove("hidden");
                 
-                if (snapshot.empty) {
-                    products = [];
-                } else {
-                    products = snapshot.docs.map(doc => doc.data());
-                }
+                if (snapshot.empty) { products = []; } 
+                else { products = snapshot.docs.map(doc => doc.data()); }
                 renderCategories();
                 renderProducts();
             }, err => {
-                console.error("Error obteniendo productos", err);
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
             });
         });
 
-        // ---------------------------------
-        // FUNCIONES DE INTERFAZ BÁSICAS
-        // ---------------------------------
         function switchView(viewName) {
             ['catalogo', 'auth'].forEach(v => document.getElementById('view-' + v).classList.add('hidden'));
             document.getElementById('view-' + viewName).classList.remove('hidden');
@@ -362,9 +357,6 @@
             else body.style.backgroundColor = '#0f172a';
         }
 
-        // ---------------------------------
-        // RENDERIZADO DEL CATÁLOGO
-        // ---------------------------------
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
             const categories = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
@@ -426,9 +418,6 @@
             }).join('');
         }
 
-        // ---------------------------------
-        // CARRITO DE COMPRAS (Sin límites)
-        // ---------------------------------
         function addToCart(sku) {
             const prod = products.find(p => p.sku === sku);
             if (!prod) return;
@@ -438,7 +427,6 @@
             
             updateCartBadge();
             renderCartItems();
-            alert(`Añadido: ${prod.name}`);
         }
 
         function changeQty(sku, delta) {
@@ -489,15 +477,28 @@
             totalPriceEl.textContent = `$${total.toFixed(2)}`;
         }
 
-        // ---------------------------------
-        // USUARIOS Y REGISTROS
-        // ---------------------------------
         function toggleAuthMode() {
             isRegistering = !isRegistering;
             document.getElementById('authFormTitle').textContent = isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión';
             document.getElementById('nameFieldContainer').classList.toggle('hidden', !isRegistering);
+            document.getElementById('addressFieldContainer').classList.toggle('hidden', !isRegistering);
             document.getElementById('authSubmitBtn').textContent = isRegistering ? 'Registrarse' : 'Iniciar Sesión';
             document.getElementById('authToggleBtn').textContent = isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate';
+        }
+
+        function forgotPassword() {
+            alert("Para recuperar tu contraseña, te redirigiremos a nuestro WhatsApp para apoyarte.");
+            window.open(`https://wa.me/${whatsappNumber}?text=Hola,%20olvidé%20mi%20contraseña%20del%20catálogo%20Pomelero.%20¿Me%20pueden%20ayudar%20a%20restablecerla?`, '_blank');
+        }
+
+        function requestAccountDeletion() {
+            const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
+            if(user) {
+                if(confirm("Para proteger tu seguridad, la eliminación de cuenta se gestiona por WhatsApp. ¿Deseas ir al chat ahora para solicitarlo?")) {
+                    const text = `Hola, me gustaría solicitar la eliminación de mi cuenta del catálogo Pomelero.%0A*Nombre:* ${user.name}%0A*Teléfono:* ${user.phone}%0A*Motivo:* [Escribe aquí tu motivo]`;
+                    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
+                }
+            }
         }
 
         async function handleAuthSubmit(e) {
@@ -505,6 +506,7 @@
             const phone = document.getElementById('regPhone').value.trim();
             const pass = document.getElementById('regPassword').value.trim();
             const name = document.getElementById('regName').value.trim();
+            const address = document.getElementById('regAddress').value.trim();
             
             const userRef = db.collection("pomelero_users").doc(phone);
 
@@ -514,10 +516,9 @@
                     const doc = await userRef.get();
                     if (doc.exists) return alert("Este número ya está registrado. Por favor inicia sesión.");
                     
-                    const newUser = { name, phone, password: pass, orders: [] };
+                    const newUser = { name, phone, address, password: pass, orders: [] };
                     await userRef.set(newUser);
                     localStorage.setItem('pomelero_client_profile', JSON.stringify(newUser));
-                    alert("¡Cuenta creada exitosamente en la nube!");
                 } else {
                     const doc = await userRef.get();
                     if (!doc.exists || doc.data().password !== pass) return alert("Teléfono o contraseña incorrectos.");
@@ -527,9 +528,9 @@
                 document.getElementById('regPhone').value = '';
                 document.getElementById('regPassword').value = '';
                 document.getElementById('regName').value = '';
+                document.getElementById('regAddress').value = '';
                 updateAuthUI();
             } catch(error) {
-                console.error(error);
                 alert("Error de conexión al registrar. Revisa tu internet.");
             }
         }
@@ -546,7 +547,8 @@
                 navBtn.textContent = user.name.split(' ')[0];
                 document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
                 document.getElementById('activeUserName').textContent = user.name;
-                document.getElementById('activeUserPhone').textContent = user.phone;
+                document.getElementById('activeUserPhone').innerHTML = `Tel: <span class="font-normal">${user.phone}</span>`;
+                document.getElementById('activeUserAddress').innerHTML = `Dirección: <span class="font-normal">${user.address || 'Recoger en sucursal'}</span>`;
 
                 const ordersList = document.getElementById('ordersHistoryList');
                 if (!user.orders || user.orders.length === 0) {
@@ -559,6 +561,10 @@
                                 <span class="font-bold text-slate-100">$${ord.total.toFixed(2)}</span>
                             </div>
                             <p class="text-[10px] text-slate-400">${ord.date}</p>
+                            <div class="flex gap-2 pt-2 border-t border-slate-800">
+                                <button onclick="resendOrder('${ord.id}')" class="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30">Reenviar 💬</button>
+                                <button onclick="downloadOrderPDF('${ord.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700">Descargar 📄</button>
+                            </div>
                         </div>
                     `).join('');
                 }
@@ -575,9 +581,67 @@
             switchView('catalogo');
         }
 
-        // ---------------------------------
-        // PROCESAR PEDIDO HACIA LA NUBE
-        // ---------------------------------
+        function downloadOrderPDF(orderId) {
+            const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
+            if (!user || !user.orders) return;
+            const ord = user.orders.find(o => o.id === orderId);
+            if (!ord) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Ticket ${ord.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                        h2 { color: #f59e0b; margin-bottom: 5px; }
+                        .info { margin-bottom: 20px; font-size: 14px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+                        th { background-color: #f8fafc; }
+                        .total { text-align: right; font-size: 16px; font-weight: bold; margin-top: 15px; }
+                    </style>
+                </head>
+                <body>
+                    <h2>POMELERO LICORERÍAS</h2>
+                    <p style="font-size:12px; color:#666;">Comprobante de Pedido</p>
+                    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                    <div class="info">
+                        <strong>Folio:</strong> ${ord.id}<br>
+                        <strong>Fecha:</strong> ${ord.date}<br>
+                        <strong>Cliente:</strong> ${user.name}<br>
+                        <strong>Teléfono:</strong> ${user.phone}<br>
+                        <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Cant</th><th>Descripción</th><th>Subtotal</th></tr>
+                        </thead>
+                        <tbody>
+                            ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <div class="total">Total: $${ord.total.toFixed(2)}</div>
+                    <script>window.onload = function() { window.print(); }<\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function resendOrder(orderId) {
+            const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
+            if (!user || !user.orders) return;
+            const ord = user.orders.find(o => o.id === orderId);
+            if (!ord) return;
+
+            let text = `*REENVÍO DE PEDIDO* %0A*Folio:* ${ord.id}%0A*Cliente:* ${user.name}%0A*Dirección:* ${user.address || 'Recoger en tienda'}%0A*Teléfono:* ${user.phone}%0A----------------------%0A`;
+            ord.items.forEach(i => { text += `• ${i.qty}x ${i.name} ($${i.price * i.qty})%0A`; });
+            text += `----------------------%0A*TOTAL: $${ord.total.toFixed(2)}*`;
+
+            window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
+        }
+
         async function submitOrder() {
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
             if (!user) {
@@ -593,7 +657,6 @@
             const newOrder = { id: orderId, date: new Date().toLocaleDateString(), total: total, items: [...cart] };
 
             try {
-                // Actualizar en Firebase
                 const userRef = db.collection("pomelero_users").doc(user.phone);
                 const userDoc = await userRef.get();
                 let serverOrders = userDoc.exists && userDoc.data().orders ? userDoc.data().orders : [];
@@ -601,12 +664,10 @@
                 
                 await userRef.update({ orders: serverOrders });
                 
-                // Actualizar Local
                 user.orders = serverOrders;
                 localStorage.setItem('pomelero_client_profile', JSON.stringify(user));
 
-                // Mensaje WhatsApp
-                let text = `*NUEVO PEDIDO MAYOREO* %0A*Folio:* ${orderId}%0A*Cliente:* ${user.name}%0A----------------------%0A`;
+                let text = `*NUEVO PEDIDO MAYOREO* %0A*Folio:* ${orderId}%0A*Cliente:* ${user.name}%0A*Dirección:* ${user.address || 'Recoger en tienda'}%0A*Teléfono:* ${user.phone}%0A----------------------%0A`;
                 cart.forEach(i => { text += `• ${i.qty}x ${i.name} ($${i.price * i.qty})%0A`; });
                 text += `----------------------%0A*TOTAL: $${total.toFixed(2)}*`;
 
@@ -621,9 +682,6 @@
             }
         }
 
-        // ---------------------------------
-        // PANEL DE ADMINISTRACIÓN
-        // ---------------------------------
         function openAdminModal() {
             document.getElementById('adminModal').classList.remove('hidden');
             document.getElementById('adminLoginView').classList.remove('hidden');
@@ -652,7 +710,6 @@
             document.getElementById('tabBtn-' + tabName).classList.replace('text-slate-400', 'text-pomelero-gold');
         }
 
-        // Subir Excel a Nube
         function handleExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -682,32 +739,23 @@
                         await db.collection("pomelero_products").doc(sku).set({ name, category, price, sku });
                         count++;
                     }
-                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos en la nube para todos.`);
-                } catch (err) {
-                    alert("Error al leer el archivo Excel.");
-                }
+                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
+                } catch (err) { alert("Error al leer el archivo Excel."); }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Borrar BD Seguro (Evita límite de 500 Firebase)
         async function clearDatabase() {
             if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
             alert("Borrando catálogo... Esto tomará unos segundos.");
             try {
                 const snapshot = await db.collection("pomelero_products").get();
                 let borrados = 0;
-                for (const doc of snapshot.docs) {
-                    await doc.ref.delete();
-                    borrados++;
-                }
+                for (const doc of snapshot.docs) { await doc.ref.delete(); borrados++; }
                 alert(`✅ ¡Catálogo Vaciado! Se borraron ${borrados} productos.`);
-            } catch (error) {
-                alert("Hubo un error al borrar el catálogo.");
-            }
+            } catch (error) { alert("Hubo un error al borrar el catálogo."); }
         }
 
-        // Descargas de Excel (Catálogo y Clientes)
         function downloadCatalogExcel() {
             if(products.length === 0) return alert("No hay productos.");
             const data = products.map(p => ({
@@ -728,7 +776,7 @@
                 if(snap.empty) return alert("No hay clientes registrados.");
                 const data = snap.docs.map(d => {
                    let u = d.data();
-                   return { Nombre: u.name, Telefono: u.phone, Contrasena: u.password, Pedidos_Realizados: u.orders ? u.orders.length : 0 };
+                   return { Nombre: u.name, Telefono: u.phone, Direccion: u.address || 'N/D', Contrasena: u.password, Pedidos_Realizados: u.orders ? u.orders.length : 0 };
                 });
                 const ws = XLSX.utils.json_to_sheet(data);
                 const wb = XLSX.utils.book_new();
@@ -737,7 +785,6 @@
             } catch(e) { alert("Error descargando clientes."); }
         }
 
-        // Gestion de Clientes
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
                 const list = document.getElementById('adminClientsList');
@@ -745,27 +792,32 @@
                 
                 list.innerHTML = snapshot.docs.map(doc => {
                     const u = doc.data();
+                    const addr = u.address ? u.address : 'Sin dirección';
                     return `
-                    <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-                        <div>
+                    <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
+                        <div class="flex items-center justify-between">
                             <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
-                            <p class="text-[10px] text-slate-400">Tel: ${u.phone} | Contraseña: ${u.password}</p>
+                            <div class="flex gap-2">
+                                <button onclick="editClient('${u.phone}', '${u.name}', '${addr}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
+                                <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="editClient('${u.phone}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
-                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
-                        </div>
+                        <p class="text-[10px] text-slate-400">Tel: ${u.phone} | Contraseña: ${u.password} <br> Dir: ${addr}</p>
                     </div>`;
                 }).join('');
             });
         }
 
-        async function editClient(phone) {
-            const newPass = prompt("Ingresa la nueva contraseña para el cliente con teléfono: " + phone);
-            if(newPass && newPass.trim() !== "") {
-                await db.collection("pomelero_users").doc(phone).update({ password: newPass.trim() });
-                alert("Contraseña actualizada exitosamente.");
-            }
+        async function editClient(phone, currentName, currentAddress) {
+            const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
+            const newAddr = prompt("Modificar Dirección del cliente:", currentAddress !== 'Sin dirección' ? currentAddress : '') || currentAddress;
+            const newPass = prompt("Modificar Contraseña (deja en blanco para mantener la actual):");
+
+            let updates = { name: newName, address: newAddr !== 'Sin dirección' ? newAddr : '' };
+            if(newPass && newPass.trim() !== "") { updates.password = newPass.trim(); }
+
+            await db.collection("pomelero_users").doc(phone).update(updates);
+            alert("Información del cliente actualizada.");
         }
 
         async function deleteClient(phone) {
@@ -774,7 +826,6 @@
             }
         }
 
-        // Configuración Global Nube (WhatsApp, Logo, Tema)
         function saveWhatsappNumber() {
             const val = document.getElementById('adminWhatsappInput').value.trim();
             if(val) {
@@ -789,14 +840,14 @@
             const reader = new FileReader();
             reader.onload = async function(evt) {
                 await db.collection("config").doc("global").set({ logo: evt.target.result }, { merge: true });
-                alert("Logotipo guardado en la nube. Aparecerá a todos tus clientes.");
+                alert("Logotipo guardado en la nube.");
             };
             reader.readAsDataURL(file);
         }
 
         function setTheme(themeName) {
             db.collection("config").doc("global").set({ theme: themeName }, { merge: true });
-            alert("Tema sincronizado en la nube para todos.");
+            alert("Tema sincronizado en la nube.");
         }
     </script>
 </body>
