@@ -393,11 +393,17 @@
                 const btnStyle = isAvailable ? 'bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark' : 'bg-slate-700 text-slate-500 cursor-not-allowed';
                 const action = isAvailable ? `onclick="addToCart('${p.sku}')"` : '';
 
+                // Lógica de Imagen Integrada
+                let imgHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+                if (p.image) {
+                    imgHTML = `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">`;
+                }
+
                 return `
                     <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition">
                         <div class="space-y-3">
                             <div class="w-full h-40 bg-pomelero-dark rounded-xl flex items-center justify-center overflow-hidden border border-slate-800 relative">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                ${imgHTML}
                                 <span class="absolute top-2 left-2 bg-pomelero-dark/80 backdrop-blur-sm text-[10px] font-bold text-pomelero-gold px-2 py-1 rounded-lg border border-slate-700">${p.category || 'General'}</span>
                             </div>
                             <div>
@@ -736,8 +742,12 @@
                         else price = Number(String(rawPrice).replace(/[^0-9.-]+/g,""));
                         
                         const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
+                        
+                        // Guardado inteligente de la imagen: Lee la imagen y borra 'img/' en automático
+                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
+                        image = image.replace('img/', '').replace('IMG/', '').trim();
 
-                        await db.collection("pomelero_products").doc(sku).set({ name, category, price, sku });
+                        await db.collection("pomelero_products").doc(sku).set({ name, category, price, sku, image });
                         count++;
                     }
                     alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
@@ -760,10 +770,11 @@
         function downloadCatalogExcel() {
             if(products.length === 0) return alert("No hay productos.");
             const data = products.map(p => ({
+                SKU: p.sku,
                 Nombre: p.name,
                 Categoria: p.category,
                 Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
-                SKU: p.sku
+                Imagen: p.image || ""
             }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
