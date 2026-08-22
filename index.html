@@ -244,10 +244,10 @@
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
-                        <!-- NUEVA SECCIÓN: Editar imagen por producto -->
+                        <!-- NUEVA SECCIÓN: Editar producto individual -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
-                            <h3 class="text-sm font-bold text-slate-200">📸 Cambiar foto de un producto</h3>
-                            <p class="text-xs text-slate-400">Busca por nombre o SKU para actualizar su imagen directamente en la nube.</p>
+                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar un Producto Individual</h3>
+                            <p class="text-xs text-slate-400">Busca por nombre o SKU para cambiar su foto, nombre o precio sin subir el Excel.</p>
                             <div class="flex gap-2">
                                 <input type="text" id="adminProductSearchInput" placeholder="Ej: SKU-1321 o Nombre..." class="flex-grow bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <button onclick="searchAdminProduct()" class="bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark font-bold px-4 py-2 rounded-xl text-xs transition">Buscar</button>
@@ -785,7 +785,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ---------- NUEVAS FUNCIONES PARA BUSCAR Y EDITAR FOTO ----------
+        // ---------- NUEVAS FUNCIONES PARA BUSCAR Y EDITAR PRODUCTO ----------
         function searchAdminProduct() {
             const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
             const resultBox = document.getElementById('adminProductResult');
@@ -808,16 +808,29 @@
 
                 resultBox.innerHTML = `
                     <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 w-full">
                             ${imgPreview}
-                            <div>
+                            <div class="w-full">
                                 <h4 class="text-xs font-bold text-slate-100 line-clamp-1">${found.name}</h4>
                                 <p class="text-[10px] text-slate-400">SKU: ${found.sku}</p>
                             </div>
                         </div>
                     </div>
-                    <div class="pt-1">
-                        <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Directo a la nube):</label>
+
+                    <div class="pt-2 space-y-2">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1">Nombre del producto:</label>
+                            <input type="text" id="editProdNameInput" value="${found.name}" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1">Precio Mayoreo (deja vacío si no está disponible):</label>
+                            <input type="number" id="editProdPriceInput" value="${found.price === 'NO_DISPONIBLE' ? '' : found.price}" placeholder="Ej: 150.50" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                        </div>
+                        <button onclick="saveProductDetails('${found.sku}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs mt-1 transition shadow">Guardar Nombre y Precio</button>
+                    </div>
+
+                    <div class="pt-3 mt-2 border-t border-slate-700">
+                        <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Se guarda en automático al elegirla):</label>
                         <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
                     </div>
                 `;
@@ -827,11 +840,37 @@
             resultBox.classList.remove('hidden');
         }
 
+        async function saveProductDetails(sku) {
+            const newName = document.getElementById('editProdNameInput').value.trim();
+            const rawPrice = document.getElementById('editProdPriceInput').value.trim();
+            
+            let newPrice = rawPrice;
+            if (rawPrice === '' || rawPrice.toLowerCase() === 'no') {
+                newPrice = "NO_DISPONIBLE";
+            } else {
+                newPrice = Number(rawPrice);
+            }
+
+            if (!newName) return alert("El nombre no puede estar vacío.");
+
+            try {
+                await db.collection("pomelero_products").doc(sku).update({
+                    name: newName,
+                    price: newPrice
+                });
+                alert("✅ Nombre y precio actualizados correctamente en la nube.");
+                document.getElementById('adminProductSearchInput').value = '';
+                document.getElementById('adminProductResult').classList.add('hidden');
+            } catch (error) {
+                alert("Error al actualizar el producto. Revisa tu conexión.");
+            }
+        }
+
         function uploadSingleImage(e, sku) {
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 1500000) { // Mayor a ~1.5MB
+            if (file.size > 1500000) {
                 alert("⚠️ La imagen es muy pesada. Intenta subir una de menor tamaño para no saturar la base de datos.");
                 return;
             }
