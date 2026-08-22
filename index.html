@@ -236,13 +236,27 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube (ignora mayúsculas).</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube.</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
                             <button onclick="downloadCatalogExcel()" class="flex-1 bg-slate-800 text-slate-200 py-2.5 rounded-xl text-xs border border-slate-700">⬇️ Descargar Catálogo Actual</button>
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
+
+                        <!-- NUEVA SECCIÓN: Editar imagen por producto -->
+                        <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
+                            <h3 class="text-sm font-bold text-slate-200">📸 Cambiar foto de un producto</h3>
+                            <p class="text-xs text-slate-400">Busca por nombre o SKU para actualizar su imagen directamente en la nube.</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="adminProductSearchInput" placeholder="Ej: SKU-1321 o Nombre..." class="flex-grow bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <button onclick="searchAdminProduct()" class="bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark font-bold px-4 py-2 rounded-xl text-xs transition">Buscar</button>
+                            </div>
+                            <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
+                                <!-- Resultados de la búsqueda -->
+                            </div>
+                        </div>
+
                     </div>
                     
                     <!-- Pestaña Clientes -->
@@ -410,7 +424,6 @@
                 const btnStyle = isAvailable ? 'bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark' : 'bg-slate-700 text-slate-500 cursor-not-allowed';
                 const action = isAvailable ? `onclick="addToCart('${p.sku}')"` : '';
 
-                // Lógica de Imagen Integrada: Ahora usa object-contain y tiene el evento onclick para abrir el modal
                 let imgHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
                 if (p.image) {
                     imgHTML = `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain cursor-pointer p-2 hover:scale-105 transition-transform duration-300" onclick="openImageModal('${p.image}')">`;
@@ -760,7 +773,6 @@
                         
                         const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
                         
-                        // Guardado inteligente de la imagen: Lee la imagen y borra 'img/' en automático
                         let image = row.Imagen || row.imagen || row.IMAGEN || '';
                         image = image.replace('img/', '').replace('IMG/', '').trim();
 
@@ -772,6 +784,72 @@
             };
             reader.readAsArrayBuffer(file);
         }
+
+        // ---------- NUEVAS FUNCIONES PARA BUSCAR Y EDITAR FOTO ----------
+        function searchAdminProduct() {
+            const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
+            const resultBox = document.getElementById('adminProductResult');
+            
+            if (!query) {
+                resultBox.innerHTML = '<p class="text-xs text-rose-400">Escribe un nombre o SKU para buscar.</p>';
+                resultBox.classList.remove('hidden');
+                return;
+            }
+
+            const found = products.find(p => (p.sku && p.sku.toLowerCase() === query) || (p.name && p.name.toLowerCase().includes(query)));
+
+            if (found) {
+                let imgPreview = '';
+                if (found.image) {
+                    imgPreview = `<img src="${found.image}" class="w-12 h-12 object-contain rounded-lg bg-slate-800 border border-slate-700">`;
+                } else {
+                    imgPreview = `<div class="w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 text-center leading-tight">Sin<br>foto</div>`;
+                }
+
+                resultBox.innerHTML = `
+                    <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                        <div class="flex items-center gap-3">
+                            ${imgPreview}
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-100 line-clamp-1">${found.name}</h4>
+                                <p class="text-[10px] text-slate-400">SKU: ${found.sku}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-1">
+                        <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Directo a la nube):</label>
+                        <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
+                    </div>
+                `;
+            } else {
+                resultBox.innerHTML = '<p class="text-xs text-slate-400">No se encontró ningún producto con ese dato.</p>';
+            }
+            resultBox.classList.remove('hidden');
+        }
+
+        function uploadSingleImage(e, sku) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 1500000) { // Mayor a ~1.5MB
+                alert("⚠️ La imagen es muy pesada. Intenta subir una de menor tamaño para no saturar la base de datos.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    await db.collection("pomelero_products").doc(sku).update({ image: evt.target.result });
+                    alert("✅ Imagen actualizada correctamente en la nube.");
+                    document.getElementById('adminProductSearchInput').value = '';
+                    document.getElementById('adminProductResult').classList.add('hidden');
+                } catch (error) {
+                    alert("Error al guardar la imagen. Revisa tu conexión.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        // ----------------------------------------------------------------
 
         async function clearDatabase() {
             if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
