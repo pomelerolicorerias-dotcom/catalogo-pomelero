@@ -244,16 +244,22 @@
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
-                        <!-- NUEVA SECCIÓN: Editar producto individual -->
+                        <!-- NUEVA SECCIÓN: Editar producto individual con Buscador Dinámico -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
-                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar un Producto Individual</h3>
-                            <p class="text-xs text-slate-400">Busca por nombre o SKU para cambiar su foto, nombre o precio sin subir el Excel.</p>
-                            <div class="flex gap-2">
-                                <input type="text" id="adminProductSearchInput" placeholder="Ej: SKU-1321 o Nombre..." class="flex-grow bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <button onclick="searchAdminProduct()" class="bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark font-bold px-4 py-2 rounded-xl text-xs transition">Buscar</button>
+                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar Producto Individual</h3>
+                            <p class="text-xs text-slate-400">Escribe el nombre o SKU. Elige una opción de la lista para modificar foto, nombre o precio.</p>
+                            
+                            <!-- Buscador con lista desplegable -->
+                            <div class="relative">
+                                <input type="text" id="adminProductSearchInput" oninput="liveSearchAdminProduct()" placeholder="Escribe para buscar (Ej: Cristalino...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <div id="adminLiveSearchResults" class="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-b-xl mt-1 hidden shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-600">
+                                    <!-- Aquí caen los resultados mientras escribes -->
+                                </div>
                             </div>
+
+                            <!-- Panel de edición (Se muestra al hacer clic en un resultado) -->
                             <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
-                                <!-- Resultados de la búsqueda -->
+                                <!-- Interfaz de edición inyectada aquí -->
                             </div>
                         </div>
 
@@ -785,61 +791,97 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ---------- NUEVAS FUNCIONES PARA BUSCAR Y EDITAR PRODUCTO ----------
-        function searchAdminProduct() {
+        // ---------- NUEVAS FUNCIONES PARA BUSCADOR DINÁMICO Y EDICIÓN ----------
+        
+        // 1. Filtrar productos mientras el usuario escribe
+        function liveSearchAdminProduct() {
             const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
-            const resultBox = document.getElementById('adminProductResult');
+            const resultsBox = document.getElementById('adminLiveSearchResults');
+            const editBox = document.getElementById('adminProductResult');
             
+            // Si el buscador está vacío, oculta todo
             if (!query) {
-                resultBox.innerHTML = '<p class="text-xs text-rose-400">Escribe un nombre o SKU para buscar.</p>';
-                resultBox.classList.remove('hidden');
+                resultsBox.innerHTML = '';
+                resultsBox.classList.add('hidden');
+                editBox.classList.add('hidden');
                 return;
             }
 
-            const found = products.find(p => (p.sku && p.sku.toLowerCase() === query) || (p.name && p.name.toLowerCase().includes(query)));
+            // Buscar coincidencias en nombre o SKU
+            const matches = products.filter(p => 
+                (p.sku && p.sku.toLowerCase().includes(query)) || 
+                (p.name && p.name.toLowerCase().includes(query))
+            ).slice(0, 8); // Limitamos a mostrar solo 8 opciones para no saturar
 
-            if (found) {
-                let imgPreview = '';
-                if (found.image) {
-                    imgPreview = `<img src="${found.image}" class="w-12 h-12 object-contain rounded-lg bg-slate-800 border border-slate-700">`;
-                } else {
-                    imgPreview = `<div class="w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 text-center leading-tight">Sin<br>foto</div>`;
-                }
-
-                resultBox.innerHTML = `
-                    <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                        <div class="flex items-center gap-3 w-full">
-                            ${imgPreview}
-                            <div class="w-full">
-                                <h4 class="text-xs font-bold text-slate-100 line-clamp-1">${found.name}</h4>
-                                <p class="text-[10px] text-slate-400">SKU: ${found.sku}</p>
-                            </div>
-                        </div>
+            // Pintar la lista de coincidencias
+            if (matches.length > 0) {
+                resultsBox.innerHTML = matches.map(m => `
+                    <div onclick="selectAdminProduct('${m.sku}')" class="p-3 hover:bg-slate-600 cursor-pointer flex justify-between items-center transition">
+                        <span class="text-xs text-slate-100 font-medium line-clamp-1">${m.name}</span>
+                        <span class="text-[10px] text-pomelero-gold font-bold ml-2 shrink-0">${m.sku}</span>
                     </div>
-
-                    <div class="pt-2 space-y-2">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 block mb-1">Nombre del producto:</label>
-                            <input type="text" id="editProdNameInput" value="${found.name}" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 block mb-1">Precio Mayoreo (deja vacío si no está disponible):</label>
-                            <input type="number" id="editProdPriceInput" value="${found.price === 'NO_DISPONIBLE' ? '' : found.price}" placeholder="Ej: 150.50" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                        </div>
-                        <button onclick="saveProductDetails('${found.sku}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs mt-1 transition shadow">Guardar Nombre y Precio</button>
-                    </div>
-
-                    <div class="pt-3 mt-2 border-t border-slate-700">
-                        <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Se guarda en automático al elegirla):</label>
-                        <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
-                    </div>
-                `;
+                `).join('');
+                resultsBox.classList.remove('hidden');
             } else {
-                resultBox.innerHTML = '<p class="text-xs text-slate-400">No se encontró ningún producto con ese dato.</p>';
+                resultsBox.innerHTML = '<div class="p-3 text-xs text-slate-400">No hay coincidencias...</div>';
+                resultsBox.classList.remove('hidden');
             }
+        }
+
+        // 2. Al hacer clic en un producto de la lista, abrir su panel de edición
+        function selectAdminProduct(sku) {
+            // Ocultar la lista y limpiar el buscador
+            document.getElementById('adminLiveSearchResults').classList.add('hidden');
+            
+            const found = products.find(p => p.sku === sku);
+            if (!found) return;
+
+            // Poner el nombre en la barra para que el usuario sepa qué seleccionó
+            document.getElementById('adminProductSearchInput').value = found.name;
+
+            const resultBox = document.getElementById('adminProductResult');
+            
+            let imgPreview = '';
+            if (found.image) {
+                imgPreview = `<img src="${found.image}" class="w-16 h-16 object-contain rounded-lg bg-slate-800 border border-slate-700">`;
+            } else {
+                imgPreview = `<div class="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 text-center leading-tight">Sin<br>foto</div>`;
+            }
+
+            // Inyectar el formulario de edición con el nombre, precio e imagen
+            resultBox.innerHTML = `
+                <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                    <div class="flex items-center gap-3 w-full">
+                        ${imgPreview}
+                        <div class="w-full">
+                            <h4 class="text-sm font-bold text-slate-100 line-clamp-1">${found.name}</h4>
+                            <p class="text-[10px] text-slate-400">SKU: ${found.sku}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1">Nombre del producto:</label>
+                        <input type="text" id="editProdNameInput" value="${found.name}" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1">Precio Mayoreo (deja vacío si no está disponible):</label>
+                        <input type="number" id="editProdPriceInput" value="${found.price === 'NO_DISPONIBLE' ? '' : found.price}" placeholder="Ej: 150.50" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                    </div>
+                    <button onclick="saveProductDetails('${found.sku}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs mt-1 transition shadow">💾 Guardar Nombre y Precio</button>
+                </div>
+
+                <div class="pt-4 mt-2 border-t border-slate-700">
+                    <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Se guarda en automático al elegirla):</label>
+                    <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
+                </div>
+            `;
+            
             resultBox.classList.remove('hidden');
         }
 
+        // 3. Guardar cambios de texto a la base de datos
         async function saveProductDetails(sku) {
             const newName = document.getElementById('editProdNameInput').value.trim();
             const rawPrice = document.getElementById('editProdPriceInput').value.trim();
@@ -866,6 +908,7 @@
             }
         }
 
+        // 4. Subir la foto individual
         function uploadSingleImage(e, sku) {
             const file = e.target.files[0];
             if (!file) return;
