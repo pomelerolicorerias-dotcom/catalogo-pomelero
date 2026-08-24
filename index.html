@@ -90,14 +90,22 @@
                     <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition shadow-inner">
                 </div>
                 
-                <!-- Contenedor de categorías con flecha de desplazamiento -->
-                <div class="relative flex-grow flex items-center min-w-0 w-full">
-                    <div id="categoriesContainer" class="flex gap-2 overflow-x-auto w-full pb-2 md:pb-0 no-scrollbar scroll-smooth pr-12">
+                <!-- Contenedor de categorías con flechas automáticas -->
+                <div class="relative flex-grow flex items-center min-w-0 w-full group">
+                    
+                    <!-- Flecha Izquierda -->
+                    <button id="leftArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: -200, behavior: 'smooth'})" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-start pb-2 md:pb-0 pl-1 z-10 hidden">
+                        <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                        </div>
+                    </button>
+
+                    <div id="categoriesContainer" onscroll="updateCategoryArrows()" class="flex gap-2 overflow-x-auto w-full pb-2 md:pb-0 no-scrollbar scroll-smooth px-2">
                         <button onclick="filterByCategory('TODOS')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition bg-pomelero-gold text-pomelero-dark shadow shrink-0">TODOS</button>
                     </div>
                     
-                    <!-- Flecha indicadora -->
-                    <button onclick="document.getElementById('categoriesContainer').scrollBy({left: 200, behavior: 'smooth'})" class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-end pb-2 md:pb-0 pr-1">
+                    <!-- Flecha Derecha -->
+                    <button id="rightArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: 200, behavior: 'smooth'})" class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-end pb-2 md:pb-0 pr-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition animate-pulse hover:animate-none cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
                         </div>
@@ -368,6 +376,9 @@
             }, err => {
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
             });
+
+            // Re-evaluar las flechas si cambia el tamaño de la ventana
+            window.addEventListener('resize', updateCategoryArrows);
         });
 
         function switchView(viewName) {
@@ -397,12 +408,38 @@
             else body.style.backgroundColor = '#0f172a';
         }
 
+        // ---------- LÓGICA DE FLECHAS PARA CATEGORÍAS ----------
+        function updateCategoryArrows() {
+            const container = document.getElementById('categoriesContainer');
+            const leftBtn = document.getElementById('leftArrowBtn');
+            const rightBtn = document.getElementById('rightArrowBtn');
+            
+            if (!container) return;
+
+            // Si hay espacio para hacer scroll a la izquierda, mostrar flecha izq
+            if (container.scrollLeft > 10) {
+                leftBtn.classList.remove('hidden');
+            } else {
+                leftBtn.classList.add('hidden');
+            }
+
+            // Si hay espacio para hacer scroll a la derecha, mostrar flecha der
+            if (container.scrollLeft + container.clientWidth < container.scrollWidth - 10) {
+                rightBtn.classList.remove('hidden');
+            } else {
+                rightBtn.classList.add('hidden');
+            }
+        }
+
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
             const categories = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
             container.innerHTML = categories.map(cat => `
                 <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'} shrink-0">${cat}</button>
             `).join('');
+            
+            // Actualizar visibilidad de flechas un milisegundo después de pintar
+            setTimeout(updateCategoryArrows, 100);
         }
 
         function filterByCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
