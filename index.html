@@ -80,15 +80,28 @@
 
         <!-- VISTA 1: CATÁLOGO -->
         <div id="view-catalogo" class="space-y-6">
-            <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-lg">
-                <div class="relative w-full md:w-96">
+            
+            <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS FIJADA (STICKY) -->
+            <div class="sticky top-24 z-30 flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-2xl mb-6 backdrop-blur-sm bg-opacity-95">
+                <div class="relative w-full md:w-80 shrink-0">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </span>
-                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition">
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition shadow-inner">
                 </div>
-                <div id="categoriesContainer" class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
-                    <button onclick="filterByCategory('TODOS')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition bg-pomelero-gold text-pomelero-dark shadow">TODOS</button>
+                
+                <!-- Contenedor de categorías con flecha de desplazamiento -->
+                <div class="relative flex-grow flex items-center min-w-0 w-full">
+                    <div id="categoriesContainer" class="flex gap-2 overflow-x-auto w-full pb-2 md:pb-0 no-scrollbar scroll-smooth pr-12">
+                        <button onclick="filterByCategory('TODOS')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition bg-pomelero-gold text-pomelero-dark shadow shrink-0">TODOS</button>
+                    </div>
+                    
+                    <!-- Flecha indicadora -->
+                    <button onclick="document.getElementById('categoriesContainer').scrollBy({left: 200, behavior: 'smooth'})" class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-end pb-2 md:pb-0 pr-1">
+                        <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition animate-pulse hover:animate-none cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -388,7 +401,7 @@
             const container = document.getElementById('categoriesContainer');
             const categories = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
             container.innerHTML = categories.map(cat => `
-                <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'}">${cat}</button>
+                <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'} shrink-0">${cat}</button>
             `).join('');
         }
 
