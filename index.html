@@ -739,7 +739,7 @@
             printWindow.document.close();
         }
 
-        // ---------- NUEVO: DESCARGA ADMIN DE PEDIDOS ----------
+        // ---------- DESCARGA ADMIN DE PEDIDOS ----------
         async function adminDownloadOrderPDF(phone, orderId) {
             try {
                 const doc = await db.collection("pomelero_users").doc(phone).get();
@@ -795,7 +795,7 @@
             }
         }
 
-        // ---------- NUEVO: ELIMINAR PEDIDO DESDE ADMIN ----------
+        // ---------- ELIMINAR PEDIDO DESDE ADMIN ----------
         async function deleteOrder(phone, orderId) {
             if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
             try {
@@ -1028,7 +1028,10 @@
             if (!newName) return alert("El nombre no puede estar vacío.");
 
             try {
-                await db.collection("pomelero_products").doc(sku).update({ name: newName, price: newPrice });
+                await db.collection("pomelero_products").doc(sku).update({
+                    name: newName,
+                    price: newPrice
+                });
                 alert("✅ Nombre y precio actualizados correctamente en la nube.");
                 document.getElementById('adminProductSearchInput').value = '';
                 document.getElementById('adminProductResult').classList.add('hidden');
@@ -1101,12 +1104,14 @@
             } catch(e) { alert("Error descargando clientes."); }
         }
 
+        // ---------- LISTAR CLIENTES Y PEDIDOS ----------
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
                 const list = document.getElementById('adminClientsList');
                 if (snapshot.empty) { list.innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; return; }
                 
-                list.innerHTML = snapshot.docs.map(doc => {
+                let html = '';
+                snapshot.docs.forEach(doc => {
                     const u = doc.data();
                     const addr = u.address ? u.address : 'Sin dirección';
                     
@@ -1115,49 +1120,64 @@
                         ordersHTML = `
                         <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
                             <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
-                            <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">
-                                ${u.orders.map(o => {
-                                    const st = o.status || 'Pendiente';
-                                    const stBadge = \`<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border \${statusColors[st] || statusColors['Pendiente']} ml-2">\${st}</span>\`;
-                                    return \`
+                            <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
+                        
+                        u.orders.forEach(o => {
+                            const st = o.status || 'Pendiente';
+                            let stClass = "text-amber-400 border-amber-500/20";
+                            if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
+                            if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
+                            if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
+
+                            const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
+                            
+                            let itemsList = '';
+                            o.items.forEach(i => {
+                                itemsList += `<li>${i.qty}x ${i.name}</li>`;
+                            });
+
+                            ordersHTML += `
                                     <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
                                         <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
                                             <div class="flex items-center">
-                                                <span>\${o.id}</span>
-                                                \${stBadge}
+                                                <span>${o.id}</span>
+                                                ${stBadge}
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-pomelero-gold text-xs">$\${o.total.toFixed(2)}</span>
+                                                <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
                                                 <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                                             </div>
                                         </summary>
                                         <div class="p-3 border-t border-slate-700 bg-slate-800/80">
                                             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
-                                                <span class="text-[9px] text-slate-400 font-normal">Fecha: \${o.date}</span>
-                                                <select onchange="updateOrderStatus('\${u.phone}', '\${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
-                                                    <option value="Pendiente" \${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
-                                                    <option value="En Proceso" \${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
-                                                    <option value="Atendido" \${st==='Atendido'?'selected':''}>✅ Atendido</option>
-                                                    <option value="Cancelado" \${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
+                                                <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
+                                                <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
+                                                    <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+                                                    <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
+                                                    <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
+                                                    <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
                                                 </select>
                                             </div>
                                             <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
-                                                \${o.items.map(i => \`<li>\${i.qty}x \${i.name}</li>\`).join('')}
+                                                ${itemsList}
                                             </ul>
                                             <div class="flex gap-2">
-                                                <button onclick="adminDownloadOrderPDF('\${u.phone}', '\${o.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">Descargar Ticket</button>
-                                                <button onclick="deleteOrder('\${u.phone}', '\${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">Eliminar Pedido</button>
+                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">Descargar Ticket</button>
+                                                <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">Eliminar Pedido</button>
                                             </div>
                                         </div>
                                     </details>
-                                \`}).join('')}
+                                `;
+                        });
+                        
+                        ordersHTML += `
                             </div>
                         </div>`;
                     } else {
                         ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
                     }
 
-                    return `
+                    html += `
                     <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
                         <div class="flex items-center justify-between">
                             <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
@@ -1169,7 +1189,9 @@
                         <p class="text-[10px] text-slate-400">Tel: ${u.phone} | Contraseña: ${u.password} <br> Dir: ${addr}</p>
                         ${ordersHTML}
                     </div>`;
-                }).join('');
+                });
+                
+                list.innerHTML = html;
             });
         }
 
