@@ -234,26 +234,28 @@
                 <button onclick="closeAdminModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
 
-            <!-- Login Admin -->
+            <!-- Login Admin (ACTUALIZADO A MULTIUSUARIO) -->
             <div id="adminLoginView" class="p-8 space-y-4">
-                <p class="text-xs text-slate-400 text-center">Introduce la contraseña de administrador.</p>
+                <p class="text-xs text-slate-400 text-center">Ingresa tus credenciales de acceso.</p>
                 <form onsubmit="handleAdminLogin(event)" class="space-y-4 max-w-sm mx-auto">
+                    <input type="text" id="adminUserInput" required placeholder="Usuario (Ej: admin)" class="w-full bg-pomelero-dark border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100">
                     <input type="password" id="adminPasswordInput" required placeholder="Contraseña..." class="w-full bg-pomelero-dark border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100">
-                    <button type="submit" class="w-full bg-pomelero-gold text-pomelero-dark font-bold py-2.5 rounded-xl text-sm">Entrar</button>
+                    <button type="submit" class="w-full bg-pomelero-gold text-pomelero-dark font-bold py-2.5 rounded-xl text-sm transition hover:bg-pomelero-goldHover">Entrar al Panel</button>
                 </form>
             </div>
 
             <!-- Contenido Admin -->
             <div id="adminDashboardView" class="hidden flex-grow overflow-y-auto flex flex-col">
-                <div class="flex border-b border-slate-800 bg-pomelero-dark px-4 pt-3 gap-2">
-                    <button onclick="switchAdminTab('inventario')" id="tabBtn-inventario" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-pomelero-gold text-pomelero-gold">📦 Inventario</button>
-                    <button onclick="switchAdminTab('clientes')" id="tabBtn-clientes" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400">👥 Clientes</button>
-                    <button onclick="switchAdminTab('apariencia')" id="tabBtn-apariencia" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400">🎨 Apariencia</button>
+                <div class="flex border-b border-slate-800 bg-pomelero-dark px-4 pt-3 gap-2 overflow-x-auto no-scrollbar">
+                    <button onclick="switchAdminTab('inventario')" id="tabBtn-inventario" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 whitespace-nowrap">📦 Inventario</button>
+                    <button onclick="switchAdminTab('clientes')" id="tabBtn-clientes" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 whitespace-nowrap">👥 Clientes</button>
+                    <button onclick="switchAdminTab('apariencia')" id="tabBtn-apariencia" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 whitespace-nowrap">🎨 Apariencia</button>
+                    <button onclick="switchAdminTab('personal')" id="tabBtn-personal" class="admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 whitespace-nowrap">🛡️ Personal</button>
                 </div>
                 <div class="p-6 flex-grow overflow-y-auto">
                     
                     <!-- Pestaña Inventario -->
-                    <div id="adminTab-inventario" class="admin-tab-content space-y-6">
+                    <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
                             <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube.</p>
@@ -264,7 +266,7 @@
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
-                        <!-- SECCIÓN: Editar producto individual con Buscador Dinámico -->
+                        <!-- SECCIÓN: Editar producto individual -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
                             <h3 class="text-sm font-bold text-slate-200">✏️ Editar Producto Individual</h3>
                             <p class="text-xs text-slate-400">Escribe el nombre o SKU. Elige una opción de la lista para modificar foto, nombre o precio.</p>
@@ -278,7 +280,6 @@
                             <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
                             </div>
                         </div>
-
                     </div>
                     
                     <!-- Pestaña Clientes y Pedidos -->
@@ -286,11 +287,10 @@
                         <div class="flex justify-between items-center mb-2">
                             <h3 class="text-sm font-bold text-slate-200">Control de Clientes (CRM)</h3>
                             <button onclick="downloadClientsExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg border border-emerald-500 shadow transition font-bold flex items-center gap-1">
-                                <span>⬇️</span> Reporte Inteligente
+                                <span>⬇️</span> Reporte
                             </button>
                         </div>
 
-                        <!-- Herramientas de Filtro Inteligente -->
                         <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2 shadow-inner">
                             <label class="text-[10px] text-slate-400 font-bold block">Filtrar y Ordenar Clientes:</label>
                             <select id="clientSortSelect" onchange="renderAdminClients()" class="w-full bg-slate-900 border border-slate-600 text-xs text-slate-200 rounded-lg p-2 outline-none focus:border-pomelero-gold cursor-pointer transition">
@@ -314,7 +314,7 @@
                             </div>
                         </div>
                         <div class="space-y-3 pt-4 border-t border-slate-800">
-                            <h3 class="text-sm font-bold text-slate-200">Logotipo Oficial (Saldrá en la página y PDFs)</h3>
+                            <h3 class="text-sm font-bold text-slate-200">Logotipo Oficial</h3>
                             <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-800 file:text-slate-200 cursor-pointer">
                         </div>
                         <div class="space-y-3 pt-4 border-t border-slate-800">
@@ -323,6 +323,31 @@
                             <button onclick="saveWhatsappNumber()" class="w-full bg-pomelero-gold text-pomelero-dark font-bold py-2.5 rounded-xl text-sm">Guardar Número</button>
                         </div>
                     </div>
+
+                    <!-- Pestaña Personal (Seguridad) -->
+                    <div id="adminTab-personal" class="admin-tab-content hidden space-y-6">
+                        <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 shadow-lg">
+                            <h3 class="text-sm font-bold text-pomelero-gold flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Crear Nuevo Usuario Encargado
+                            </h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="newAdminUser" placeholder="Nombre de usuario" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newAdminPass" placeholder="Contraseña segura" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                            </div>
+                            <div class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
+                                <p class="text-[10px] font-bold text-slate-400 mb-2">Permisos permitidos:</p>
+                                <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permInv" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Modificar Inventario y Precios</label>
+                                <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permOrd" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Ver y Gestionar Pedidos</label>
+                                <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permCli" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Editar y Borrar Clientes</label>
+                                <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permApp" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Modificar Diseño y Ajustes</label>
+                            </div>
+                            <button onclick="createAdminUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Crear Usuario</button>
+                        </div>
+                        
+                        <div id="adminUsersList" class="space-y-2"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -353,12 +378,15 @@
 
         let products = [];
         let cart = [];
-        let adminClientsData = []; // NUEVO: Guarda a los clientes para ordenarlos
+        let adminClientsData = [];
         let currentCategory = 'TODOS';
         let whatsappNumber = '523780000000';
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
+        
+        // VARIABLE PARA GUARDAR PERMISOS DEL ADMIN ACTIVO
+        let currentAdminPerms = null; 
 
         const statusColors = {
             'Pendiente': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
@@ -818,7 +846,6 @@
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
             
-            // NUEVO: Agregado timestamp oculto para permitir el filtro de "Más recientes"
             const newOrder = { 
                 id: orderId, 
                 date: new Date().toLocaleDateString(), 
@@ -861,26 +888,135 @@
         }
         function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
-        function handleAdminLogin(e) {
+        // ---------- NUEVO: LOGIN CON USUARIO Y CONTRASEÑA ----------
+        async function handleAdminLogin(e) {
             e.preventDefault();
-            if (document.getElementById('adminPasswordInput').value === 'pomelero2026') {
-                document.getElementById('adminLoginView').classList.add('hidden');
-                document.getElementById('adminDashboardView').classList.remove('hidden');
-                document.getElementById('adminWhatsappInput').value = whatsappNumber;
-                loadAdminClients();
-            } else { alert("Contraseña incorrecta."); }
+            const user = document.getElementById('adminUserInput').value.trim();
+            const pass = document.getElementById('adminPasswordInput').value.trim();
+
+            if (user === 'admin' && pass === 'pomelero2026') {
+                currentAdminPerms = { inv: true, ord: true, cli: true, app: true, adm: true };
+                finishAdminLogin();
+                return;
+            }
+
+            try {
+                const doc = await db.collection("pomelero_admins").doc(user).get();
+                if (doc.exists && doc.data().password === pass) {
+                    currentAdminPerms = doc.data().perms || {};
+                    finishAdminLogin();
+                } else {
+                    alert("Usuario o contraseña incorrectos.");
+                }
+            } catch(error) {
+                alert("Error de conexión al verificar el usuario.");
+            }
+        }
+
+        function finishAdminLogin() {
+            document.getElementById('adminLoginView').classList.add('hidden');
+            document.getElementById('adminDashboardView').classList.remove('hidden');
+            document.getElementById('adminWhatsappInput').value = whatsappNumber;
+            
+            applyAdminPerms();
+            loadAdminClients();
+            
+            if (currentAdminPerms.adm) {
+                loadAdminUsers();
+            }
+        }
+
+        function applyAdminPerms() {
+            document.getElementById('tabBtn-inventario').classList.toggle('hidden', !currentAdminPerms.inv);
+            document.getElementById('tabBtn-clientes').classList.toggle('hidden', !currentAdminPerms.ord);
+            document.getElementById('tabBtn-apariencia').classList.toggle('hidden', !currentAdminPerms.app);
+            document.getElementById('tabBtn-personal').classList.toggle('hidden', !currentAdminPerms.adm);
+
+            if (currentAdminPerms.inv) switchAdminTab('inventario');
+            else if (currentAdminPerms.ord) switchAdminTab('clientes');
+            else if (currentAdminPerms.app) switchAdminTab('apariencia');
+            else if (currentAdminPerms.adm) switchAdminTab('personal');
         }
 
         function switchAdminTab(tabName) {
-            ['inventario', 'clientes', 'apariencia'].forEach(t => {
-                document.getElementById('adminTab-' + t).classList.add('hidden');
-                document.getElementById('tabBtn-' + t).classList.replace('border-pomelero-gold', 'border-transparent');
-                document.getElementById('tabBtn-' + t).classList.replace('text-pomelero-gold', 'text-slate-400');
+            ['inventario', 'clientes', 'apariencia', 'personal'].forEach(t => {
+                const elContent = document.getElementById('adminTab-' + t);
+                const elBtn = document.getElementById('tabBtn-' + t);
+                if (elContent && elBtn) {
+                    elContent.classList.add('hidden');
+                    elBtn.classList.replace('border-pomelero-gold', 'border-transparent');
+                    elBtn.classList.replace('text-pomelero-gold', 'text-slate-400');
+                }
             });
-            document.getElementById('adminTab-' + tabName).classList.remove('hidden');
-            document.getElementById('tabBtn-' + tabName).classList.replace('border-transparent', 'border-pomelero-gold');
-            document.getElementById('tabBtn-' + tabName).classList.replace('text-slate-400', 'text-pomelero-gold');
+            const activeContent = document.getElementById('adminTab-' + tabName);
+            const activeBtn = document.getElementById('tabBtn-' + tabName);
+            if (activeContent && activeBtn) {
+                activeContent.classList.remove('hidden');
+                activeBtn.classList.replace('border-transparent', 'border-pomelero-gold');
+                activeBtn.classList.replace('text-slate-400', 'text-pomelero-gold');
+            }
         }
+
+        // ---------- NUEVO: CONTROL DE USUARIOS (CRM) ----------
+        function loadAdminUsers() {
+            db.collection("pomelero_admins").onSnapshot(snap => {
+                const list = document.getElementById('adminUsersList');
+                if(snap.empty) { list.innerHTML = '<p class="text-xs text-slate-500 mt-2">No hay usuarios extra creados.</p>'; return; }
+                
+                let html = '<h3 class="text-xs font-bold text-slate-400 mt-4 mb-2">Usuarios Activos:</h3>';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    let permsTxt = [];
+                    if(data.perms.inv) permsTxt.push('Inventario');
+                    if(data.perms.ord) permsTxt.push('Pedidos');
+                    if(data.perms.cli) permsTxt.push('Clientes (Edición)');
+                    if(data.perms.app) permsTxt.push('Diseño');
+                    if(permsTxt.length === 0) permsTxt.push('Ninguno (Lectura básica)');
+
+                    html += `
+                        <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700 shadow-sm">
+                            <div>
+                                <p class="text-xs font-bold text-slate-200">👤 ${doc.id}</p>
+                                <p class="text-[9px] text-slate-400 mt-1">Permisos: ${permsTxt.join(', ')}</p>
+                            </div>
+                            <button onclick="deleteAdminUser('${doc.id}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/20 transition">Eliminar</button>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            });
+        }
+
+        async function createAdminUser() {
+            const user = document.getElementById('newAdminUser').value.trim();
+            const pass = document.getElementById('newAdminPass').value.trim();
+            if(!user || !pass) return alert("Por favor llena el usuario y la contraseña.");
+            
+            const perms = {
+                inv: document.getElementById('permInv').checked,
+                ord: document.getElementById('permOrd').checked,
+                cli: document.getElementById('permCli').checked,
+                app: document.getElementById('permApp').checked,
+                adm: false 
+            };
+
+            await db.collection("pomelero_admins").doc(user).set({ password: pass, perms });
+            alert("Usuario creado exitosamente.");
+            
+            document.getElementById('newAdminUser').value = '';
+            document.getElementById('newAdminPass').value = '';
+            document.getElementById('permInv').checked = false;
+            document.getElementById('permOrd').checked = false;
+            document.getElementById('permCli').checked = false;
+            document.getElementById('permApp').checked = false;
+        }
+
+        async function deleteAdminUser(user) {
+            if(confirm(`¿Seguro que deseas eliminar el acceso al usuario "${user}"?`)) {
+                await db.collection("pomelero_admins").doc(user).delete();
+            }
+        }
+        // ------------------------------------------------------
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
@@ -908,10 +1044,16 @@
                         
                         const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
                         
-                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
-                        image = image.replace('img/', '').replace('IMG/', '').trim();
+                        let productData = { name, category, price, sku };
 
-                        await db.collection("pomelero_products").doc(sku).set({ name, category, price, sku, image });
+                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
+                        image = String(image).replace('img/', '').replace('IMG/', '').trim();
+
+                        if (image && image !== '[Imagen en nube]') {
+                            productData.image = image;
+                        }
+
+                        await db.collection("pomelero_products").doc(sku).set(productData, { merge: true });
                         count++;
                     }
                     alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
@@ -1059,20 +1201,25 @@
 
         function downloadCatalogExcel() {
             if(products.length === 0) return alert("No hay productos.");
-            const data = products.map(p => ({
-                SKU: p.sku,
-                Nombre: p.name,
-                Categoria: p.category,
-                Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
-                Imagen: p.image || ""
-            }));
+            const data = products.map(p => {
+                let imgVal = p.image || "";
+                if (imgVal.startsWith('data:image')) {
+                    imgVal = "[Imagen en nube]";
+                }
+                return {
+                    SKU: p.sku,
+                    Nombre: p.name,
+                    Categoria: p.category,
+                    Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
+                    Imagen: imgVal
+                };
+            });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
             XLSX.writeFile(wb, "Catalogo_Pomelero.xlsx");
         }
 
-        // ---------- NUEVO: CARGA Y ORDENAMIENTO DE CLIENTES (CRM) ----------
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
                 if (snapshot.empty) { 
@@ -1089,7 +1236,6 @@
             const list = document.getElementById('adminClientsList');
             const sortMode = document.getElementById('clientSortSelect').value;
 
-            // Procesar y Etiquetar Clientes
             let processedClients = adminClientsData.map(u => {
                 const orderCount = u.orders ? u.orders.length : 0;
                 const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
@@ -1112,24 +1258,22 @@
                 return { ...u, orderCount, totalSpent, lastOrder, category, catColor };
             });
 
-            // Lógica de Ordenamiento
             if (sortMode === 'recent') {
                 processedClients.sort((a, b) => {
                     let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
                     let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tB - tA; // Mayor timestamp (más reciente) primero
+                    return tB - tA; 
                 });
             } else if (sortMode === 'inactive') {
                 processedClients.sort((a, b) => {
                     let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
                     let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tA - tB; // Menor timestamp (más antiguo/cero) primero
+                    return tA - tB; 
                 });
             } else if (sortMode === 'best') {
-                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); // Mayor gasto primero
+                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); 
             }
 
-            // Generar HTML
             let html = '';
             processedClients.forEach(u => {
                 let ordersHTML = '';
@@ -1150,6 +1294,11 @@
                         
                         let itemsList = '';
                         o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
+
+                        // NUEVO: Proteger botón borrar pedido si no tiene permiso de edición de cliente
+                        let deleteOrderBtn = currentAdminPerms.cli 
+                            ? `<button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>` 
+                            : '';
 
                         ordersHTML += `
                                 <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
@@ -1179,7 +1328,7 @@
                                         <div class="flex gap-2">
                                             <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
                                             <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
-                                            <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>
+                                            ${deleteOrderBtn}
                                         </div>
                                     </div>
                                 </details>
@@ -1193,6 +1342,17 @@
                     ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
                 }
 
+                // NUEVO: Proteger botones de cliente principal
+                let clientActionButtons = '';
+                if (currentAdminPerms.cli) {
+                    clientActionButtons = `
+                        <div class="flex gap-2">
+                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
+                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
+                        </div>
+                    `;
+                }
+
                 html += `
                 <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
                     <div class="flex items-center justify-between">
@@ -1200,10 +1360,7 @@
                             <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
                             <span class="text-[9px] px-1.5 py-0.5 rounded border inline-block mt-1 w-max ${u.catColor}">${u.category}</span>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
-                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
-                        </div>
+                        ${clientActionButtons}
                     </div>
                     <div class="flex justify-between items-center text-[10px]">
                         <p class="text-slate-400">Tel: ${u.phone} | Dir: ${u.address || 'N/D'}</p>
@@ -1216,7 +1373,6 @@
             list.innerHTML = html;
         }
 
-        // ---------- NUEVO: REPORTE DE EXCEL INTELIGENTE ----------
         async function downloadClientsExcel() {
             if (adminClientsData.length === 0) return alert("No hay clientes registrados.");
             
@@ -1247,22 +1403,6 @@
             XLSX.writeFile(wb, "Reporte_Inteligente_Clientes.xlsx");
         }
 
-        async function updateOrderStatus(phone, orderId, newStatus) {
-            try {
-                const userRef = db.collection("pomelero_users").doc(phone);
-                const doc = await userRef.get();
-                if (doc.exists) {
-                    let ordersArray = doc.data().orders || [];
-                    let index = ordersArray.findIndex(o => o.id === orderId);
-                    if (index !== -1) {
-                        ordersArray[index].status = newStatus;
-                        await userRef.update({ orders: ordersArray });
-                    }
-                }
-            } catch (error) { alert("Hubo un error al actualizar el estado del pedido."); }
-        }
-
-        // ---------- DESCARGA DE PDF PARA ADMIN ----------
         async function adminDownloadOrderPDF(phone, orderId, format) {
             try {
                 const doc = await db.collection("pomelero_users").doc(phone).get();
