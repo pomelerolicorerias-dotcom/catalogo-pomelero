@@ -265,7 +265,7 @@
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
-                        <!-- NUEVA SECCIÓN: Editar producto individual con Buscador Dinámico -->
+                        <!-- SECCIÓN: Editar producto individual con Buscador Dinámico -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
                             <h3 class="text-sm font-bold text-slate-200">✏️ Editar Producto Individual</h3>
                             <p class="text-xs text-slate-400">Escribe el nombre o SKU. Elige una opción de la lista para modificar foto, nombre o precio.</p>
@@ -286,13 +286,13 @@
 
                     </div>
                     
-                    <!-- Pestaña Clientes -->
+                    <!-- Pestaña Clientes y Pedidos -->
                     <div id="adminTab-clientes" class="admin-tab-content hidden space-y-4">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-bold text-slate-200">Base de Datos de Clientes</h3>
+                            <h3 class="text-sm font-bold text-slate-200">Control de Clientes y Pedidos</h3>
                             <button onclick="downloadClientsExcel()" class="bg-emerald-600/20 text-emerald-400 text-xs px-3 py-1.5 rounded-lg border border-emerald-500/30">⬇️ Descargar Excel</button>
                         </div>
-                        <div id="adminClientsList" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+                        <div id="adminClientsList" class="space-y-4 max-h-96 overflow-y-auto pr-1"></div>
                     </div>
                     
                     <!-- Pestaña Apariencia -->
@@ -350,6 +350,13 @@
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
+
+        const statusColors = {
+            'Pendiente': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+            'En Proceso': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+            'Atendido': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+            'Cancelado': 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
@@ -629,42 +636,62 @@
         }
 
         function updateAuthUI() {
+            // Se actualiza el perfil local si hay conexión (opcional, pero útil para sincronizar)
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
-            const login = document.getElementById('loginFormContainer');
-            const session = document.getElementById('activeSessionContainer');
-            const navBtn = document.getElementById('navUserName');
+            if (!user) {
+                document.getElementById('loginFormContainer').classList.remove('hidden');
+                document.getElementById('activeSessionContainer').classList.add('hidden');
+                document.getElementById('navUserName').textContent = 'Ingresar';
+                return;
+            }
 
-            if (user) {
-                login.classList.add('hidden');
-                session.classList.remove('hidden');
-                navBtn.textContent = user.name.split(' ')[0];
-                document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
-                document.getElementById('activeUserName').textContent = user.name;
-                document.getElementById('activeUserPhone').innerHTML = `Tel: <span class="font-normal">${user.phone}</span>`;
-                document.getElementById('activeUserAddress').innerHTML = `Dirección: <span class="font-normal">${user.address || 'Recoger en sucursal'}</span>`;
-
-                const ordersList = document.getElementById('ordersHistoryList');
-                if (!user.orders || user.orders.length === 0) {
-                    ordersList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No tienes pedidos.</p>`;
+            // Si hay usuario local, intentamos descargar sus datos más recientes para reflejar cambios de estado
+            db.collection("pomelero_users").doc(user.phone).get().then(doc => {
+                if (doc.exists) {
+                    const freshUser = doc.data();
+                    localStorage.setItem('pomelero_client_profile', JSON.stringify(freshUser));
+                    renderUserDashboard(freshUser);
                 } else {
-                    ordersList.innerHTML = user.orders.map(ord => `
-                        <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 space-y-2">
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="font-bold text-pomelero-gold">${ord.id}</span>
-                                <span class="font-bold text-slate-100">$${ord.total.toFixed(2)}</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400">${ord.date}</p>
-                            <div class="flex gap-2 pt-2 border-t border-slate-800">
-                                <button onclick="resendOrder('${ord.id}')" class="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30">Reenviar 💬</button>
-                                <button onclick="downloadOrderPDF('${ord.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700">Descargar 📄</button>
-                            </div>
-                        </div>
-                    `).join('');
+                    renderUserDashboard(user);
                 }
+            }).catch(() => {
+                renderUserDashboard(user);
+            });
+        }
+
+        function renderUserDashboard(user) {
+            document.getElementById('loginFormContainer').classList.add('hidden');
+            document.getElementById('activeSessionContainer').classList.remove('hidden');
+            document.getElementById('navUserName').textContent = user.name.split(' ')[0];
+            document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('activeUserName').textContent = user.name;
+            document.getElementById('activeUserPhone').innerHTML = `Tel: <span class="font-normal">${user.phone}</span>`;
+            document.getElementById('activeUserAddress').innerHTML = `Dirección: <span class="font-normal">${user.address || 'Recoger en sucursal'}</span>`;
+
+            const ordersList = document.getElementById('ordersHistoryList');
+            if (!user.orders || user.orders.length === 0) {
+                ordersList.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No tienes pedidos.</p>`;
             } else {
-                login.classList.remove('hidden');
-                session.classList.add('hidden');
-                navBtn.textContent = 'Ingresar';
+                ordersList.innerHTML = user.orders.map(ord => {
+                    const st = ord.status || 'Pendiente';
+                    const stBadge = `<span class="px-2 py-0.5 rounded text-[9px] font-bold border ${statusColors[st] || statusColors['Pendiente']}">${st}</span>`;
+
+                    return `
+                    <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-pomelero-gold">${ord.id}</span>
+                                ${stBadge}
+                            </div>
+                            <span class="font-bold text-slate-100">$${ord.total.toFixed(2)}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400">${ord.date}</p>
+                        <div class="flex gap-2 pt-2 border-t border-slate-800">
+                            <button onclick="resendOrder('${ord.id}')" class="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30">Reenviar 💬</button>
+                            <button onclick="downloadOrderPDF('${ord.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700">Descargar 📄</button>
+                        </div>
+                    </div>
+                `}).join('');
             }
         }
 
@@ -701,6 +728,7 @@
                     <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                     <div class="info">
                         <strong>Folio:</strong> ${ord.id}<br>
+                        <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
                         <strong>Fecha:</strong> ${ord.date}<br>
                         <strong>Cliente:</strong> ${user.name}<br>
                         <strong>Teléfono:</strong> ${user.phone}<br>
@@ -747,7 +775,13 @@
 
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
-            const newOrder = { id: orderId, date: new Date().toLocaleDateString(), total: total, items: [...cart] };
+            const newOrder = { 
+                id: orderId, 
+                date: new Date().toLocaleDateString(), 
+                total: total, 
+                items: [...cart],
+                status: 'Pendiente' // ¡Nuevo campo para seguimiento!
+            };
 
             try {
                 const userRef = db.collection("pomelero_users").doc(user.phone);
@@ -842,14 +876,11 @@
         }
 
         // ---------- NUEVAS FUNCIONES PARA BUSCADOR DINÁMICO Y EDICIÓN ----------
-        
-        // 1. Filtrar productos mientras el usuario escribe
         function liveSearchAdminProduct() {
             const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
             const resultsBox = document.getElementById('adminLiveSearchResults');
             const editBox = document.getElementById('adminProductResult');
             
-            // Si el buscador está vacío, oculta todo
             if (!query) {
                 resultsBox.innerHTML = '';
                 resultsBox.classList.add('hidden');
@@ -857,13 +888,11 @@
                 return;
             }
 
-            // Buscar coincidencias en nombre o SKU
             const matches = products.filter(p => 
                 (p.sku && p.sku.toLowerCase().includes(query)) || 
                 (p.name && p.name.toLowerCase().includes(query))
-            ).slice(0, 8); // Limitamos a mostrar solo 8 opciones para no saturar
+            ).slice(0, 8); 
 
-            // Pintar la lista de coincidencias
             if (matches.length > 0) {
                 resultsBox.innerHTML = matches.map(m => `
                     <div onclick="selectAdminProduct('${m.sku}')" class="p-3 hover:bg-slate-600 cursor-pointer flex justify-between items-center transition">
@@ -878,17 +907,12 @@
             }
         }
 
-        // 2. Al hacer clic en un producto de la lista, abrir su panel de edición
         function selectAdminProduct(sku) {
-            // Ocultar la lista y limpiar el buscador
             document.getElementById('adminLiveSearchResults').classList.add('hidden');
-            
             const found = products.find(p => p.sku === sku);
             if (!found) return;
 
-            // Poner el nombre en la barra para que el usuario sepa qué seleccionó
             document.getElementById('adminProductSearchInput').value = found.name;
-
             const resultBox = document.getElementById('adminProductResult');
             
             let imgPreview = '';
@@ -898,7 +922,6 @@
                 imgPreview = `<div class="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 text-center leading-tight">Sin<br>foto</div>`;
             }
 
-            // Inyectar el formulario de edición con el nombre, precio e imagen
             resultBox.innerHTML = `
                 <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
                     <div class="flex items-center gap-3 w-full">
@@ -927,11 +950,9 @@
                     <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
                 </div>
             `;
-            
             resultBox.classList.remove('hidden');
         }
 
-        // 3. Guardar cambios de texto a la base de datos
         async function saveProductDetails(sku) {
             const newName = document.getElementById('editProdNameInput').value.trim();
             const rawPrice = document.getElementById('editProdPriceInput').value.trim();
@@ -958,7 +979,6 @@
             }
         }
 
-        // 4. Subir la foto individual
         function uploadSingleImage(e, sku) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1024,6 +1044,7 @@
             } catch(e) { alert("Error descargando clientes."); }
         }
 
+        // ---------- NUEVO: CONTROL DE ESTADO DE PEDIDOS ----------
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
                 const list = document.getElementById('adminClientsList');
@@ -1032,6 +1053,44 @@
                 list.innerHTML = snapshot.docs.map(doc => {
                     const u = doc.data();
                     const addr = u.address ? u.address : 'Sin dirección';
+                    
+                    // Generar HTML del historial de pedidos del cliente con selector de estado
+                    let ordersHTML = '';
+                    if (u.orders && u.orders.length > 0) {
+                        ordersHTML = `
+                        <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
+                            <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
+                            <div class="max-h-40 overflow-y-auto pr-1 space-y-2 no-scrollbar">
+                                ${u.orders.map(o => {
+                                    const st = o.status || 'Pendiente';
+                                    return `
+                                    <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">
+                                        <div class="flex justify-between items-center text-[10px] font-bold text-slate-200">
+                                            <div class="flex flex-col">
+                                                <span>${o.id}</span>
+                                                <span class="text-[9px] text-slate-400 font-normal">${o.date}</span>
+                                            </div>
+                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[10px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer">
+                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
+                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
+                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
+                                            </select>
+                                        </div>
+                                        <ul class="text-[9px] text-slate-400 mt-2 list-disc pl-3">
+                                            ${o.items.map(i => `<li>${i.qty}x ${i.name}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        </div>`;
+                    } else {
+                        ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
+                    }
+
                     return `
                     <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
                         <div class="flex items-center justify-between">
@@ -1042,10 +1101,30 @@
                             </div>
                         </div>
                         <p class="text-[10px] text-slate-400">Tel: ${u.phone} | Contraseña: ${u.password} <br> Dir: ${addr}</p>
+                        ${ordersHTML}
                     </div>`;
                 }).join('');
             });
         }
+
+        async function updateOrderStatus(phone, orderId, newStatus) {
+            try {
+                const userRef = db.collection("pomelero_users").doc(phone);
+                const doc = await userRef.get();
+                if (doc.exists) {
+                    let ordersArray = doc.data().orders || [];
+                    let index = ordersArray.findIndex(o => o.id === orderId);
+                    if (index !== -1) {
+                        ordersArray[index].status = newStatus;
+                        await userRef.update({ orders: ordersArray });
+                        // Como se actualiza la nube, la vista del cliente se refrescará en automático.
+                    }
+                }
+            } catch (error) {
+                alert("Hubo un error al actualizar el estado del pedido.");
+            }
+        }
+        // ---------------------------------------------------------
 
         async function editClient(phone, currentName, currentAddress) {
             const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
