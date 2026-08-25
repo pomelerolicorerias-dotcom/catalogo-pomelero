@@ -32,6 +32,8 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
     </style>
 </head>
 <body id="bodyTheme" class="bg-pomelero-dark text-slate-100 min-h-screen font-sans flex flex-col">
@@ -384,7 +386,6 @@
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
             });
 
-            // Re-evaluar las flechas si cambia el tamaño de la ventana
             window.addEventListener('resize', updateCategoryArrows);
         });
 
@@ -423,19 +424,11 @@
             
             if (!container) return;
 
-            // Si hay espacio para hacer scroll a la izquierda, mostrar flecha izq
-            if (container.scrollLeft > 10) {
-                leftBtn.classList.remove('hidden');
-            } else {
-                leftBtn.classList.add('hidden');
-            }
+            if (container.scrollLeft > 10) { leftBtn.classList.remove('hidden'); } 
+            else { leftBtn.classList.add('hidden'); }
 
-            // Si hay espacio para hacer scroll a la derecha, mostrar flecha der
-            if (container.scrollLeft + container.clientWidth < container.scrollWidth - 10) {
-                rightBtn.classList.remove('hidden');
-            } else {
-                rightBtn.classList.add('hidden');
-            }
+            if (container.scrollLeft + container.clientWidth < container.scrollWidth - 10) { rightBtn.classList.remove('hidden'); } 
+            else { rightBtn.classList.add('hidden'); }
         }
 
         function renderCategories() {
@@ -445,7 +438,6 @@
                 <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'} shrink-0">${cat}</button>
             `).join('');
             
-            // Actualizar visibilidad de flechas un milisegundo después de pintar
             setTimeout(updateCategoryArrows, 100);
         }
 
@@ -461,7 +453,6 @@
         function closeImageModal() {
             document.getElementById('imageModal').classList.add('hidden');
         }
-        // ---------------------------------------------
 
         function renderProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
@@ -636,7 +627,6 @@
         }
 
         function updateAuthUI() {
-            // Se actualiza el perfil local si hay conexión (opcional, pero útil para sincronizar)
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
             if (!user) {
                 document.getElementById('loginFormContainer').classList.remove('hidden');
@@ -645,7 +635,6 @@
                 return;
             }
 
-            // Si hay usuario local, intentamos descargar sus datos más recientes para reflejar cambios de estado
             db.collection("pomelero_users").doc(user.phone).get().then(doc => {
                 if (doc.exists) {
                     const freshUser = doc.data();
@@ -750,6 +739,79 @@
             printWindow.document.close();
         }
 
+        // ---------- NUEVO: DESCARGA ADMIN DE PEDIDOS ----------
+        async function adminDownloadOrderPDF(phone, orderId) {
+            try {
+                const doc = await db.collection("pomelero_users").doc(phone).get();
+                if(doc.exists) {
+                    const user = doc.data();
+                    const ord = (user.orders || []).find(o => o.id === orderId);
+                    if(ord) {
+                        const printWindow = window.open('', '_blank');
+                        printWindow.document.write(`
+                            <html>
+                            <head>
+                                <title>Ticket ${ord.id}</title>
+                                <style>
+                                    body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                                    h2 { color: #f59e0b; margin-bottom: 5px; }
+                                    .info { margin-bottom: 20px; font-size: 14px; }
+                                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                    th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+                                    th { background-color: #f8fafc; }
+                                    .total { text-align: right; font-size: 16px; font-weight: bold; margin-top: 15px; }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>POMELERO LICORERÍAS</h2>
+                                <p style="font-size:12px; color:#666;">Copia de Pedido (Administrador)</p>
+                                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                                <div class="info">
+                                    <strong>Folio:</strong> ${ord.id}<br>
+                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                                    <strong>Fecha:</strong> ${ord.date}<br>
+                                    <strong>Cliente:</strong> ${user.name}<br>
+                                    <strong>Teléfono:</strong> ${user.phone}<br>
+                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr><th>Cant</th><th>Descripción</th><th>Subtotal</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="total">Total: $${ord.total.toFixed(2)}</div>
+                                <script>window.onload = function() { window.print(); }<\/script>
+                            </body>
+                            </html>
+                        `);
+                        printWindow.document.close();
+                    }
+                }
+            } catch(e) {
+                alert("Error al descargar el ticket.");
+            }
+        }
+
+        // ---------- NUEVO: ELIMINAR PEDIDO DESDE ADMIN ----------
+        async function deleteOrder(phone, orderId) {
+            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
+            try {
+                const userRef = db.collection("pomelero_users").doc(phone);
+                const doc = await userRef.get();
+                if(doc.exists) {
+                    let ordersArray = doc.data().orders || [];
+                    ordersArray = ordersArray.filter(o => o.id !== orderId);
+                    await userRef.update({ orders: ordersArray });
+                    alert("Pedido eliminado correctamente.");
+                }
+            } catch (error) {
+                alert("Hubo un error al eliminar el pedido.");
+            }
+        }
+
         function resendOrder(orderId) {
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
             if (!user || !user.orders) return;
@@ -780,7 +842,7 @@
                 date: new Date().toLocaleDateString(), 
                 total: total, 
                 items: [...cart],
-                status: 'Pendiente' // ¡Nuevo campo para seguimiento!
+                status: 'Pendiente'
             };
 
             try {
@@ -875,7 +937,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ---------- NUEVAS FUNCIONES PARA BUSCADOR DINÁMICO Y EDICIÓN ----------
         function liveSearchAdminProduct() {
             const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
             const resultsBox = document.getElementById('adminLiveSearchResults');
@@ -967,10 +1028,7 @@
             if (!newName) return alert("El nombre no puede estar vacío.");
 
             try {
-                await db.collection("pomelero_products").doc(sku).update({
-                    name: newName,
-                    price: newPrice
-                });
+                await db.collection("pomelero_products").doc(sku).update({ name: newName, price: newPrice });
                 alert("✅ Nombre y precio actualizados correctamente en la nube.");
                 document.getElementById('adminProductSearchInput').value = '';
                 document.getElementById('adminProductResult').classList.add('hidden');
@@ -1001,7 +1059,6 @@
             };
             reader.readAsDataURL(file);
         }
-        // ----------------------------------------------------------------
 
         async function clearDatabase() {
             if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
@@ -1044,7 +1101,6 @@
             } catch(e) { alert("Error descargando clientes."); }
         }
 
-        // ---------- NUEVO: CONTROL DE ESTADO DE PEDIDOS ----------
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
                 const list = document.getElementById('adminClientsList');
@@ -1054,37 +1110,47 @@
                     const u = doc.data();
                     const addr = u.address ? u.address : 'Sin dirección';
                     
-                    // Generar HTML del historial de pedidos del cliente con selector de estado
                     let ordersHTML = '';
                     if (u.orders && u.orders.length > 0) {
                         ordersHTML = `
                         <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
                             <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
-                            <div class="max-h-40 overflow-y-auto pr-1 space-y-2 no-scrollbar">
+                            <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">
                                 ${u.orders.map(o => {
                                     const st = o.status || 'Pendiente';
-                                    return `
-                                    <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">
-                                        <div class="flex justify-between items-center text-[10px] font-bold text-slate-200">
-                                            <div class="flex flex-col">
-                                                <span>${o.id}</span>
-                                                <span class="text-[9px] text-slate-400 font-normal">${o.date}</span>
+                                    const stBadge = \`<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border \${statusColors[st] || statusColors['Pendiente']} ml-2">\${st}</span>\`;
+                                    return \`
+                                    <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
+                                        <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
+                                            <div class="flex items-center">
+                                                <span>\${o.id}</span>
+                                                \${stBadge}
                                             </div>
-                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-pomelero-gold text-xs">$\${o.total.toFixed(2)}</span>
+                                                <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                                            </div>
+                                        </summary>
+                                        <div class="p-3 border-t border-slate-700 bg-slate-800/80">
+                                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
+                                                <span class="text-[9px] text-slate-400 font-normal">Fecha: \${o.date}</span>
+                                                <select onchange="updateOrderStatus('\${u.phone}', '\${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
+                                                    <option value="Pendiente" \${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+                                                    <option value="En Proceso" \${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
+                                                    <option value="Atendido" \${st==='Atendido'?'selected':''}>✅ Atendido</option>
+                                                    <option value="Cancelado" \${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
+                                                </select>
+                                            </div>
+                                            <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
+                                                \${o.items.map(i => \`<li>\${i.qty}x \${i.name}</li>\`).join('')}
+                                            </ul>
+                                            <div class="flex gap-2">
+                                                <button onclick="adminDownloadOrderPDF('\${u.phone}', '\${o.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">Descargar Ticket</button>
+                                                <button onclick="deleteOrder('\${u.phone}', '\${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">Eliminar Pedido</button>
+                                            </div>
                                         </div>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[10px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer">
-                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
-                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
-                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
-                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
-                                            </select>
-                                        </div>
-                                        <ul class="text-[9px] text-slate-400 mt-2 list-disc pl-3">
-                                            ${o.items.map(i => `<li>${i.qty}x ${i.name}</li>`).join('')}
-                                        </ul>
-                                    </div>
-                                `}).join('')}
+                                    </details>
+                                \`}).join('')}
                             </div>
                         </div>`;
                     } else {
@@ -1117,14 +1183,10 @@
                     if (index !== -1) {
                         ordersArray[index].status = newStatus;
                         await userRef.update({ orders: ordersArray });
-                        // Como se actualiza la nube, la vista del cliente se refrescará en automático.
                     }
                 }
-            } catch (error) {
-                alert("Hubo un error al actualizar el estado del pedido.");
-            }
+            } catch (error) { alert("Hubo un error al actualizar el estado del pedido."); }
         }
-        // ---------------------------------------------------------
 
         async function editClient(phone, currentName, currentAddress) {
             const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
