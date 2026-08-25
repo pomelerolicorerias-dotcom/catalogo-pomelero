@@ -94,8 +94,6 @@
                 
                 <!-- Contenedor de categorías con flechas automáticas -->
                 <div class="relative flex-grow flex items-center min-w-0 w-full group">
-                    
-                    <!-- Flecha Izquierda -->
                     <button id="leftArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: -200, behavior: 'smooth'})" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-start pb-2 md:pb-0 pl-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
@@ -106,7 +104,6 @@
                         <button onclick="filterByCategory('TODOS')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition bg-pomelero-gold text-pomelero-dark shadow shrink-0">TODOS</button>
                     </div>
                     
-                    <!-- Flecha Derecha -->
                     <button id="rightArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: 200, behavior: 'smooth'})" class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-end pb-2 md:pb-0 pr-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition animate-pulse hover:animate-none cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
@@ -272,17 +269,13 @@
                             <h3 class="text-sm font-bold text-slate-200">✏️ Editar Producto Individual</h3>
                             <p class="text-xs text-slate-400">Escribe el nombre o SKU. Elige una opción de la lista para modificar foto, nombre o precio.</p>
                             
-                            <!-- Buscador con lista desplegable -->
                             <div class="relative">
                                 <input type="text" id="adminProductSearchInput" oninput="liveSearchAdminProduct()" placeholder="Escribe para buscar (Ej: Cristalino...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <div id="adminLiveSearchResults" class="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-b-xl mt-1 hidden shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-600">
-                                    <!-- Aquí caen los resultados mientras escribes -->
                                 </div>
                             </div>
 
-                            <!-- Panel de edición (Se muestra al hacer clic en un resultado) -->
                             <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
-                                <!-- Interfaz de edición inyectada aquí -->
                             </div>
                         </div>
 
@@ -290,11 +283,24 @@
                     
                     <!-- Pestaña Clientes y Pedidos -->
                     <div id="adminTab-clientes" class="admin-tab-content hidden space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-bold text-slate-200">Control de Clientes y Pedidos</h3>
-                            <button onclick="downloadClientsExcel()" class="bg-emerald-600/20 text-emerald-400 text-xs px-3 py-1.5 rounded-lg border border-emerald-500/30">⬇️ Descargar Excel</button>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-bold text-slate-200">Control de Clientes (CRM)</h3>
+                            <button onclick="downloadClientsExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg border border-emerald-500 shadow transition font-bold flex items-center gap-1">
+                                <span>⬇️</span> Reporte Inteligente
+                            </button>
                         </div>
-                        <div id="adminClientsList" class="space-y-4 max-h-96 overflow-y-auto pr-1"></div>
+
+                        <!-- Herramientas de Filtro Inteligente -->
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2 shadow-inner">
+                            <label class="text-[10px] text-slate-400 font-bold block">Filtrar y Ordenar Clientes:</label>
+                            <select id="clientSortSelect" onchange="renderAdminClients()" class="w-full bg-slate-900 border border-slate-600 text-xs text-slate-200 rounded-lg p-2 outline-none focus:border-pomelero-gold cursor-pointer transition">
+                                <option value="recent">🕒 Ordenar por: Último pedido (Más recientes)</option>
+                                <option value="best">⭐ Ordenar por: Mejores Clientes (Más compras/gasto)</option>
+                                <option value="inactive">⚠️ Ordenar por: Inactivos (Más tiempo sin pedir)</option>
+                            </select>
+                        </div>
+
+                        <div id="adminClientsList" class="space-y-4 max-h-[28rem] overflow-y-auto pr-1"></div>
                     </div>
                     
                     <!-- Pestaña Apariencia -->
@@ -347,6 +353,7 @@
 
         let products = [];
         let cart = [];
+        let adminClientsData = []; // NUEVO: Guarda a los clientes para ordenarlos
         let currentCategory = 'TODOS';
         let whatsappNumber = '523780000000';
         let storeLogo = '';
@@ -810,9 +817,12 @@
 
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            
+            // NUEVO: Agregado timestamp oculto para permitir el filtro de "Más recientes"
             const newOrder = { 
                 id: orderId, 
                 date: new Date().toLocaleDateString(), 
+                timestamp: Date.now(),
                 total: total, 
                 items: [...cart],
                 status: 'Pendiente'
@@ -1062,111 +1072,179 @@
             XLSX.writeFile(wb, "Catalogo_Pomelero.xlsx");
         }
 
-        async function downloadClientsExcel() {
-            try {
-                const snap = await db.collection("pomelero_users").get();
-                if(snap.empty) return alert("No hay clientes registrados.");
-                const data = snap.docs.map(d => {
-                   let u = d.data();
-                   return { Nombre: u.name, Telefono: u.phone, Direccion: u.address || 'N/D', Contrasena: u.password, Pedidos_Realizados: u.orders ? u.orders.length : 0 };
-                });
-                const ws = XLSX.utils.json_to_sheet(data);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-                XLSX.writeFile(wb, "Clientes_Pomelero.xlsx");
-            } catch(e) { alert("Error descargando clientes."); }
-        }
-
-        // ---------- LISTAR CLIENTES Y PEDIDOS ----------
+        // ---------- NUEVO: CARGA Y ORDENAMIENTO DE CLIENTES (CRM) ----------
         function loadAdminClients() {
             db.collection("pomelero_users").onSnapshot(snapshot => {
-                const list = document.getElementById('adminClientsList');
-                if (snapshot.empty) { list.innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; return; }
-                
-                let html = '';
-                snapshot.docs.forEach(doc => {
-                    const u = doc.data();
-                    const addr = u.address ? u.address : 'Sin dirección';
-                    
-                    let ordersHTML = '';
-                    if (u.orders && u.orders.length > 0) {
-                        ordersHTML = `
-                        <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
-                            <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
-                            <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
-                        
-                        u.orders.forEach(o => {
-                            const st = o.status || 'Pendiente';
-                            let stClass = "text-amber-400 border-amber-500/20";
-                            if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
-                            if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
-                            if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
-
-                            const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
-                            
-                            let itemsList = '';
-                            o.items.forEach(i => {
-                                itemsList += `<li>${i.qty}x ${i.name}</li>`;
-                            });
-
-                            ordersHTML += `
-                                    <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
-                                        <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
-                                            <div class="flex items-center">
-                                                <span>${o.id}</span>
-                                                ${stBadge}
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
-                                                <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
-                                            </div>
-                                        </summary>
-                                        <div class="p-3 border-t border-slate-700 bg-slate-800/80">
-                                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
-                                                <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
-                                                <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
-                                                    <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
-                                                    <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
-                                                    <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
-                                                    <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
-                                                </select>
-                                            </div>
-                                            <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
-                                                ${itemsList}
-                                            </ul>
-                                            <div class="flex gap-2">
-                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
-                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
-                                                <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>
-                                            </div>
-                                        </div>
-                                    </details>
-                                `;
-                        });
-                        
-                        ordersHTML += `
-                            </div>
-                        </div>`;
-                    } else {
-                        ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
-                    }
-
-                    html += `
-                    <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
-                        <div class="flex items-center justify-between">
-                            <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
-                            <div class="flex gap-2">
-                                <button onclick="editClient('${u.phone}', '${u.name}', '${addr}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
-                                <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
-                            </div>
-                        </div>
-                        <p class="text-[10px] text-slate-400">Tel: ${u.phone} | Contraseña: ${u.password} <br> Dir: ${addr}</p>
-                        ${ordersHTML}
-                    </div>`;
-                });
-                
-                list.innerHTML = html;
+                if (snapshot.empty) { 
+                    document.getElementById('adminClientsList').innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; 
+                    adminClientsData = [];
+                    return; 
+                }
+                adminClientsData = snapshot.docs.map(doc => doc.data());
+                renderAdminClients();
             });
+        }
+
+        function renderAdminClients() {
+            const list = document.getElementById('adminClientsList');
+            const sortMode = document.getElementById('clientSortSelect').value;
+
+            // Procesar y Etiquetar Clientes
+            let processedClients = adminClientsData.map(u => {
+                const orderCount = u.orders ? u.orders.length : 0;
+                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
+                const lastOrder = orderCount > 0 ? u.orders[0] : null; 
+                
+                let category = "⚠️ Inactivo / Malo";
+                let catColor = "text-rose-400 border-rose-500/20 bg-rose-500/10";
+                
+                if (orderCount >= 5 || totalSpent >= 3000) {
+                    category = "⭐ Cliente Bueno";
+                    catColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
+                } else if (orderCount >= 2) {
+                    category = "👍 Cliente Medio";
+                    catColor = "text-blue-400 border-blue-500/20 bg-blue-500/10";
+                } else if (orderCount === 1) {
+                    category = "🆕 Nuevo Cliente";
+                    catColor = "text-amber-400 border-amber-500/20 bg-amber-500/10";
+                }
+
+                return { ...u, orderCount, totalSpent, lastOrder, category, catColor };
+            });
+
+            // Lógica de Ordenamiento
+            if (sortMode === 'recent') {
+                processedClients.sort((a, b) => {
+                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
+                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
+                    return tB - tA; // Mayor timestamp (más reciente) primero
+                });
+            } else if (sortMode === 'inactive') {
+                processedClients.sort((a, b) => {
+                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
+                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
+                    return tA - tB; // Menor timestamp (más antiguo/cero) primero
+                });
+            } else if (sortMode === 'best') {
+                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); // Mayor gasto primero
+            }
+
+            // Generar HTML
+            let html = '';
+            processedClients.forEach(u => {
+                let ordersHTML = '';
+                if (u.orderCount > 0) {
+                    ordersHTML = `
+                    <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
+                        <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
+                        <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
+                    
+                    u.orders.forEach(o => {
+                        const st = o.status || 'Pendiente';
+                        let stClass = "text-amber-400 border-amber-500/20";
+                        if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
+                        if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
+                        if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
+
+                        const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
+                        
+                        let itemsList = '';
+                        o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
+
+                        ordersHTML += `
+                                <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
+                                    <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
+                                        <div class="flex items-center">
+                                            <span>${o.id}</span>
+                                            ${stBadge}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
+                                            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                                        </div>
+                                    </summary>
+                                    <div class="p-3 border-t border-slate-700 bg-slate-800/80">
+                                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
+                                            <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
+                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
+                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
+                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
+                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
+                                            </select>
+                                        </div>
+                                        <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
+                                            ${itemsList}
+                                        </ul>
+                                        <div class="flex gap-2">
+                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
+                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
+                                            <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>
+                                        </div>
+                                    </div>
+                                </details>
+                            `;
+                    });
+                    
+                    ordersHTML += `
+                        </div>
+                    </div>`;
+                } else {
+                    ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
+                }
+
+                html += `
+                <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded border inline-block mt-1 w-max ${u.catColor}">${u.category}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
+                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px]">
+                        <p class="text-slate-400">Tel: ${u.phone} | Dir: ${u.address || 'N/D'}</p>
+                        <p class="text-pomelero-gold font-bold">Gasto: $${u.totalSpent.toFixed(2)}</p>
+                    </div>
+                    ${ordersHTML}
+                </div>`;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        // ---------- NUEVO: REPORTE DE EXCEL INTELIGENTE ----------
+        async function downloadClientsExcel() {
+            if (adminClientsData.length === 0) return alert("No hay clientes registrados.");
+            
+            const data = adminClientsData.map(u => {
+                const orderCount = u.orders ? u.orders.length : 0;
+                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
+                const lastOrderDate = orderCount > 0 ? u.orders[0].date : 'Nunca';
+
+                let category = "Inactivo / Malo";
+                if (orderCount >= 5 || totalSpent >= 3000) category = "Bueno";
+                else if (orderCount >= 2) category = "Medio";
+                else if (orderCount === 1) category = "Nuevo";
+
+                return { 
+                    Nombre: u.name, 
+                    Telefono: u.phone, 
+                    Direccion: u.address || 'N/D', 
+                    Clasificacion: category,
+                    Total_Gastado: "$" + totalSpent.toFixed(2),
+                    Pedidos_Realizados: orderCount,
+                    Ultimo_Pedido: lastOrderDate,
+                    Contrasena: u.password
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_Clientes");
+            XLSX.writeFile(wb, "Reporte_Inteligente_Clientes.xlsx");
         }
 
         async function updateOrderStatus(phone, orderId, newStatus) {
