@@ -308,7 +308,7 @@
                             </div>
                         </div>
                         <div class="space-y-3 pt-4 border-t border-slate-800">
-                            <h3 class="text-sm font-bold text-slate-200">Logotipo desde PC</h3>
+                            <h3 class="text-sm font-bold text-slate-200">Logotipo Oficial (Saldrá en la página y PDFs)</h3>
                             <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-800 file:text-slate-200 cursor-pointer">
                         </div>
                         <div class="space-y-3 pt-4 border-t border-slate-800">
@@ -416,7 +416,6 @@
             else body.style.backgroundColor = '#0f172a';
         }
 
-        // ---------- LÓGICA DE FLECHAS PARA CATEGORÍAS ----------
         function updateCategoryArrows() {
             const container = document.getElementById('categoriesContainer');
             const leftBtn = document.getElementById('leftArrowBtn');
@@ -444,7 +443,6 @@
         function filterByCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
         function filterProducts() { renderProducts(); }
 
-        // ----- FUNCIONES PARA EL MODAL DE IMAGEN -----
         function openImageModal(imgSrc) {
             document.getElementById('modalImageSrc').src = imgSrc;
             document.getElementById('imageModal').classList.remove('hidden');
@@ -677,7 +675,7 @@
                         <p class="text-[10px] text-slate-400">${ord.date}</p>
                         <div class="flex gap-2 pt-2 border-t border-slate-800">
                             <button onclick="resendOrder('${ord.id}')" class="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30">Reenviar 💬</button>
-                            <button onclick="downloadOrderPDF('${ord.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700">Descargar 📄</button>
+                            <button onclick="downloadOrderPDF('${ord.id}', 'carta')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700">Descargar 📄</button>
                         </div>
                     </div>
                 `}).join('');
@@ -690,126 +688,101 @@
             switchView('catalogo');
         }
 
-        function downloadOrderPDF(orderId) {
+        // ---------- DESCARGA DE PDF PARA CLIENTE ----------
+        function downloadOrderPDF(orderId, format) {
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
             if (!user || !user.orders) return;
             const ord = user.orders.find(o => o.id === orderId);
             if (!ord) return;
 
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Ticket ${ord.id}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                        h2 { color: #f59e0b; margin-bottom: 5px; }
-                        .info { margin-bottom: 20px; font-size: 14px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
-                        th { background-color: #f8fafc; }
-                        .total { text-align: right; font-size: 16px; font-weight: bold; margin-top: 15px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>POMELERO LICORERÍAS</h2>
-                    <p style="font-size:12px; color:#666;">Comprobante de Pedido</p>
-                    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+            let styleHtml = '';
+            let bodyHtml = '';
+
+            const logoHtml = storeLogo 
+                ? `<img src="${storeLogo}" style="filter: invert(1) brightness(0); ${format === 'ticket' ? 'max-width: 45mm; margin-bottom: 5px;' : 'max-width: 150px;'}">` 
+                : `<h2>GRUPO POMELERO</h2>`;
+
+            const companyInfoHtml = `
+                <strong>Grupo Pomelero</strong><br>
+                Blvd. Lic. Anacleto Glez F. Sur 340a<br>
+                San Miguel, 47660<br>
+                Tepatitlán de Morelos, Jal.<br>
+                Tel: 3781165303<br>
+            `;
+
+            if (format === 'ticket') {
+                styleHtml = `
+                    @page { margin: 0; }
+                    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 10px 5px; color: #000; background: #fff; text-align: center; }
+                    .text-left { text-align: left; }
+                    .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                    .info { font-size: 11px; margin-bottom: 5px; line-height: 1.2; text-align: left; }
+                    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+                    th, td { text-align: left; padding: 2px 0; vertical-align: top; }
+                    th { border-bottom: 1px solid #000; padding-bottom: 4px; }
+                    .right { text-align: right; }
+                    .total { font-size: 14px; font-weight: bold; text-align: right; margin-top: 5px; }
+                `;
+                bodyHtml = `
+                    ${logoHtml}
+                    <div class="info text-left" style="text-align: center;">${companyInfoHtml}</div>
+                    <div class="divider"></div>
                     <div class="info">
                         <strong>Folio:</strong> ${ord.id}<br>
-                        <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
                         <strong>Fecha:</strong> ${ord.date}<br>
+                        <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
                         <strong>Cliente:</strong> ${user.name}<br>
-                        <strong>Teléfono:</strong> ${user.phone}<br>
+                        <strong>Tel:</strong> ${user.phone}
+                    </div>
+                    <div class="divider"></div>
+                    <table>
+                        <thead><tr><th style="width: 15%">Cant</th><th style="width: 55%">Desc</th><th class="right" style="width: 30%">Total</th></tr></thead>
+                        <tbody>
+                            ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <div class="divider"></div>
+                    <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                    <div class="divider"></div>
+                    <div style="font-size: 10px; margin-top: 10px;">¡Gracias por su compra!</div>
+                `;
+            } else {
+                styleHtml = `
+                    @page { margin: 15mm; }
+                    body { font-family: Arial, sans-serif; font-size: 14px; color: #000; background: #fff; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                    .company { text-align: right; font-size: 12px; line-height: 1.4; }
+                    .info { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+                    th { background-color: #f8fafc; font-weight: bold; border-bottom: 2px solid #000; }
+                    .right { text-align: right; }
+                    .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px; }
+                `;
+                bodyHtml = `
+                    <div class="header">
+                        <div>${logoHtml}</div>
+                        <div class="company">${companyInfoHtml}</div>
+                    </div>
+                    <div class="info">
+                        <strong>Comprobante de Pedido</strong><br>
+                        <strong>Folio:</strong> ${ord.id} | <strong>Fecha:</strong> ${ord.date} | <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                        <strong>Cliente:</strong> ${user.name} | <strong>Teléfono:</strong> ${user.phone}<br>
                         <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
                     </div>
                     <table>
-                        <thead>
-                            <tr><th>Cant</th><th>Descripción</th><th>Subtotal</th></tr>
-                        </thead>
+                        <thead><tr><th>Cant</th><th>Descripción</th><th>Precio Unitario</th><th class="right">Subtotal</th></tr></thead>
                         <tbody>
-                            ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                            ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${i.price.toFixed(2)}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
                         </tbody>
                     </table>
-                    <div class="total">Total: $${ord.total.toFixed(2)}</div>
-                    <script>window.onload = function() { window.print(); }<\/script>
-                </body>
-                </html>
-            `);
+                    <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                `;
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<html><head><title>Pedido_${ord.id}</title><style>${styleHtml}</style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
             printWindow.document.close();
-        }
-
-        // ---------- DESCARGA ADMIN DE PEDIDOS ----------
-        async function adminDownloadOrderPDF(phone, orderId) {
-            try {
-                const doc = await db.collection("pomelero_users").doc(phone).get();
-                if(doc.exists) {
-                    const user = doc.data();
-                    const ord = (user.orders || []).find(o => o.id === orderId);
-                    if(ord) {
-                        const printWindow = window.open('', '_blank');
-                        printWindow.document.write(`
-                            <html>
-                            <head>
-                                <title>Ticket ${ord.id}</title>
-                                <style>
-                                    body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                                    h2 { color: #f59e0b; margin-bottom: 5px; }
-                                    .info { margin-bottom: 20px; font-size: 14px; }
-                                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                                    th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
-                                    th { background-color: #f8fafc; }
-                                    .total { text-align: right; font-size: 16px; font-weight: bold; margin-top: 15px; }
-                                </style>
-                            </head>
-                            <body>
-                                <h2>POMELERO LICORERÍAS</h2>
-                                <p style="font-size:12px; color:#666;">Copia de Pedido (Administrador)</p>
-                                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-                                <div class="info">
-                                    <strong>Folio:</strong> ${ord.id}<br>
-                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
-                                    <strong>Fecha:</strong> ${ord.date}<br>
-                                    <strong>Cliente:</strong> ${user.name}<br>
-                                    <strong>Teléfono:</strong> ${user.phone}<br>
-                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
-                                </div>
-                                <table>
-                                    <thead>
-                                        <tr><th>Cant</th><th>Descripción</th><th>Subtotal</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="total">Total: $${ord.total.toFixed(2)}</div>
-                                <script>window.onload = function() { window.print(); }<\/script>
-                            </body>
-                            </html>
-                        `);
-                        printWindow.document.close();
-                    }
-                }
-            } catch(e) {
-                alert("Error al descargar el ticket.");
-            }
-        }
-
-        // ---------- ELIMINAR PEDIDO DESDE ADMIN ----------
-        async function deleteOrder(phone, orderId) {
-            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
-            try {
-                const userRef = db.collection("pomelero_users").doc(phone);
-                const doc = await userRef.get();
-                if(doc.exists) {
-                    let ordersArray = doc.data().orders || [];
-                    ordersArray = ordersArray.filter(o => o.id !== orderId);
-                    await userRef.update({ orders: ordersArray });
-                    alert("Pedido eliminado correctamente.");
-                }
-            } catch (error) {
-                alert("Hubo un error al eliminar el pedido.");
-            }
         }
 
         function resendOrder(orderId) {
@@ -1162,8 +1135,9 @@
                                                 ${itemsList}
                                             </ul>
                                             <div class="flex gap-2">
-                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">Descargar Ticket</button>
-                                                <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">Eliminar Pedido</button>
+                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
+                                                <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
+                                                <button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>
                                             </div>
                                         </div>
                                     </details>
@@ -1208,6 +1182,126 @@
                     }
                 }
             } catch (error) { alert("Hubo un error al actualizar el estado del pedido."); }
+        }
+
+        // ---------- DESCARGA DE PDF PARA ADMIN ----------
+        async function adminDownloadOrderPDF(phone, orderId, format) {
+            try {
+                const doc = await db.collection("pomelero_users").doc(phone).get();
+                if(doc.exists) {
+                    const user = doc.data();
+                    const ord = (user.orders || []).find(o => o.id === orderId);
+                    if(ord) {
+                        let styleHtml = '';
+                        let bodyHtml = '';
+
+                        const logoHtml = storeLogo 
+                            ? `<img src="${storeLogo}" style="filter: invert(1) brightness(0); ${format === 'ticket' ? 'max-width: 45mm; margin-bottom: 5px;' : 'max-width: 150px;'}">` 
+                            : `<h2>GRUPO POMELERO</h2>`;
+
+                        const companyInfoHtml = `
+                            <strong>Grupo Pomelero</strong><br>
+                            Blvd. Lic. Anacleto Glez F. Sur 340a<br>
+                            San Miguel, 47660<br>
+                            Tepatitlán de Morelos, Jal.<br>
+                            Tel: 3781165303<br>
+                        `;
+
+                        if (format === 'ticket') {
+                            styleHtml = `
+                                @page { margin: 0; }
+                                body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 10px 5px; color: #000; background: #fff; text-align: center; }
+                                .text-left { text-align: left; }
+                                .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                                .info { font-size: 11px; margin-bottom: 5px; line-height: 1.2; text-align: left; }
+                                table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+                                th, td { text-align: left; padding: 2px 0; vertical-align: top; }
+                                th { border-bottom: 1px solid #000; padding-bottom: 4px; }
+                                .right { text-align: right; }
+                                .total { font-size: 14px; font-weight: bold; text-align: right; margin-top: 5px; }
+                            `;
+                            bodyHtml = `
+                                ${logoHtml}
+                                <div class="info text-left" style="text-align: center;">${companyInfoHtml}</div>
+                                <div class="divider"></div>
+                                <div class="info">
+                                    <strong>Folio:</strong> ${ord.id}<br>
+                                    <strong>Fecha:</strong> ${ord.date}<br>
+                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                                    <strong>Cliente:</strong> ${user.name}<br>
+                                    <strong>Tel:</strong> ${user.phone}<br>
+                                    <strong>Dir:</strong> ${user.address || 'Recoger en tienda'}
+                                </div>
+                                <div class="divider"></div>
+                                <table>
+                                    <thead><tr><th style="width: 15%">Cant</th><th style="width: 55%">Desc</th><th class="right" style="width: 30%">Total</th></tr></thead>
+                                    <tbody>
+                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="divider"></div>
+                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                                <div class="divider"></div>
+                                <div style="font-size: 10px; margin-top: 10px;">*** TICKET INTERNO ***</div>
+                            `;
+                        } else {
+                            styleHtml = `
+                                @page { margin: 15mm; }
+                                body { font-family: Arial, sans-serif; font-size: 14px; color: #000; background: #fff; }
+                                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                                .company { text-align: right; font-size: 12px; line-height: 1.4; }
+                                .info { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+                                th { background-color: #f8fafc; font-weight: bold; border-bottom: 2px solid #000; }
+                                .right { text-align: right; }
+                                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px; }
+                            `;
+                            bodyHtml = `
+                                <div class="header">
+                                    <div>${logoHtml}</div>
+                                    <div class="company">${companyInfoHtml}</div>
+                                </div>
+                                <div class="info">
+                                    <strong>Copia de Pedido (Administrador)</strong><br>
+                                    <strong>Folio:</strong> ${ord.id} | <strong>Fecha:</strong> ${ord.date} | <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                                    <strong>Cliente:</strong> ${user.name} | <strong>Teléfono:</strong> ${user.phone}<br>
+                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
+                                </div>
+                                <table>
+                                    <thead><tr><th>Cant</th><th>Descripción</th><th>Precio Unitario</th><th class="right">Subtotal</th></tr></thead>
+                                    <tbody>
+                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${i.price.toFixed(2)}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                            `;
+                        }
+
+                        const printWindow = window.open('', '_blank');
+                        printWindow.document.write(`<html><head><title>Admin_Pedido_${ord.id}</title><style>${styleHtml}</style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+                        printWindow.document.close();
+                    }
+                }
+            } catch(e) {
+                alert("Error al descargar el ticket.");
+            }
+        }
+
+        async function deleteOrder(phone, orderId) {
+            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
+            try {
+                const userRef = db.collection("pomelero_users").doc(phone);
+                const doc = await userRef.get();
+                if(doc.exists) {
+                    let ordersArray = doc.data().orders || [];
+                    ordersArray = ordersArray.filter(o => o.id !== orderId);
+                    await userRef.update({ orders: ordersArray });
+                    alert("Pedido eliminado correctamente.");
+                }
+            } catch (error) {
+                alert("Hubo un error al eliminar el pedido.");
+            }
         }
 
         async function editClient(phone, currentName, currentAddress) {
