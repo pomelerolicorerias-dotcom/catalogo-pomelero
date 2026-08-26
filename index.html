@@ -34,6 +34,16 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
+        
+        /* Ocultar las flechas de los recuadros de número para un diseño más limpio */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body id="bodyTheme" class="bg-pomelero-dark text-slate-100 min-h-screen font-sans flex flex-col">
@@ -258,10 +268,11 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube.</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios (Protege las fotos ya subidas).</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
+                            <!-- BOTÓN DESCARGAR EXCEL ARREGLADO -->
                             <button onclick="downloadCatalogExcel()" class="flex-1 bg-slate-800 text-slate-200 py-2.5 rounded-xl text-xs border border-slate-700">⬇️ Descargar Catálogo Actual</button>
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
@@ -378,14 +389,13 @@
 
         let products = [];
         let cart = [];
-        let adminClientsData = [];
+        let adminClientsData = []; 
         let currentCategory = 'TODOS';
         let whatsappNumber = '523780000000';
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
         
-        // VARIABLE PARA GUARDAR PERMISOS DEL ADMIN ACTIVO
         let currentAdminPerms = null; 
 
         const statusColors = {
@@ -487,6 +497,7 @@
             document.getElementById('imageModal').classList.add('hidden');
         }
 
+        // ---------- NUEVO: RENDERIZADO DE PRODUCTOS CON INPUT DE CANTIDAD ----------
         function renderProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('productsGrid');
@@ -509,12 +520,17 @@
                 const isAvailable = p.price !== "NO_DISPONIBLE" && p.price !== null && p.price !== "";
                 const priceBadge = isAvailable ? `<span class="text-lg font-bold text-pomelero-gold">$${Number(p.price).toFixed(2)}</span>` : `<span class="text-sm font-bold text-rose-500">No disponible</span>`;
                 const btnStyle = isAvailable ? 'bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark' : 'bg-slate-700 text-slate-500 cursor-not-allowed';
-                const action = isAvailable ? `onclick="addToCart('${p.sku}')"` : '';
+                const action = isAvailable ? `onclick="addToCartWithQty('${p.sku}')"` : '';
 
                 let imgHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
                 if (p.image) {
                     imgHTML = `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain cursor-pointer p-2 hover:scale-105 transition-transform duration-300" onclick="openImageModal('${p.image}')">`;
                 }
+
+                // NUEVO: Input para seleccionar cantidad directo en el catálogo
+                const inputQtyHTML = isAvailable 
+                    ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
+                    : '';
 
                 return `
                     <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition">
@@ -533,21 +549,35 @@
                                 <span class="text-[10px] text-slate-400 block uppercase">Precio Mayoreo</span>
                                 ${priceBadge}
                             </div>
-                            <button ${action} class="${btnStyle} p-2.5 rounded-xl transition shadow font-bold">
-                                +
-                            </button>
+                            
+                            <div class="flex items-center gap-2">
+                                ${inputQtyHTML}
+                                <button ${action} class="${btnStyle} px-3 py-1.5 rounded-xl transition shadow font-bold text-xs flex items-center justify-center">
+                                    + Agregar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function addToCart(sku) {
+        // ---------- NUEVO: FUNCIÓN AGREGAR CANTIDAD ESPECÍFICA ----------
+        function addToCartWithQty(sku) {
             const prod = products.find(p => p.sku === sku);
             if (!prod) return;
+            
+            let qtyToAdd = 1;
+            const qtyInput = document.getElementById('qty-' + sku);
+            if (qtyInput) {
+                qtyToAdd = parseInt(qtyInput.value);
+                if (isNaN(qtyToAdd) || qtyToAdd <= 0) qtyToAdd = 1;
+                qtyInput.value = 1; // Resetea el cuadro a 1 después de agregar
+            }
+
             const existing = cart.find(item => item.sku === sku);
-            if (existing) existing.qty += 1;
-            else cart.push({ ...prod, qty: 1 });
+            if (existing) existing.qty += qtyToAdd;
+            else cart.push({ ...prod, qty: qtyToAdd });
             
             updateCartBadge();
             renderCartItems();
@@ -563,6 +593,21 @@
             renderCartItems();
         }
 
+        // ---------- NUEVO: FUNCIÓN PARA EL INPUT EDITABLE DEL CARRITO ----------
+        function setQty(sku, val) {
+            const qty = parseInt(val);
+            const item = cart.find(i => i.sku === sku);
+            if (item) {
+                if (isNaN(qty) || qty <= 0) {
+                    cart = cart.filter(i => i.sku !== sku);
+                } else {
+                    item.qty = qty;
+                }
+            }
+            updateCartBadge();
+            renderCartItems();
+        }
+
         function updateCartBadge() {
             const badge = document.getElementById('cartBadge');
             const total = cart.reduce((s, i) => s + i.qty, 0);
@@ -573,6 +618,7 @@
         function openCartModal() { renderCartItems(); document.getElementById('cartModal').classList.remove('hidden'); }
         function closeCartModal() { document.getElementById('cartModal').classList.add('hidden'); }
 
+        // ---------- NUEVO: RENDERIZADO DEL CARRITO CON INPUT EDITABLE ----------
         function renderCartItems() {
             const container = document.getElementById('cartItemsContainer');
             const totalPriceEl = document.getElementById('cartTotalPrice');
@@ -586,14 +632,14 @@
                 total += (item.price * item.qty);
                 return `
                     <div class="py-3 flex items-center justify-between">
-                        <div class="pr-2">
-                            <h4 class="text-sm font-bold text-slate-100">${item.name}</h4>
+                        <div class="pr-2 w-1/2">
+                            <h4 class="text-sm font-bold text-slate-100 line-clamp-2">${item.name}</h4>
                             <p class="text-xs text-pomelero-gold font-semibold">$${item.price} c/u</p>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="changeQty('${item.sku}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold">-</button>
-                            <span class="text-sm font-bold w-6 text-center">${item.qty}</span>
-                            <button onclick="changeQty('${item.sku}', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold">+</button>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="changeQty('${item.sku}', -1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center justify-center">-</button>
+                            <input type="number" value="${item.qty}" min="0" onchange="setQty('${item.sku}', this.value)" class="w-10 h-6 bg-slate-900 border border-slate-700 text-slate-100 text-center rounded-md text-[11px] outline-none focus:border-pomelero-gold shadow-inner">
+                            <button onclick="changeQty('${item.sku}', 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center justify-center">+</button>
                         </div>
                     </div>
                 `;
@@ -723,7 +769,6 @@
             switchView('catalogo');
         }
 
-        // ---------- DESCARGA DE PDF PARA CLIENTE ----------
         function downloadOrderPDF(orderId, format) {
             const user = JSON.parse(localStorage.getItem('pomelero_client_profile'));
             if (!user || !user.orders) return;
@@ -888,7 +933,6 @@
         }
         function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
-        // ---------- NUEVO: LOGIN CON USUARIO Y CONTRASEÑA ----------
         async function handleAdminLogin(e) {
             e.preventDefault();
             const user = document.getElementById('adminUserInput').value.trim();
@@ -957,7 +1001,6 @@
             }
         }
 
-        // ---------- NUEVO: CONTROL DE USUARIOS (CRM) ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
@@ -1016,7 +1059,6 @@
                 await db.collection("pomelero_admins").doc(user).delete();
             }
         }
-        // ------------------------------------------------------
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
@@ -1295,8 +1337,7 @@
                         let itemsList = '';
                         o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
 
-                        // NUEVO: Proteger botón borrar pedido si no tiene permiso de edición de cliente
-                        let deleteOrderBtn = currentAdminPerms.cli 
+                        let deleteOrderBtn = currentAdminPerms && currentAdminPerms.cli 
                             ? `<button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>` 
                             : '';
 
@@ -1342,9 +1383,8 @@
                     ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
                 }
 
-                // NUEVO: Proteger botones de cliente principal
                 let clientActionButtons = '';
-                if (currentAdminPerms.cli) {
+                if (currentAdminPerms && currentAdminPerms.cli) {
                     clientActionButtons = `
                         <div class="flex gap-2">
                             <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
