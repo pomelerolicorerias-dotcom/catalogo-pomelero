@@ -35,7 +35,6 @@
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         
-        /* Ocultar las flechas de los recuadros de número para un diseño más limpio */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -244,7 +243,7 @@
                 <button onclick="closeAdminModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
 
-            <!-- Login Admin (ACTUALIZADO A MULTIUSUARIO) -->
+            <!-- Login Admin -->
             <div id="adminLoginView" class="p-8 space-y-4">
                 <p class="text-xs text-slate-400 text-center">Ingresa tus credenciales de acceso.</p>
                 <form onsubmit="handleAdminLogin(event)" class="space-y-4 max-w-sm mx-auto">
@@ -272,15 +271,14 @@
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
-                            <!-- BOTÓN DESCARGAR EXCEL ARREGLADO -->
                             <button onclick="downloadCatalogExcel()" class="flex-1 bg-slate-800 text-slate-200 py-2.5 rounded-xl text-xs border border-slate-700">⬇️ Descargar Catálogo Actual</button>
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
                         <!-- SECCIÓN: Editar producto individual -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
-                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar Producto Individual</h3>
-                            <p class="text-xs text-slate-400">Escribe el nombre o SKU. Elige una opción de la lista para modificar foto, nombre o precio.</p>
+                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar o Borrar un Producto</h3>
+                            <p class="text-xs text-slate-400">Busca por nombre o SKU. Elige una opción de la lista para modificar o eliminar.</p>
                             
                             <div class="relative">
                                 <input type="text" id="adminProductSearchInput" oninput="liveSearchAdminProduct()" placeholder="Escribe para buscar (Ej: Cristalino...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
@@ -290,6 +288,25 @@
 
                             <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
                             </div>
+                        </div>
+
+                        <!-- NUEVA SECCIÓN: Crear Producto Manualmente -->
+                        <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
+                            <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                                ➕ Agregar Producto Nuevo
+                            </h3>
+                            <p class="text-xs text-slate-400">Añade un solo producto a la nube sin tener que subir el Excel completo.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="text" id="newProdSku" placeholder="SKU (Ej: SKU-999)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newProdCat" placeholder="Categoría (Ej: Tequila)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                            </div>
+                            <div class="pt-2">
+                                <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Imagen (Opcional):</label>
+                                <input type="file" id="newProdImage" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
+                            </div>
+                            <button onclick="createNewProduct()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs mt-1 transition shadow">Crear y Guardar Producto</button>
                         </div>
                     </div>
                     
@@ -497,7 +514,6 @@
             document.getElementById('imageModal').classList.add('hidden');
         }
 
-        // ---------- NUEVO: RENDERIZADO DE PRODUCTOS CON INPUT DE CANTIDAD ----------
         function renderProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const grid = document.getElementById('productsGrid');
@@ -527,7 +543,6 @@
                     imgHTML = `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain cursor-pointer p-2 hover:scale-105 transition-transform duration-300" onclick="openImageModal('${p.image}')">`;
                 }
 
-                // NUEVO: Input para seleccionar cantidad directo en el catálogo
                 const inputQtyHTML = isAvailable 
                     ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
                     : '';
@@ -562,7 +577,6 @@
             }).join('');
         }
 
-        // ---------- NUEVO: FUNCIÓN AGREGAR CANTIDAD ESPECÍFICA ----------
         function addToCartWithQty(sku) {
             const prod = products.find(p => p.sku === sku);
             if (!prod) return;
@@ -572,7 +586,7 @@
             if (qtyInput) {
                 qtyToAdd = parseInt(qtyInput.value);
                 if (isNaN(qtyToAdd) || qtyToAdd <= 0) qtyToAdd = 1;
-                qtyInput.value = 1; // Resetea el cuadro a 1 después de agregar
+                qtyInput.value = 1; 
             }
 
             const existing = cart.find(item => item.sku === sku);
@@ -593,7 +607,6 @@
             renderCartItems();
         }
 
-        // ---------- NUEVO: FUNCIÓN PARA EL INPUT EDITABLE DEL CARRITO ----------
         function setQty(sku, val) {
             const qty = parseInt(val);
             const item = cart.find(i => i.sku === sku);
@@ -618,7 +631,6 @@
         function openCartModal() { renderCartItems(); document.getElementById('cartModal').classList.remove('hidden'); }
         function closeCartModal() { document.getElementById('cartModal').classList.add('hidden'); }
 
-        // ---------- NUEVO: RENDERIZADO DEL CARRITO CON INPUT EDITABLE ----------
         function renderCartItems() {
             const container = document.getElementById('cartItemsContainer');
             const totalPriceEl = document.getElementById('cartTotalPrice');
@@ -1017,7 +1029,7 @@
                     if(permsTxt.length === 0) permsTxt.push('Ninguno (Lectura básica)');
 
                     html += `
-                        <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700 shadow-sm">
+                        <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700 shadow-sm mb-2">
                             <div>
                                 <p class="text-xs font-bold text-slate-200">👤 ${doc.id}</p>
                                 <p class="text-[9px] text-slate-400 mt-1">Permisos: ${permsTxt.join(', ')}</p>
@@ -1170,7 +1182,10 @@
                         <label class="text-[10px] font-bold text-slate-400 block mb-1">Precio Mayoreo (deja vacío si no está disponible):</label>
                         <input type="number" id="editProdPriceInput" value="${found.price === 'NO_DISPONIBLE' ? '' : found.price}" placeholder="Ej: 150.50" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
                     </div>
-                    <button onclick="saveProductDetails('${found.sku}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs mt-1 transition shadow">💾 Guardar Nombre y Precio</button>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="saveProductDetails('${found.sku}')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">💾 Guardar Cambios</button>
+                        <button onclick="deleteProduct('${found.sku}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2.5 rounded-xl text-xs transition shadow border border-rose-500/20">🗑️ Borrar Producto</button>
+                    </div>
                 </div>
 
                 <div class="pt-4 mt-2 border-t border-slate-700">
@@ -1180,6 +1195,68 @@
             `;
             resultBox.classList.remove('hidden');
         }
+
+        // ---------- NUEVO: ELIMINAR Y CREAR PRODUCTO INDIVIDUAL ----------
+        async function deleteProduct(sku) {
+            if(!confirm(`¿Estás seguro de eliminar el producto ${sku}? Esto no se puede deshacer.`)) return;
+            try {
+                await db.collection("pomelero_products").doc(sku).delete();
+                alert("✅ Producto eliminado de la nube.");
+                document.getElementById('adminProductSearchInput').value = '';
+                document.getElementById('adminProductResult').classList.add('hidden');
+            } catch (error) {
+                alert("Error al eliminar el producto.");
+            }
+        }
+
+        async function createNewProduct() {
+            const sku = document.getElementById('newProdSku').value.trim();
+            const name = document.getElementById('newProdName').value.trim();
+            const category = document.getElementById('newProdCat').value.trim();
+            const rawPrice = document.getElementById('newProdPrice').value.trim();
+            const imageInput = document.getElementById('newProdImage');
+
+            if (!sku || !name || !category) return alert("SKU, Nombre y Categoría son obligatorios para crear un producto.");
+
+            const existing = products.find(p => p.sku.toLowerCase() === sku.toLowerCase());
+            if (existing) return alert(`Ya existe un producto con el SKU: ${sku}. Por favor elige uno diferente.`);
+
+            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
+            let productData = { sku, name, category, price };
+
+            try {
+                if (imageInput.files && imageInput.files[0]) {
+                    const file = imageInput.files[0];
+                    if (file.size > 1500000) {
+                        alert("⚠️ La imagen es muy pesada. Intenta con una imagen de menor tamaño (máx 1.5MB).");
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = async function(evt) {
+                        productData.image = evt.target.result;
+                        await db.collection("pomelero_products").doc(sku).set(productData);
+                        alert("✅ Producto y foto guardados correctamente en la nube.");
+                        clearNewProductForm();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    await db.collection("pomelero_products").doc(sku).set(productData);
+                    alert("✅ Producto guardado correctamente sin imagen.");
+                    clearNewProductForm();
+                }
+            } catch (error) {
+                alert("Error de conexión al crear el producto.");
+            }
+        }
+
+        function clearNewProductForm() {
+            document.getElementById('newProdSku').value = '';
+            document.getElementById('newProdName').value = '';
+            document.getElementById('newProdCat').value = '';
+            document.getElementById('newProdPrice').value = '';
+            document.getElementById('newProdImage').value = '';
+        }
+        // -----------------------------------------------------------------
 
         async function saveProductDetails(sku) {
             const newName = document.getElementById('editProdNameInput').value.trim();
