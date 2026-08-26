@@ -267,7 +267,7 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios (Protege las fotos ya subidas).</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube.</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
@@ -290,14 +290,17 @@
                             </div>
                         </div>
 
-                        <!-- NUEVA SECCIÓN: Crear Producto Manualmente -->
+                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
                             <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                                 ➕ Agregar Producto Nuevo
                             </h3>
                             <p class="text-xs text-slate-400">Añade un solo producto a la nube sin tener que subir el Excel completo.</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <input type="text" id="newProdSku" placeholder="SKU (Ej: SKU-999)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <div class="flex gap-2">
+                                    <input type="text" id="newProdSku" placeholder="SKU (Ej: SKU-999)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                    <button onclick="generateNextSKU()" title="Generar código automático" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-[10px] font-bold transition border border-slate-600">Generar</button>
+                                </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <input type="text" id="newProdCat" placeholder="Categoría (Ej: Tequila)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
@@ -1196,7 +1199,31 @@
             resultBox.classList.remove('hidden');
         }
 
-        // ---------- NUEVO: ELIMINAR Y CREAR PRODUCTO INDIVIDUAL ----------
+        // ---------- NUEVO: FUNCIÓN GENERAR SKU AUTOMÁTICO ----------
+        function generateNextSKU() {
+            if (products.length === 0) {
+                document.getElementById('newProdSku').value = 'SKU-1000';
+                return;
+            }
+            
+            let maxNumber = 0;
+            products.forEach(p => {
+                if (p.sku) {
+                    // Extrae únicamente los números del SKU
+                    const match = p.sku.match(/\d+/);
+                    if (match) {
+                        const num = parseInt(match[0], 10);
+                        if (num > maxNumber) {
+                            maxNumber = num;
+                        }
+                    }
+                }
+            });
+            
+            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
+            document.getElementById('newProdSku').value = 'SKU-' + nextNumber;
+        }
+
         async function deleteProduct(sku) {
             if(!confirm(`¿Estás seguro de eliminar el producto ${sku}? Esto no se puede deshacer.`)) return;
             try {
@@ -1256,7 +1283,6 @@
             document.getElementById('newProdPrice').value = '';
             document.getElementById('newProdImage').value = '';
         }
-        // -----------------------------------------------------------------
 
         async function saveProductDetails(sku) {
             const newName = document.getElementById('editProdNameInput').value.trim();
