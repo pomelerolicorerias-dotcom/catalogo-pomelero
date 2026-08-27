@@ -267,7 +267,7 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para sincronizarlo con la nube.</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios (Protege las fotos ya subidas).</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
@@ -290,7 +290,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU -->
+                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU Y DATALIST CATEGORÍA -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
                             <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                                 ➕ Agregar Producto Nuevo
@@ -302,7 +302,11 @@
                                     <button onclick="generateNextSKU()" title="Generar código automático" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-[10px] font-bold transition border border-slate-600">Generar</button>
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <input type="text" id="newProdCat" placeholder="Categoría (Ej: Tequila)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                
+                                <!-- NUEVO: Buscador inteligente híbrido de Categorías (Datalist) -->
+                                <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <datalist id="existingCats"></datalist>
+
                                 <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="pt-2">
@@ -497,11 +501,19 @@
 
         function renderCategories() {
             const container = document.getElementById('categoriesContainer');
-            const categories = ['TODOS', ...new Set(products.map(p => p.category || 'General'))];
+            const uniqueCategories = [...new Set(products.map(p => p.category || 'General'))];
+            const categories = ['TODOS', ...uniqueCategories];
+            
             container.innerHTML = categories.map(cat => `
                 <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'} shrink-0">${cat}</button>
             `).join('');
             
+            // NUEVO: Actualizar la lista inteligente del formulario de nuevo producto
+            const dl = document.getElementById('existingCats');
+            if (dl) {
+                dl.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
+            }
+
             setTimeout(updateCategoryArrows, 100);
         }
 
@@ -1199,7 +1211,6 @@
             resultBox.classList.remove('hidden');
         }
 
-        // ---------- NUEVO: FUNCIÓN GENERAR SKU AUTOMÁTICO ----------
         function generateNextSKU() {
             if (products.length === 0) {
                 document.getElementById('newProdSku').value = 'SKU-1000';
@@ -1209,7 +1220,6 @@
             let maxNumber = 0;
             products.forEach(p => {
                 if (p.sku) {
-                    // Extrae únicamente los números del SKU
                     const match = p.sku.match(/\d+/);
                     if (match) {
                         const num = parseInt(match[0], 10);
