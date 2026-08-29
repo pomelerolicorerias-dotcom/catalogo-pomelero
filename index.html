@@ -95,7 +95,6 @@
             <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS FIJADA (STICKY) -->
             <div class="sticky top-24 z-30 flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-2xl mb-6 backdrop-blur-sm bg-opacity-95">
                 
-                <!-- Buscador y Select de Ordenamiento (ESTILO MERCADO LIBRE) -->
                 <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0">
                     <div class="relative w-full sm:w-64">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
@@ -111,7 +110,6 @@
                     </select>
                 </div>
                 
-                <!-- Contenedor de categorías con flechas automáticas -->
                 <div class="relative flex-grow flex items-center min-w-0 w-full group mt-2 md:mt-0">
                     <button id="leftArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: -200, behavior: 'smooth'})" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-start pb-2 md:pb-0 pl-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition cursor-pointer">
@@ -131,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- Cuadrícula de Productos -->
             <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             
             <div id="loadingCatalog" class="text-center py-20 bg-pomelero-card rounded-2xl border border-slate-800">
@@ -146,12 +143,8 @@
 
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
-            
-            <!-- Panel de Login / Registro CON BOTÓN DE CERRAR 'X' -->
             <div id="loginFormContainer" class="relative bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
-                
                 <div class="text-center space-y-2 pt-2">
                     <h2 id="authFormTitle" class="text-xl font-bold text-slate-100">Iniciar Sesión</h2>
                     <p id="authFormSubtitle" class="text-xs text-slate-400">Ingresa tus datos para registrar o enviar tus pedidos.</p>
@@ -181,11 +174,8 @@
                 </div>
             </div>
 
-            <!-- Panel de Usuario Conectado CON BOTÓN DE CERRAR 'X' -->
             <div id="activeSessionContainer" class="relative hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
-                
                 <div class="flex flex-col items-center text-center space-y-3 pt-2">
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
                     <div>
@@ -195,13 +185,11 @@
                     </div>
                 </div>
 
-                <!-- Historial de Pedidos -->
                 <div class="space-y-3 pt-2 border-t border-slate-800">
                     <h3 class="text-xs font-bold text-pomelero-gold uppercase tracking-wider flex items-center justify-between">
                         <span>Mis Pedidos Anteriores</span>
                     </h3>
                     <div id="ordersHistoryList" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
-                        <!-- Pedidos inyectados aquí -->
                     </div>
                 </div>
 
@@ -226,7 +214,6 @@
                 <button onclick="closeCartModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
             <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-5 space-y-4 divide-y divide-slate-800/60">
-                <!-- Ítems del carrito -->
             </div>
             <div class="p-5 border-t border-slate-800 bg-pomelero-dark/50 space-y-4">
                 <div class="flex justify-between items-center text-base font-bold">
@@ -253,18 +240,21 @@
 
     <!-- MODAL FICHA TÉCNICA (EDICIÓN RÁPIDA DE ADMIN) -->
     <div id="editProductModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
-        <div class="bg-pomelero-card w-full max-w-md rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-pomelero-card w-full max-w-md rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
-                <h3 class="font-bold text-pomelero-gold text-sm">✏️ Ficha Técnica (Edición Rápida)</h3>
+                <h3 class="font-bold text-pomelero-gold text-sm">✏️ Ficha Técnica</h3>
                 <button onclick="closeEditProductModal()" class="text-slate-400 hover:text-white text-2xl font-light">&times;</button>
             </div>
-            <div class="p-5 space-y-4">
+            <div class="p-5 space-y-4 overflow-y-auto">
                 <div class="flex justify-center mb-2">
                     <img id="editModalImgPreview" src="" class="h-28 object-contain bg-slate-900 rounded-lg border border-slate-700 p-2 hidden">
                 </div>
                 <div>
-                    <label class="text-[10px] text-slate-400 font-bold block mb-1">SKU (No editable)</label>
-                    <input type="text" id="editModalSku" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-500 cursor-not-allowed shadow-inner">
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">SKU (Código)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="editModalSku" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 shadow-inner focus:outline-none focus:border-pomelero-gold">
+                        <button onclick="generateNextSKUForEditModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-[10px] font-bold transition border border-slate-600 shadow">Generar</button>
+                    </div>
                 </div>
                 <div>
                     <label class="text-[10px] text-slate-400 font-bold block mb-1">Nombre</label>
@@ -273,20 +263,19 @@
                 <div>
                     <label class="text-[10px] text-slate-400 font-bold block mb-1">Categoría</label>
                     <input type="text" id="editModalCat" list="existingCatsModal" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
-                    <datalist id="existingCatsModal"></datalist>
                 </div>
                 <div>
                     <label class="text-[10px] text-slate-400 font-bold block mb-1">Precio Mayoreo (Vacío = No disponible)</label>
                     <input type="number" id="editModalPrice" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Cambiar Imagen (Auto-guardado):</label>
-                    <input type="file" accept="image/*" onchange="uploadImageFromModal(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
+                    <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Cambiar Imagen (Se aplicará al guardar):</label>
+                    <input type="file" id="editModalImageInput" accept="image/*" onchange="uploadImageFromModal(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
                 </div>
             </div>
             <div class="p-4 border-t border-slate-800 flex gap-2 bg-slate-800/50">
-                <button id="btnSaveModal" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Guardar Cambios</button>
-                <button id="btnDeleteModal" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2 rounded-xl text-xs transition border border-rose-500/20">Borrar Producto</button>
+                <button id="btnSaveModal" onclick="saveProductFromModal()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Guardar Cambios</button>
+                <button id="btnDeleteModal" onclick="deleteProductFromModal()" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2 rounded-xl text-xs transition border border-rose-500/20">Borrar Producto</button>
             </div>
         </div>
     </div>
@@ -297,7 +286,6 @@
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">Panel de Administración</h2>
-                    <!-- BOTÓN CERRAR SESIÓN ADMIN -->
                     <button id="adminLogoutBtn" onclick="logoutAdmin()" class="hidden text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/20 transition border border-rose-500/20">Salir de Admin</button>
                 </div>
                 <button onclick="closeAdminModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
@@ -327,7 +315,7 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios (Protege las fotos ya subidas).</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios.</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
@@ -335,22 +323,7 @@
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
                         </div>
 
-                        <!-- SECCIÓN: Editar producto individual -->
-                        <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
-                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar o Borrar un Producto</h3>
-                            <p class="text-xs text-slate-400">Busca por nombre o SKU. Elige una opción de la lista para modificar o eliminar.</p>
-                            
-                            <div class="relative">
-                                <input type="text" id="adminProductSearchInput" oninput="liveSearchAdminProduct()" placeholder="Escribe para buscar (Ej: Cristalino...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <div id="adminLiveSearchResults" class="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-b-xl mt-1 hidden shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-600">
-                                </div>
-                            </div>
-
-                            <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
-                            </div>
-                        </div>
-
-                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU Y DATALIST CATEGORÍA -->
+                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
                             <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                                 ➕ Agregar Producto Nuevo
@@ -363,10 +336,8 @@
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 
-                                <!-- NUEVO: Buscador inteligente híbrido de Categorías (Datalist) -->
                                 <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <datalist id="existingCats"></datalist>
-
+                                
                                 <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="pt-2">
@@ -428,7 +399,7 @@
                             </h3>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="text" id="newAdminUser" placeholder="Nombre de usuario" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <input type="text" id="newAdminPass" placeholder="Contraseña segura" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newAdminPass" placeholder="Contraseña" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
                                 <p class="text-[10px] font-bold text-slate-400 mb-2">Permisos permitidos:</p>
@@ -479,11 +450,14 @@
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
-        let editingAdminUserId = null; 
         
-        // VARIABLES GLOBALES PARA SESIÓN ADMIN
         let currentAdminUser = null;
         let currentAdminPerms = null; 
+        
+        // Variables para la Ficha Técnica (Edición rápida y Segura de Usuarios/Productos)
+        let editingAdminUserId = null; 
+        let originalEditSku = null;
+        let pendingModalImage = null;
 
         const statusColors = {
             'Pendiente': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
@@ -495,7 +469,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
             
-            // NUEVO: CHECAR SI LA SESIÓN ADMIN YA EXISTE
             const savedAdmin = localStorage.getItem('pomelero_admin_profile');
             if (savedAdmin) {
                 try {
@@ -582,7 +555,7 @@
             `).join('');
             
             const dl = document.getElementById('existingCats');
-            const dlModal = document.getElementById('existingCatsModal'); // Para ficha técnica
+            const dlModal = document.getElementById('existingCatsModal');
             if (dl) dl.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
             if (dlModal) dlModal.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
 
@@ -640,7 +613,6 @@
                     ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
                     : '';
 
-                // NUEVO: Botón de Edición Rápida en el catálogo si el admin tiene permisos
                 let adminEditBtn = '';
                 if (currentAdminPerms && currentAdminPerms.inv) {
                     adminEditBtn = `<button onclick="openEditProductModal('${p.sku}')" class="absolute top-2 right-2 bg-slate-800/90 text-pomelero-gold p-1.5 rounded-lg border border-slate-700 shadow hover:bg-slate-700 transition z-10" title="Ficha Técnica (Editar)">✏️</button>`;
@@ -677,10 +649,14 @@
             }).join('');
         }
 
-        // ---------- NUEVO: LÓGICA DE LA FICHA TÉCNICA (MODAL EDICIÓN RÁPIDA) ----------
+        // ---------- NUEVO: LÓGICA DE FICHA TÉCNICA REPARADA Y SEGURA ----------
         function openEditProductModal(sku) {
             const p = products.find(x => x.sku === sku);
             if(!p) return;
+            
+            originalEditSku = p.sku;
+            pendingModalImage = null; // Reiniciar imagen pendiente
+            document.getElementById('editModalImageInput').value = ''; 
             
             document.getElementById('editModalSku').value = p.sku;
             document.getElementById('editModalName').value = p.name;
@@ -696,67 +672,105 @@
                 imgEl.classList.add('hidden');
             }
 
-            document.getElementById('btnSaveModal').onclick = () => saveProductFromModal(p.sku);
-            document.getElementById('btnDeleteModal').onclick = () => deleteProductFromModal(p.sku);
-
             document.getElementById('editProductModal').classList.remove('hidden');
         }
 
         function closeEditProductModal() {
             document.getElementById('editProductModal').classList.add('hidden');
+            originalEditSku = null;
+            pendingModalImage = null;
         }
 
-        async function saveProductFromModal(sku) {
+        function generateNextSKUForEditModal() {
+            if (products.length === 0) {
+                document.getElementById('editModalSku').value = 'SKU-1000';
+                return;
+            }
+            let maxNumber = 0;
+            products.forEach(p => {
+                if (p.sku) {
+                    const match = p.sku.match(/\d+/);
+                    if (match) {
+                        const num = parseInt(match[0], 10);
+                        if (num > maxNumber) maxNumber = num;
+                    }
+                }
+            });
+            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
+            document.getElementById('editModalSku').value = 'SKU-' + nextNumber;
+        }
+
+        function uploadImageFromModal(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 1500000) return alert("⚠️ La imagen es muy pesada (máximo 1.5MB).");
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                pendingModalImage = evt.target.result;
+                const imgEl = document.getElementById('editModalImgPreview');
+                imgEl.src = evt.target.result;
+                imgEl.classList.remove('hidden');
+                alert("✅ Foto cargada temporalmente. ¡No olvides darle a 'Guardar Cambios' abajo!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveProductFromModal() {
+            if(!originalEditSku) return;
+
+            const newSku = document.getElementById('editModalSku').value.trim();
             const name = document.getElementById('editModalName').value.trim();
             const cat = document.getElementById('editModalCat').value.trim();
             const rawPrice = document.getElementById('editModalPrice').value.trim();
             
-            if (!name || !cat) return alert("El nombre y la categoría no pueden estar vacíos.");
+            if (!newSku || !name || !cat) return alert("SKU, Nombre y Categoría no pueden estar vacíos.");
             
             let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
+            let productData = { sku: newSku, name, category: cat, price };
+            
+            const oldProd = products.find(p => p.sku === originalEditSku);
+            
+            // Lógica para mantener foto vieja o aplicar la nueva
+            if (pendingModalImage) {
+                productData.image = pendingModalImage;
+            } else if (oldProd && oldProd.image) {
+                productData.image = oldProd.image;
+            }
 
             try {
-                await db.collection("pomelero_products").doc(sku).update({ name, category: cat, price });
-                alert("✅ Cambios guardados correctamente.");
+                // Si el SKU cambió, es un producto "nuevo" (corregido o duplicado)
+                if (newSku !== originalEditSku) {
+                    const existing = products.find(p => p.sku.toLowerCase() === newSku.toLowerCase());
+                    if (existing) return alert(`El código ${newSku} ya existe en otro producto.`);
+
+                    await db.collection("pomelero_products").doc(newSku).set(productData);
+                    await db.collection("pomelero_products").doc(originalEditSku).delete();
+                } else {
+                    // Si el SKU es igual, solo sobreescribe
+                    await db.collection("pomelero_products").doc(originalEditSku).set(productData, { merge: true });
+                }
+
+                alert("✅ Ficha Técnica actualizada.");
                 closeEditProductModal();
             } catch(e) {
                 alert("Error al guardar en la nube. Revisa tu conexión.");
             }
         }
 
-        async function deleteProductFromModal(sku) {
+        async function deleteProductFromModal() {
+            if(!originalEditSku) return;
             if(!confirm("¿Estás 100% seguro de borrar este producto del catálogo?")) return;
             try {
-                await db.collection("pomelero_products").doc(sku).delete();
-                alert("🗑️ Producto borrado.");
+                await db.collection("pomelero_products").doc(originalEditSku).delete();
+                alert("🗑️ Producto borrado permanentemente.");
                 closeEditProductModal();
             } catch(e) {
                 alert("Error al borrar.");
             }
         }
-
-        function uploadImageFromModal(e) {
-            const sku = document.getElementById('editModalSku').value;
-            const file = e.target.files[0];
-            if (!file || !sku) return;
-
-            if (file.size > 1500000) return alert("⚠️ La imagen es muy pesada (máximo 1.5MB).");
-
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                try {
-                    await db.collection("pomelero_products").doc(sku).update({ image: evt.target.result });
-                    const imgEl = document.getElementById('editModalImgPreview');
-                    imgEl.src = evt.target.result;
-                    imgEl.classList.remove('hidden');
-                    alert("✅ Foto actualizada.");
-                } catch (error) {
-                    alert("Error al subir la foto.");
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-        // ------------------------------------------------------------------------------
+        // ---------------------------------------------------------------------------------
 
         function openImageModal(imgSrc) {
             document.getElementById('modalImageSrc').src = imgSrc;
@@ -1131,7 +1145,6 @@
         function openAdminModal() {
             document.getElementById('adminModal').classList.remove('hidden');
             
-            // Si el admin ya tiene sesión activa en la memoria
             if (currentAdminPerms) {
                 document.getElementById('adminLoginView').classList.add('hidden');
                 document.getElementById('adminDashboardView').classList.remove('hidden');
@@ -1159,7 +1172,7 @@
                 currentAdminUser = 'admin';
                 localStorage.setItem('pomelero_admin_profile', JSON.stringify({ user: currentAdminUser, perms: currentAdminPerms }));
                 finishAdminLogin();
-                renderProducts(); // Renderiza de nuevo para mostrar el lapicito de edición
+                renderProducts(); 
                 return;
             }
 
@@ -1193,7 +1206,6 @@
             }
         }
         
-        // ---------- NUEVO: CERRAR SESIÓN DE ADMINISTRADOR ----------
         function logoutAdmin() {
             localStorage.removeItem('pomelero_admin_profile');
             currentAdminPerms = null;
@@ -1234,6 +1246,7 @@
             }
         }
 
+        // ---------- LÓGICA DE USUARIOS ADMINISTRADORES CORREGIDA ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
@@ -1242,11 +1255,13 @@
                 let html = '<h3 class="text-xs font-bold text-slate-400 mt-4 mb-2">Usuarios Activos:</h3>';
                 snap.forEach(doc => {
                     const data = doc.data();
+                    const p = data.perms || {}; // Protección anti-errores si el permiso está vacío
+                    
                     let permsTxt = [];
-                    if(data.perms.inv) permsTxt.push('Inventario');
-                    if(data.perms.ord) permsTxt.push('Pedidos');
-                    if(data.perms.cli) permsTxt.push('Clientes');
-                    if(data.perms.app) permsTxt.push('Diseño');
+                    if(p.inv) permsTxt.push('Inventario');
+                    if(p.ord) permsTxt.push('Pedidos');
+                    if(p.cli) permsTxt.push('Clientes');
+                    if(p.app) permsTxt.push('Diseño');
                     if(permsTxt.length === 0) permsTxt.push('Lectura básica');
 
                     html += `
@@ -1256,7 +1271,7 @@
                                 <p class="text-[9px] text-slate-400 mt-1">Permisos: ${permsTxt.join(', ')}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="editAdminUser('${doc.id}', '${data.password}', ${data.perms.inv}, ${data.perms.ord}, ${data.perms.cli}, ${data.perms.app})" class="text-[10px] bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-slate-600 transition">Editar</button>
+                                <button onclick="editAdminUser('${doc.id}', '${data.password}', ${!!p.inv}, ${!!p.ord}, ${!!p.cli}, ${!!p.app})" class="text-[10px] bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-slate-600 transition">Editar</button>
                                 <button onclick="deleteAdminUser('${doc.id}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/20 transition">Eliminar</button>
                             </div>
                         </div>
@@ -1365,6 +1380,495 @@
                 await db.collection("pomelero_admins").doc(user).delete();
                 if (editingAdminUserId === user) cancelEditAdmin();
             }
+        }
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+                    if (json.length === 0) return alert("El archivo está vacío.");
+
+                    alert("⏳ Subiendo productos a la Nube. Por favor no cierres la página... Te avisaremos cuando termine.");
+
+                    let count = 0;
+                    for (const row of json) {
+                        const name = row.Nombre || row.nombre || row.PRODUCTO || row.Producto || 'Sin Nombre';
+                        const category = row.Categoria || row.categoria || row.CATEGORIA || 'General';
+                        const rawPrice = row.Precio || row.precio || row.PRECIO;
+                        let price = rawPrice;
+                        
+                        if (rawPrice == null || String(rawPrice).trim().toLowerCase() === 'no') price = "NO_DISPONIBLE";
+                        else price = Number(String(rawPrice).replace(/[^0-9.-]+/g,""));
+                        
+                        const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
+                        
+                        let productData = { name, category, price, sku };
+
+                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
+                        image = String(image).replace('img/', '').replace('IMG/', '').trim();
+
+                        if (image && image !== '[Imagen en nube]') {
+                            productData.image = image;
+                        }
+
+                        await db.collection("pomelero_products").doc(sku).set(productData, { merge: true });
+                        count++;
+                    }
+                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
+                } catch (err) { alert("Error al leer el archivo Excel."); }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function generateNextSKU() {
+            if (products.length === 0) {
+                document.getElementById('newProdSku').value = 'SKU-1000';
+                return;
+            }
+            
+            let maxNumber = 0;
+            products.forEach(p => {
+                if (p.sku) {
+                    const match = p.sku.match(/\d+/);
+                    if (match) {
+                        const num = parseInt(match[0], 10);
+                        if (num > maxNumber) {
+                            maxNumber = num;
+                        }
+                    }
+                }
+            });
+            
+            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
+            document.getElementById('newProdSku').value = 'SKU-' + nextNumber;
+        }
+
+        async function createNewProduct() {
+            const sku = document.getElementById('newProdSku').value.trim();
+            const name = document.getElementById('newProdName').value.trim();
+            const category = document.getElementById('newProdCat').value.trim();
+            const rawPrice = document.getElementById('newProdPrice').value.trim();
+            const imageInput = document.getElementById('newProdImage');
+
+            if (!sku || !name || !category) return alert("SKU, Nombre y Categoría son obligatorios para crear un producto.");
+
+            const existing = products.find(p => p.sku.toLowerCase() === sku.toLowerCase());
+            if (existing) return alert(`Ya existe un producto con el SKU: ${sku}. Por favor elige uno diferente.`);
+
+            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
+            let productData = { sku, name, category, price };
+
+            try {
+                if (imageInput.files && imageInput.files[0]) {
+                    const file = imageInput.files[0];
+                    if (file.size > 1500000) {
+                        alert("⚠️ La imagen es muy pesada. Intenta con una imagen de menor tamaño (máx 1.5MB).");
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = async function(evt) {
+                        productData.image = evt.target.result;
+                        await db.collection("pomelero_products").doc(sku).set(productData);
+                        alert("✅ Producto y foto guardados correctamente en la nube.");
+                        clearNewProductForm();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    await db.collection("pomelero_products").doc(sku).set(productData);
+                    alert("✅ Producto guardado correctamente sin imagen.");
+                    clearNewProductForm();
+                }
+            } catch (error) {
+                alert("Error de conexión al crear el producto.");
+            }
+        }
+
+        function clearNewProductForm() {
+            document.getElementById('newProdSku').value = '';
+            document.getElementById('newProdName').value = '';
+            document.getElementById('newProdCat').value = '';
+            document.getElementById('newProdPrice').value = '';
+            document.getElementById('newProdImage').value = '';
+        }
+
+        async function clearDatabase() {
+            if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
+            alert("Borrando catálogo... Esto tomará unos segundos.");
+            try {
+                const snapshot = await db.collection("pomelero_products").get();
+                let borrados = 0;
+                for (const doc of snapshot.docs) { await doc.ref.delete(); borrados++; }
+                alert(`✅ ¡Catálogo Vaciado! Se borraron ${borrados} productos.`);
+            } catch (error) { alert("Hubo un error al borrar el catálogo."); }
+        }
+
+        function downloadCatalogExcel() {
+            if(products.length === 0) return alert("No hay productos.");
+            const data = products.map(p => {
+                let imgVal = p.image || "";
+                if (imgVal.startsWith('data:image')) {
+                    imgVal = "[Imagen en nube]";
+                }
+                return {
+                    SKU: p.sku,
+                    Nombre: p.name,
+                    Categoria: p.category,
+                    Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
+                    Imagen: imgVal
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
+            XLSX.writeFile(wb, "Catalogo_Pomelero.xlsx");
+        }
+
+        function loadAdminClients() {
+            db.collection("pomelero_users").onSnapshot(snapshot => {
+                if (snapshot.empty) { 
+                    document.getElementById('adminClientsList').innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; 
+                    adminClientsData = [];
+                    return; 
+                }
+                adminClientsData = snapshot.docs.map(doc => doc.data());
+                renderAdminClients();
+            });
+        }
+
+        function renderAdminClients() {
+            const list = document.getElementById('adminClientsList');
+            const sortMode = document.getElementById('clientSortSelect').value;
+
+            let processedClients = adminClientsData.map(u => {
+                const orderCount = u.orders ? u.orders.length : 0;
+                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
+                const lastOrder = orderCount > 0 ? u.orders[0] : null; 
+                
+                let category = "⚠️ Inactivo / Malo";
+                let catColor = "text-rose-400 border-rose-500/20 bg-rose-500/10";
+                
+                if (orderCount >= 5 || totalSpent >= 3000) {
+                    category = "⭐ Cliente Bueno";
+                    catColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
+                } else if (orderCount >= 2) {
+                    category = "👍 Cliente Medio";
+                    catColor = "text-blue-400 border-blue-500/20 bg-blue-500/10";
+                } else if (orderCount === 1) {
+                    category = "🆕 Nuevo Cliente";
+                    catColor = "text-amber-400 border-amber-500/20 bg-amber-500/10";
+                }
+
+                return { ...u, orderCount, totalSpent, lastOrder, category, catColor };
+            });
+
+            if (sortMode === 'recent') {
+                processedClients.sort((a, b) => {
+                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
+                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
+                    return tB - tA; 
+                });
+            } else if (sortMode === 'inactive') {
+                processedClients.sort((a, b) => {
+                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
+                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
+                    return tA - tB; 
+                });
+            } else if (sortMode === 'best') {
+                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); 
+            }
+
+            let html = '';
+            processedClients.forEach(u => {
+                let ordersHTML = '';
+                if (u.orderCount > 0) {
+                    ordersHTML = `
+                    <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
+                        <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
+                        <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
+                    
+                    u.orders.forEach(o => {
+                        const st = o.status || 'Pendiente';
+                        let stClass = "text-amber-400 border-amber-500/20";
+                        if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
+                        if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
+                        if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
+
+                        const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
+                        
+                        let itemsList = '';
+                        o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
+
+                        let deleteOrderBtn = currentAdminPerms && currentAdminPerms.cli 
+                            ? `<button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>` 
+                            : '';
+
+                        ordersHTML += `
+                                <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
+                                    <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
+                                        <div class="flex items-center">
+                                            <span>${o.id}</span>
+                                            ${stBadge}
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
+                                            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                                        </div>
+                                    </summary>
+                                    <div class="p-3 border-t border-slate-700 bg-slate-800/80">
+                                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
+                                            <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
+                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
+                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
+                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
+                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
+                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
+                                            </select>
+                                        </div>
+                                        <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
+                                            ${itemsList}
+                                        </ul>
+                                        <div class="flex gap-2">
+                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
+                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
+                                            ${deleteOrderBtn}
+                                        </div>
+                                    </div>
+                                </details>
+                            `;
+                    });
+                    
+                    ordersHTML += `
+                        </div>
+                    </div>`;
+                } else {
+                    ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
+                }
+
+                let clientActionButtons = '';
+                if (currentAdminPerms && currentAdminPerms.cli) {
+                    clientActionButtons = `
+                        <div class="flex gap-2">
+                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
+                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
+                        </div>
+                    `;
+                }
+
+                html += `
+                <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded border inline-block mt-1 w-max ${u.catColor}">${u.category}</span>
+                        </div>
+                        ${clientActionButtons}
+                    </div>
+                    <div class="flex justify-between items-center text-[10px]">
+                        <p class="text-slate-400">Tel: ${u.phone} | Dir: ${u.address || 'N/D'}</p>
+                        <p class="text-pomelero-gold font-bold">Gasto: $${u.totalSpent.toFixed(2)}</p>
+                    </div>
+                    ${ordersHTML}
+                </div>`;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        async function downloadClientsExcel() {
+            if (adminClientsData.length === 0) return alert("No hay clientes registrados.");
+            
+            const data = adminClientsData.map(u => {
+                const orderCount = u.orders ? u.orders.length : 0;
+                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
+                const lastOrderDate = orderCount > 0 ? u.orders[0].date : 'Nunca';
+
+                let category = "Inactivo / Malo";
+                if (orderCount >= 5 || totalSpent >= 3000) category = "Bueno";
+                else if (orderCount >= 2) category = "Medio";
+                else if (orderCount === 1) category = "Nuevo";
+
+                return { 
+                    Nombre: u.name, 
+                    Telefono: u.phone, 
+                    Direccion: u.address || 'N/D', 
+                    Clasificacion: category,
+                    Total_Gastado: "$" + totalSpent.toFixed(2),
+                    Pedidos_Realizados: orderCount,
+                    Ultimo_Pedido: lastOrderDate,
+                    Contrasena: u.password
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_Clientes");
+            XLSX.writeFile(wb, "Reporte_Inteligente_Clientes.xlsx");
+        }
+
+        async function adminDownloadOrderPDF(phone, orderId, format) {
+            try {
+                const doc = await db.collection("pomelero_users").doc(phone).get();
+                if(doc.exists) {
+                    const user = doc.data();
+                    const ord = (user.orders || []).find(o => o.id === orderId);
+                    if(ord) {
+                        let styleHtml = '';
+                        let bodyHtml = '';
+
+                        const logoHtml = storeLogo 
+                            ? `<img src="${storeLogo}" style="filter: invert(1) brightness(0); ${format === 'ticket' ? 'max-width: 45mm; margin-bottom: 5px;' : 'max-width: 150px;'}">` 
+                            : `<h2>GRUPO POMELERO</h2>`;
+
+                        const companyInfoHtml = `
+                            <strong>Grupo Pomelero</strong><br>
+                            Blvd. Lic. Anacleto Glez F. Sur 340a<br>
+                            San Miguel, 47660<br>
+                            Tepatitlán de Morelos, Jal.<br>
+                            Tel: 3781165303<br>
+                        `;
+
+                        if (format === 'ticket') {
+                            styleHtml = `
+                                @page { margin: 0; }
+                                body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 10px 5px; color: #000; background: #fff; text-align: center; }
+                                .text-left { text-align: left; }
+                                .divider { border-top: 1px dashed #000; margin: 8px 0; }
+                                .info { font-size: 11px; margin-bottom: 5px; line-height: 1.2; text-align: left; }
+                                table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+                                th, td { text-align: left; padding: 2px 0; vertical-align: top; }
+                                th { border-bottom: 1px solid #000; padding-bottom: 4px; }
+                                .right { text-align: right; }
+                                .total { font-size: 14px; font-weight: bold; text-align: right; margin-top: 5px; }
+                            `;
+                            bodyHtml = `
+                                ${logoHtml}
+                                <div class="info text-left" style="text-align: center;">${companyInfoHtml}</div>
+                                <div class="divider"></div>
+                                <div class="info">
+                                    <strong>Folio:</strong> ${ord.id}<br>
+                                    <strong>Fecha:</strong> ${ord.date}<br>
+                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                                    <strong>Cliente:</strong> ${user.name}<br>
+                                    <strong>Tel:</strong> ${user.phone}<br>
+                                    <strong>Dir:</strong> ${user.address || 'Recoger en tienda'}
+                                </div>
+                                <div class="divider"></div>
+                                <table>
+                                    <thead><tr><th style="width: 15%">Cant</th><th style="width: 55%">Desc</th><th class="right" style="width: 30%">Total</th></tr></thead>
+                                    <tbody>
+                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="divider"></div>
+                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                                <div class="divider"></div>
+                                <div style="font-size: 10px; margin-top: 10px;">*** TICKET INTERNO ***</div>
+                            `;
+                        } else {
+                            styleHtml = `
+                                @page { margin: 15mm; }
+                                body { font-family: Arial, sans-serif; font-size: 14px; color: #000; background: #fff; }
+                                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                                .company { text-align: right; font-size: 12px; line-height: 1.4; }
+                                .info { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+                                th { background-color: #f8fafc; font-weight: bold; border-bottom: 2px solid #000; }
+                                .right { text-align: right; }
+                                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px; }
+                            `;
+                            bodyHtml = `
+                                <div class="header">
+                                    <div>${logoHtml}</div>
+                                    <div class="company">${companyInfoHtml}</div>
+                                </div>
+                                <div class="info">
+                                    <strong>Copia de Pedido (Administrador)</strong><br>
+                                    <strong>Folio:</strong> ${ord.id} | <strong>Fecha:</strong> ${ord.date} | <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
+                                    <strong>Cliente:</strong> ${user.name} | <strong>Teléfono:</strong> ${user.phone}<br>
+                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
+                                </div>
+                                <table>
+                                    <thead><tr><th>Cant</th><th>Descripción</th><th>Precio Unitario</th><th class="right">Subtotal</th></tr></thead>
+                                    <tbody>
+                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${i.price.toFixed(2)}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
+                            `;
+                        }
+
+                        const printWindow = window.open('', '_blank');
+                        printWindow.document.write(`<html><head><title>Admin_Pedido_${ord.id}</title><style>${styleHtml}</style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+                        printWindow.document.close();
+                    }
+                }
+            } catch(e) {
+                alert("Error al descargar el ticket.");
+            }
+        }
+
+        async function deleteOrder(phone, orderId) {
+            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
+            try {
+                const userRef = db.collection("pomelero_users").doc(phone);
+                const doc = await userRef.get();
+                if(doc.exists) {
+                    let ordersArray = doc.data().orders || [];
+                    ordersArray = ordersArray.filter(o => o.id !== orderId);
+                    await userRef.update({ orders: ordersArray });
+                    alert("Pedido eliminado correctamente.");
+                }
+            } catch (error) {
+                alert("Hubo un error al eliminar el pedido.");
+            }
+        }
+
+        async function editClient(phone, currentName, currentAddress) {
+            const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
+            const newAddr = prompt("Modificar Dirección del cliente:", currentAddress !== 'Sin dirección' ? currentAddress : '') || currentAddress;
+            const newPass = prompt("Modificar Contraseña (deja en blanco para mantener la actual):");
+
+            let updates = { name: newName, address: newAddr !== 'Sin dirección' ? newAddr : '' };
+            if(newPass && newPass.trim() !== "") { updates.password = newPass.trim(); }
+
+            await db.collection("pomelero_users").doc(phone).update(updates);
+            alert("Información del cliente actualizada.");
+        }
+
+        async function deleteClient(phone) {
+            if(confirm("¿Seguro que deseas eliminar este cliente? Perderá todos sus pedidos.")) {
+                await db.collection("pomelero_users").doc(phone).delete();
+            }
+        }
+
+        function saveWhatsappNumber() {
+            const val = document.getElementById('adminWhatsappInput').value.trim();
+            if(val) {
+                db.collection("config").doc("global").set({ whatsapp: val }, { merge: true });
+                alert("Número sincronizado en la nube.");
+            }
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                await db.collection("config").doc("global").set({ logo: evt.target.result }, { merge: true });
+                alert("Logotipo guardado en la nube.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setTheme(themeName) {
+            db.collection("config").doc("global").set({ theme: themeName }, { merge: true });
+            alert("Tema sincronizado en la nube.");
         }
     </script>
 </body>
