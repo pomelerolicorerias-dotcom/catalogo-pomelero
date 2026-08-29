@@ -101,7 +101,6 @@
                     <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition shadow-inner">
                 </div>
                 
-                <!-- Contenedor de categorías con flechas automáticas -->
                 <div class="relative flex-grow flex items-center min-w-0 w-full group">
                     <button id="leftArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: -200, behavior: 'smooth'})" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-start pb-2 md:pb-0 pl-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition cursor-pointer">
@@ -121,7 +120,6 @@
                 </div>
             </div>
 
-            <!-- Cuadrícula de Productos -->
             <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             
             <div id="loadingCatalog" class="text-center py-20 bg-pomelero-card rounded-2xl border border-slate-800">
@@ -136,8 +134,6 @@
 
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
-            
-            <!-- Panel de Login / Registro -->
             <div id="loginFormContainer" class="bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
                 <div class="text-center space-y-2">
                     <h2 id="authFormTitle" class="text-xl font-bold text-slate-100">Iniciar Sesión</h2>
@@ -168,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- Panel de Usuario Conectado -->
             <div id="activeSessionContainer" class="hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
                 <div class="flex flex-col items-center text-center space-y-3">
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
@@ -179,13 +174,11 @@
                     </div>
                 </div>
 
-                <!-- Historial de Pedidos -->
                 <div class="space-y-3 pt-2 border-t border-slate-800">
                     <h3 class="text-xs font-bold text-pomelero-gold uppercase tracking-wider flex items-center justify-between">
                         <span>Mis Pedidos Anteriores</span>
                     </h3>
                     <div id="ordersHistoryList" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
-                        <!-- Pedidos inyectados aquí -->
                     </div>
                 </div>
 
@@ -210,7 +203,6 @@
                 <button onclick="closeCartModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
             <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-5 space-y-4 divide-y divide-slate-800/60">
-                <!-- Ítems del carrito -->
             </div>
             <div class="p-5 border-t border-slate-800 bg-pomelero-dark/50 space-y-4">
                 <div class="flex justify-between items-center text-base font-bold">
@@ -290,7 +282,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU Y DATALIST CATEGORÍA -->
+                        <!-- SECCIÓN: Crear Producto Manualmente -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
                             <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                                 ➕ Agregar Producto Nuevo
@@ -303,7 +295,6 @@
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 
-                                <!-- NUEVO: Buscador inteligente híbrido de Categorías (Datalist) -->
                                 <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <datalist id="existingCats"></datalist>
 
@@ -362,13 +353,13 @@
                     <!-- Pestaña Personal (Seguridad) -->
                     <div id="adminTab-personal" class="admin-tab-content hidden space-y-6">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 shadow-lg">
-                            <h3 class="text-sm font-bold text-pomelero-gold flex items-center gap-2">
+                            <h3 id="adminUserFormTitle" class="text-sm font-bold text-pomelero-gold flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                 Crear Nuevo Usuario Encargado
                             </h3>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="text" id="newAdminUser" placeholder="Nombre de usuario" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <input type="text" id="newAdminPass" placeholder="Contraseña segura" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newAdminPass" placeholder="Contraseña" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
                                 <p class="text-[10px] font-bold text-slate-400 mb-2">Permisos permitidos:</p>
@@ -377,7 +368,7 @@
                                 <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permCli" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Editar y Borrar Clientes</label>
                                 <label class="flex items-center text-xs text-slate-200 gap-2 cursor-pointer"><input type="checkbox" id="permApp" class="w-4 h-4 rounded accent-pomelero-gold cursor-pointer"> Modificar Diseño y Ajustes</label>
                             </div>
-                            <button onclick="createAdminUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Crear Usuario</button>
+                            <button id="adminUserSubmitBtn" onclick="createAdminUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">Crear Usuario</button>
                         </div>
                         
                         <div id="adminUsersList" class="space-y-2"></div>
@@ -419,6 +410,7 @@
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
+        let editingAdminUserId = null; // Variable para saber si estamos editando usuario
         
         let currentAdminPerms = null; 
 
@@ -508,7 +500,6 @@
                 <button onclick="filterByCategory('${cat}')" class="category-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition ${currentCategory === cat ? 'bg-pomelero-gold text-pomelero-dark shadow' : 'bg-pomelero-card text-slate-300 hover:bg-slate-800 border border-slate-800'} shrink-0">${cat}</button>
             `).join('');
             
-            // NUEVO: Actualizar la lista inteligente del formulario de nuevo producto
             const dl = document.getElementById('existingCats');
             if (dl) {
                 dl.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
@@ -1028,6 +1019,7 @@
             }
         }
 
+        // ---------- NUEVO: CONTROL DE EDICIÓN DE USUARIOS ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
@@ -1039,9 +1031,9 @@
                     let permsTxt = [];
                     if(data.perms.inv) permsTxt.push('Inventario');
                     if(data.perms.ord) permsTxt.push('Pedidos');
-                    if(data.perms.cli) permsTxt.push('Clientes (Edición)');
+                    if(data.perms.cli) permsTxt.push('Clientes');
                     if(data.perms.app) permsTxt.push('Diseño');
-                    if(permsTxt.length === 0) permsTxt.push('Ninguno (Lectura básica)');
+                    if(permsTxt.length === 0) permsTxt.push('Lectura básica');
 
                     html += `
                         <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700 shadow-sm mb-2">
@@ -1049,7 +1041,10 @@
                                 <p class="text-xs font-bold text-slate-200">👤 ${doc.id}</p>
                                 <p class="text-[9px] text-slate-400 mt-1">Permisos: ${permsTxt.join(', ')}</p>
                             </div>
-                            <button onclick="deleteAdminUser('${doc.id}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/20 transition">Eliminar</button>
+                            <div class="flex gap-2">
+                                <button onclick="editAdminUser('${doc.id}', '${data.password}', ${data.perms.inv}, ${data.perms.ord}, ${data.perms.cli}, ${data.perms.app})" class="text-[10px] bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:bg-slate-600 transition">Editar</button>
+                                <button onclick="deleteAdminUser('${doc.id}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/20 transition">Eliminar</button>
+                            </div>
                         </div>
                     `;
                 });
@@ -1057,11 +1052,69 @@
             });
         }
 
-        async function createAdminUser() {
-            const user = document.getElementById('newAdminUser').value.trim();
-            const pass = document.getElementById('newAdminPass').value.trim();
-            if(!user || !pass) return alert("Por favor llena el usuario y la contraseña.");
+        function editAdminUser(id, pass, inv, ord, cli, app) {
+            editingAdminUserId = id;
+            document.getElementById('newAdminUser').value = id;
+            document.getElementById('newAdminPass').value = pass;
+            document.getElementById('permInv').checked = inv;
+            document.getElementById('permOrd').checked = ord;
+            document.getElementById('permCli').checked = cli;
+            document.getElementById('permApp').checked = app;
             
+            document.getElementById('adminUserFormTitle').innerHTML = '✏️ Editando Usuario: <span class="text-white">' + id + '</span>';
+            
+            const btn = document.getElementById('adminUserSubmitBtn');
+            btn.innerHTML = '💾 Guardar Cambios';
+            btn.classList.replace('bg-emerald-600', 'bg-pomelero-gold');
+            btn.classList.replace('hover:bg-emerald-500', 'hover:bg-pomelero-goldHover');
+            btn.classList.replace('text-white', 'text-pomelero-dark');
+            
+            let cancelBtn = document.getElementById('cancelEditAdminBtn');
+            if (!cancelBtn) {
+                cancelBtn = document.createElement('button');
+                cancelBtn.id = 'cancelEditAdminBtn';
+                cancelBtn.textContent = 'Cancelar Edición';
+                cancelBtn.className = 'w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-xl text-xs mt-2 transition shadow border border-slate-600';
+                cancelBtn.onclick = cancelEditAdmin;
+                btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
+            } else {
+                cancelBtn.classList.remove('hidden');
+            }
+            
+            document.getElementById('adminTab-personal').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function cancelEditAdmin() {
+            editingAdminUserId = null;
+            document.getElementById('newAdminUser').value = '';
+            document.getElementById('newAdminPass').value = '';
+            document.getElementById('permInv').checked = false;
+            document.getElementById('permOrd').checked = false;
+            document.getElementById('permCli').checked = false;
+            document.getElementById('permApp').checked = false;
+            
+            document.getElementById('adminUserFormTitle').innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                Crear Nuevo Usuario Encargado
+            `;
+
+            const btn = document.getElementById('adminUserSubmitBtn');
+            btn.textContent = 'Crear Usuario';
+            btn.classList.replace('bg-pomelero-gold', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-pomelero-goldHover', 'hover:bg-emerald-500');
+            btn.classList.replace('text-pomelero-dark', 'text-white');
+            
+            const cancelBtn = document.getElementById('cancelEditAdminBtn');
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+        }
+
+        async function createAdminUser() {
+            const newUserStr = document.getElementById('newAdminUser').value.trim();
+            const pass = document.getElementById('newAdminPass').value.trim();
+            if(!newUserStr || !pass) return alert("Por favor llena el usuario y la contraseña.");
+            
+            if (newUserStr.toLowerCase() === 'admin') return alert("El nombre 'admin' es de sistema y no se puede usar aquí.");
+
             const perms = {
                 inv: document.getElementById('permInv').checked,
                 ord: document.getElementById('permOrd').checked,
@@ -1070,22 +1123,36 @@
                 adm: false 
             };
 
-            await db.collection("pomelero_admins").doc(user).set({ password: pass, perms });
-            alert("Usuario creado exitosamente.");
-            
-            document.getElementById('newAdminUser').value = '';
-            document.getElementById('newAdminPass').value = '';
-            document.getElementById('permInv').checked = false;
-            document.getElementById('permOrd').checked = false;
-            document.getElementById('permCli').checked = false;
-            document.getElementById('permApp').checked = false;
+            if (editingAdminUserId) {
+                if (newUserStr !== editingAdminUserId) {
+                    const checkDoc = await db.collection("pomelero_admins").doc(newUserStr).get();
+                    if(checkDoc.exists) return alert("El nuevo nombre de usuario ya está ocupado. Elige otro.");
+                    
+                    await db.collection("pomelero_admins").doc(newUserStr).set({ password: pass, perms });
+                    await db.collection("pomelero_admins").doc(editingAdminUserId).delete();
+                } else {
+                    await db.collection("pomelero_admins").doc(editingAdminUserId).update({ password: pass, perms });
+                }
+                alert("Usuario actualizado exitosamente.");
+                cancelEditAdmin();
+            } else {
+                const doc = await db.collection("pomelero_admins").doc(newUserStr).get();
+                if (doc.exists) {
+                    if(!confirm("Este usuario ya existe. ¿Deseas sobreescribirlo?")) return;
+                }
+                await db.collection("pomelero_admins").doc(newUserStr).set({ password: pass, perms });
+                alert("Usuario creado exitosamente.");
+                cancelEditAdmin();
+            }
         }
 
         async function deleteAdminUser(user) {
             if(confirm(`¿Seguro que deseas eliminar el acceso al usuario "${user}"?`)) {
                 await db.collection("pomelero_admins").doc(user).delete();
+                if (editingAdminUserId === user) cancelEditAdmin();
             }
         }
+        // ------------------------------------------------------
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
