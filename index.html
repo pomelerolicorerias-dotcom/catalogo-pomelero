@@ -144,9 +144,7 @@
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
             <div id="loginFormContainer" class="relative bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
-                
                 <div class="text-center space-y-2 pt-2">
                     <h2 id="authFormTitle" class="text-xl font-bold text-slate-100">Iniciar Sesión</h2>
                     <p id="authFormSubtitle" class="text-xs text-slate-400">Ingresa tus datos para registrar o enviar tus pedidos.</p>
@@ -177,9 +175,7 @@
             </div>
 
             <div id="activeSessionContainer" class="relative hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
-                
                 <div class="flex flex-col items-center text-center space-y-3 pt-2">
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
                     <div>
@@ -458,6 +454,7 @@
         let currentAdminUser = null;
         let currentAdminPerms = null; 
         
+        // Variables para la Ficha Técnica (Edición rápida y Segura de Usuarios/Productos)
         let editingAdminUserId = null; 
         let originalEditSku = null;
         let pendingModalImage = null;
@@ -500,7 +497,6 @@
                 else { products = snapshot.docs.map(doc => doc.data()); }
                 
                 renderCategories();
-                // ESCUDO DE PROTECCIÓN: Ejecutar el renderizado de forma segura y automática en la carga.
                 renderProducts();
             }, err => {
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
@@ -577,7 +573,6 @@
             renderProducts(); 
         }
 
-        // ---------- FUNCIÓN SEGURA PARA RENDERIZAR PRODUCTOS ----------
         function renderProducts() { 
             try {
                 const searchInput = document.getElementById('searchInput');
@@ -683,7 +678,6 @@
                 console.error("Error renderizando catálogo", e);
             }
         }
-        // -----------------------------------------------------------------------------
 
         function openEditProductModal(sku) {
             const p = products.find(x => x.sku === sku);
@@ -1277,9 +1271,11 @@
             }
         }
 
+        // ---------- AQUÍ ESTÁ LA FUNCIÓN RESTAURADA PARA VER Y EDITAR USUARIOS ADMIN ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
+                if(!list) return; // Protección extra
                 if(snap.empty) { list.innerHTML = '<p class="text-xs text-slate-500 mt-2">No hay usuarios extra creados.</p>'; return; }
                 
                 let html = '<h3 class="text-xs font-bold text-slate-400 mt-4 mb-2">Usuarios Activos:</h3>';
@@ -1411,50 +1407,7 @@
                 if (editingAdminUserId === user) cancelEditAdmin();
             }
         }
-
-        function handleExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-                    if (json.length === 0) return alert("El archivo está vacío.");
-
-                    alert("⏳ Subiendo productos a la Nube. Por favor no cierres la página... Te avisaremos cuando termine.");
-
-                    let count = 0;
-                    for (const row of json) {
-                        const name = row.Nombre || row.nombre || row.PRODUCTO || row.Producto || 'Sin Nombre';
-                        const category = row.Categoria || row.categoria || row.CATEGORIA || 'General';
-                        const rawPrice = row.Precio || row.precio || row.PRECIO;
-                        let price = rawPrice;
-                        
-                        if (rawPrice == null || String(rawPrice).trim().toLowerCase() === 'no') price = "NO_DISPONIBLE";
-                        else price = Number(String(rawPrice).replace(/[^0-9.-]+/g,""));
-                        
-                        const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
-                        
-                        let productData = { name, category, price, sku };
-
-                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
-                        image = String(image).replace('img/', '').replace('IMG/', '').trim();
-
-                        if (image && image !== '[Imagen en nube]') {
-                            productData.image = image;
-                        }
-
-                        await db.collection("pomelero_products").doc(sku).set(productData, { merge: true });
-                        count++;
-                    }
-                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
-                } catch (err) { alert("Error al leer el archivo Excel."); }
-            };
-            reader.readAsArrayBuffer(file);
-        }
+        // --------------------------------------------------------------------------------------
     </script>
 </body>
 </html>
