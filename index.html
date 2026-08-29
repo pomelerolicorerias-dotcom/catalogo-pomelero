@@ -94,14 +94,25 @@
             
             <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS FIJADA (STICKY) -->
             <div class="sticky top-24 z-30 flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-2xl mb-6 backdrop-blur-sm bg-opacity-95">
-                <div class="relative w-full md:w-80 shrink-0">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </span>
-                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto, categoría..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition shadow-inner">
+                
+                <!-- Buscador y Select de Ordenamiento (ESTILO MERCADO LIBRE) -->
+                <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0">
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </span>
+                        <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar producto..." class="w-full bg-pomelero-dark text-slate-100 pl-11 pr-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-pomelero-gold text-sm transition shadow-inner">
+                    </div>
+                    <select id="sortProductsSelect" onchange="filterProducts()" class="w-full sm:w-auto bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-pomelero-gold shadow-inner cursor-pointer">
+                        <option value="default">Recomendados</option>
+                        <option value="price_asc">Menor a Mayor Precio</option>
+                        <option value="price_desc">Mayor a Menor Precio</option>
+                        <option value="name_asc">Alfabético (A - Z)</option>
+                    </select>
                 </div>
                 
-                <div class="relative flex-grow flex items-center min-w-0 w-full group">
+                <!-- Contenedor de categorías con flechas automáticas -->
+                <div class="relative flex-grow flex items-center min-w-0 w-full group mt-2 md:mt-0">
                     <button id="leftArrowBtn" onclick="document.getElementById('categoriesContainer').scrollBy({left: -200, behavior: 'smooth'})" class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-pomelero-card via-pomelero-card/90 to-transparent flex items-center justify-start pb-2 md:pb-0 pl-1 z-10 hidden">
                         <div class="bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 border border-slate-700 shadow-lg transition cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-pomelero-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
@@ -120,6 +131,7 @@
                 </div>
             </div>
 
+            <!-- Cuadrícula de Productos -->
             <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             
             <div id="loadingCatalog" class="text-center py-20 bg-pomelero-card rounded-2xl border border-slate-800">
@@ -134,8 +146,13 @@
 
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
-            <div id="loginFormContainer" class="bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <div class="text-center space-y-2">
+            
+            <!-- Panel de Login / Registro CON BOTÓN DE CERRAR 'X' -->
+            <div id="loginFormContainer" class="relative bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
+                <!-- BOTÓN X PARA CERRAR -->
+                <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
+                
+                <div class="text-center space-y-2 pt-2">
                     <h2 id="authFormTitle" class="text-xl font-bold text-slate-100">Iniciar Sesión</h2>
                     <p id="authFormSubtitle" class="text-xs text-slate-400">Ingresa tus datos para registrar o enviar tus pedidos.</p>
                 </div>
@@ -164,8 +181,12 @@
                 </div>
             </div>
 
-            <div id="activeSessionContainer" class="hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-                <div class="flex flex-col items-center text-center space-y-3">
+            <!-- Panel de Usuario Conectado CON BOTÓN DE CERRAR 'X' -->
+            <div id="activeSessionContainer" class="relative hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
+                <!-- BOTÓN X PARA CERRAR -->
+                <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
+                
+                <div class="flex flex-col items-center text-center space-y-3 pt-2">
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
                     <div>
                         <h2 id="activeUserName" class="text-lg font-bold text-slate-100">Nombre de Usuario</h2>
@@ -174,11 +195,13 @@
                     </div>
                 </div>
 
+                <!-- Historial de Pedidos -->
                 <div class="space-y-3 pt-2 border-t border-slate-800">
                     <h3 class="text-xs font-bold text-pomelero-gold uppercase tracking-wider flex items-center justify-between">
                         <span>Mis Pedidos Anteriores</span>
                     </h3>
                     <div id="ordersHistoryList" class="space-y-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+                        <!-- Pedidos inyectados aquí -->
                     </div>
                 </div>
 
@@ -203,6 +226,7 @@
                 <button onclick="closeCartModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
             <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-5 space-y-4 divide-y divide-slate-800/60">
+                <!-- Ítems del carrito -->
             </div>
             <div class="p-5 border-t border-slate-800 bg-pomelero-dark/50 space-y-4">
                 <div class="flex justify-between items-center text-base font-bold">
@@ -359,7 +383,7 @@
                             </h3>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="text" id="newAdminUser" placeholder="Nombre de usuario" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <input type="text" id="newAdminPass" placeholder="Contraseña" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newAdminPass" placeholder="Contraseña segura" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
                                 <p class="text-[10px] font-bold text-slate-400 mb-2">Permisos permitidos:</p>
@@ -410,7 +434,7 @@
         let storeLogo = '';
         let currentTheme = 'classic';
         let isRegistering = false;
-        let editingAdminUserId = null; // Variable para saber si estamos editando usuario
+        let editingAdminUserId = null; 
         
         let currentAdminPerms = null; 
 
@@ -509,26 +533,34 @@
         }
 
         function filterByCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
-        function filterProducts() { renderProducts(); }
-
-        function openImageModal(imgSrc) {
-            document.getElementById('modalImageSrc').src = imgSrc;
-            document.getElementById('imageModal').classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-        }
-
-        function renderProducts() {
+        
+        // ---------- NUEVA LÓGICA DE FILTRADO Y ORDENAMIENTO (MERCADO LIBRE) ----------
+        function filterProducts() { 
             const query = document.getElementById('searchInput').value.toLowerCase();
+            const sortMode = document.getElementById('sortProductsSelect').value;
             const grid = document.getElementById('productsGrid');
             const empty = document.getElementById('emptyCatalog');
 
-            const filtered = products.filter(p => {
+            let filtered = products.filter(p => {
                 const matchesCat = currentCategory === 'TODOS' || (p.category || 'General') === currentCategory;
                 const matchesQuery = p.name.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query));
                 return matchesCat && matchesQuery;
+            });
+
+            // Lógica de Ordenamiento
+            filtered.sort((a, b) => {
+                if (sortMode === 'price_asc') {
+                    let priceA = a.price === "NO_DISPONIBLE" ? 999999 : Number(a.price);
+                    let priceB = b.price === "NO_DISPONIBLE" ? 999999 : Number(b.price);
+                    return priceA - priceB;
+                } else if (sortMode === 'price_desc') {
+                    let priceA = a.price === "NO_DISPONIBLE" ? -1 : Number(a.price);
+                    let priceB = b.price === "NO_DISPONIBLE" ? -1 : Number(b.price);
+                    return priceB - priceA;
+                } else if (sortMode === 'name_asc') {
+                    return a.name.localeCompare(b.name);
+                }
+                return 0; 
             });
 
             if (filtered.length === 0) {
@@ -581,6 +613,16 @@
                     </div>
                 `;
             }).join('');
+        }
+        // -----------------------------------------------------------------------------
+
+        function openImageModal(imgSrc) {
+            document.getElementById('modalImageSrc').src = imgSrc;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
         }
 
         function addToCartWithQty(sku) {
@@ -1019,7 +1061,6 @@
             }
         }
 
-        // ---------- NUEVO: CONTROL DE EDICIÓN DE USUARIOS ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
@@ -1152,7 +1193,6 @@
                 if (editingAdminUserId === user) cancelEditAdmin();
             }
         }
-        // ------------------------------------------------------
 
         function handleExcelUpload(e) {
             const file = e.target.files[0];
