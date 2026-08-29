@@ -92,7 +92,7 @@
         <!-- VISTA 1: CATÁLOGO -->
         <div id="view-catalogo" class="space-y-6">
             
-            <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS FIJADA (STICKY) -->
+            <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS -->
             <div class="sticky top-24 z-30 flex flex-col md:flex-row gap-4 items-center justify-between bg-pomelero-card p-4 rounded-2xl border border-slate-800 shadow-2xl mb-6 backdrop-blur-sm bg-opacity-95">
                 
                 <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto shrink-0">
@@ -273,9 +273,10 @@
                     <input type="file" id="editModalImageInput" accept="image/*" onchange="uploadImageFromModal(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
                 </div>
             </div>
-            <div class="p-4 border-t border-slate-800 flex gap-2 bg-slate-800/50">
-                <button id="btnSaveModal" onclick="saveProductFromModal()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Guardar Cambios</button>
-                <button id="btnDeleteModal" onclick="deleteProductFromModal()" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2 rounded-xl text-xs transition border border-rose-500/20">Borrar Producto</button>
+            <div class="p-4 border-t border-slate-800 flex gap-2 bg-slate-800/50 flex-wrap sm:flex-nowrap">
+                <button id="btnSaveModal" onclick="saveProductFromModal()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Guardar</button>
+                <button id="btnDuplicateModal" onclick="duplicateProductFromModal()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Duplicar</button>
+                <button id="btnDeleteModal" onclick="deleteProductFromModal()" class="w-full sm:w-auto flex-none bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2 px-4 rounded-xl text-xs transition border border-rose-500/20 shadow">Borrar</button>
             </div>
         </div>
     </div>
@@ -315,12 +316,27 @@
                     <div id="adminTab-inventario" class="admin-tab-content space-y-6 hidden">
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3">
                             <h3 class="text-sm font-bold text-slate-200">Subir Catálogo Excel</h3>
-                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios.</p>
+                            <p class="text-xs text-slate-400">Sube tu archivo .xlsx para actualizar precios (Protege las fotos ya subidas).</p>
                             <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="handleExcelUpload(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-pomelero-gold file:text-pomelero-dark cursor-pointer">
                         </div>
                         <div class="flex gap-4">
                             <button onclick="downloadCatalogExcel()" class="flex-1 bg-slate-800 text-slate-200 py-2.5 rounded-xl text-xs border border-slate-700">⬇️ Descargar Catálogo Actual</button>
                             <button onclick="clearDatabase()" class="bg-rose-500/10 text-rose-400 px-4 py-2.5 rounded-xl text-xs border border-rose-500/30">Borrar Todo</button>
+                        </div>
+
+                        <!-- SECCIÓN: Editar producto individual -->
+                        <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4">
+                            <h3 class="text-sm font-bold text-slate-200">✏️ Editar o Borrar un Producto</h3>
+                            <p class="text-xs text-slate-400">Busca por nombre o SKU. Elige una opción de la lista para modificar o eliminar.</p>
+                            
+                            <div class="relative">
+                                <input type="text" id="adminProductSearchInput" oninput="liveSearchAdminProduct()" placeholder="Escribe para buscar (Ej: Cristalino...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <div id="adminLiveSearchResults" class="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-b-xl mt-1 hidden shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-600">
+                                </div>
+                            </div>
+
+                            <div id="adminProductResult" class="hidden pt-3 border-t border-slate-800 space-y-3">
+                            </div>
                         </div>
 
                         <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU -->
@@ -411,6 +427,7 @@
                             <button id="adminUserSubmitBtn" onclick="createAdminUser()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">Crear Usuario</button>
                         </div>
                         
+                        <!-- Lista de Usuarios Admin Reconstruida -->
                         <div id="adminUsersList" class="space-y-2"></div>
                     </div>
 
@@ -454,7 +471,6 @@
         let currentAdminUser = null;
         let currentAdminPerms = null; 
         
-        // Variables para la Ficha Técnica (Edición rápida y Segura de Usuarios/Productos)
         let editingAdminUserId = null; 
         let originalEditSku = null;
         let pendingModalImage = null;
@@ -497,7 +513,7 @@
                 else { products = snapshot.docs.map(doc => doc.data()); }
                 
                 renderCategories();
-                renderProducts();
+                renderProducts(); // ESCUDO DE PROTECCIÓN: Siempre renderiza todo
             }, err => {
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
             });
@@ -679,6 +695,7 @@
             }
         }
 
+        // ---------- NUEVO: LÓGICA DE FICHA TÉCNICA (DUPLICAR Y AUTO-GUARDAR FOTO) ----------
         function openEditProductModal(sku) {
             const p = products.find(x => x.sku === sku);
             if(!p) return;
@@ -741,7 +758,7 @@
                 const imgEl = document.getElementById('editModalImgPreview');
                 imgEl.src = evt.target.result;
                 imgEl.classList.remove('hidden');
-                alert("✅ Foto cargada temporalmente. ¡No olvides darle a 'Guardar Cambios' abajo!");
+                alert("✅ Foto cargada temporalmente. ¡No olvides darle a 'Guardar' o 'Duplicar'!");
             };
             reader.readAsDataURL(file);
         }
@@ -785,6 +802,41 @@
             }
         }
 
+        async function duplicateProductFromModal() {
+            if(!originalEditSku) return;
+
+            const newSku = document.getElementById('editModalSku').value.trim();
+            const name = document.getElementById('editModalName').value.trim();
+            const cat = document.getElementById('editModalCat').value.trim();
+            const rawPrice = document.getElementById('editModalPrice').value.trim();
+            
+            if (!newSku || !name || !cat) return alert("SKU, Nombre y Categoría no pueden estar vacíos.");
+            
+            if (newSku === originalEditSku) return alert("Para duplicar, primero debes Generar o escribir un SKU diferente al original.");
+
+            const existing = products.find(p => p.sku.toLowerCase() === newSku.toLowerCase());
+            if (existing) return alert(`El código ${newSku} ya existe. Genera otro.`);
+
+            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
+            let productData = { sku: newSku, name, category: cat, price };
+            
+            const oldProd = products.find(p => p.sku === originalEditSku);
+            
+            if (pendingModalImage) {
+                productData.image = pendingModalImage;
+            } else if (oldProd && oldProd.image) {
+                productData.image = oldProd.image;
+            }
+
+            try {
+                await db.collection("pomelero_products").doc(newSku).set(productData);
+                alert("✅ Producto duplicado exitosamente como uno nuevo.");
+                closeEditProductModal();
+            } catch(e) {
+                alert("Error al duplicar. Revisa tu conexión.");
+            }
+        }
+
         async function deleteProductFromModal() {
             if(!originalEditSku) return;
             if(!confirm("¿Estás 100% seguro de borrar este producto del catálogo?")) return;
@@ -796,6 +848,8 @@
                 alert("Error al borrar.");
             }
         }
+
+        // ---------------------------------------------------------------------------------
 
         function openImageModal(imgSrc) {
             document.getElementById('modalImageSrc').src = imgSrc;
@@ -1269,14 +1323,25 @@
                 activeBtn.classList.replace('border-transparent', 'border-pomelero-gold');
                 activeBtn.classList.replace('text-slate-400', 'text-pomelero-gold');
             }
+            
+            // ESCUDO DE PROTECCIÓN: Siempre forzar carga de usuarios al abrir la pestaña Personal
+            if (tabName === 'personal' && currentAdminPerms && currentAdminPerms.adm) {
+                loadAdminUsers();
+            }
         }
 
-        // ---------- AQUÍ ESTÁ LA FUNCIÓN RESTAURADA PARA VER Y EDITAR USUARIOS ADMIN ----------
+        // ---------- SISTEMA BLINDADO PARA CARGAR USUARIOS ADMIN ----------
         function loadAdminUsers() {
-            db.collection("pomelero_admins").onSnapshot(snap => {
-                const list = document.getElementById('adminUsersList');
-                if(!list) return; // Protección extra
-                if(snap.empty) { list.innerHTML = '<p class="text-xs text-slate-500 mt-2">No hay usuarios extra creados.</p>'; return; }
+            const list = document.getElementById('adminUsersList');
+            if(!list) return;
+            
+            list.innerHTML = '<p class="text-xs text-slate-400 mt-4 text-center">⏳ Cargando usuarios...</p>';
+            
+            db.collection("pomelero_admins").get().then(snap => {
+                if(snap.empty) { 
+                    list.innerHTML = '<p class="text-xs text-slate-500 mt-4 text-center">No hay usuarios extra creados.</p>'; 
+                    return; 
+                }
                 
                 let html = '<h3 class="text-xs font-bold text-slate-400 mt-4 mb-2">Usuarios Activos:</h3>';
                 snap.forEach(doc => {
@@ -1304,6 +1369,9 @@
                     `;
                 });
                 list.innerHTML = html;
+            }).catch(err => {
+                console.error("Error cargando usuarios:", err);
+                list.innerHTML = `<p class="text-xs text-rose-500 mt-4 text-center">Error al cargar usuarios. Recarga la página.</p>`;
             });
         }
 
@@ -1390,6 +1458,7 @@
                 }
                 alert("Usuario actualizado exitosamente.");
                 cancelEditAdmin();
+                loadAdminUsers(); // FORZAR REFRESCO VISUAL
             } else {
                 const doc = await db.collection("pomelero_admins").doc(newUserStr).get();
                 if (doc.exists) {
@@ -1398,6 +1467,7 @@
                 await db.collection("pomelero_admins").doc(newUserStr).set({ password: pass, perms });
                 alert("Usuario creado exitosamente.");
                 cancelEditAdmin();
+                loadAdminUsers(); // FORZAR REFRESCO VISUAL
             }
         }
 
@@ -1405,9 +1475,53 @@
             if(confirm(`¿Seguro que deseas eliminar el acceso al usuario "${user}"?`)) {
                 await db.collection("pomelero_admins").doc(user).delete();
                 if (editingAdminUserId === user) cancelEditAdmin();
+                loadAdminUsers(); // FORZAR REFRESCO VISUAL
             }
         }
-        // --------------------------------------------------------------------------------------
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(sheet);
+                    if (json.length === 0) return alert("El archivo está vacío.");
+
+                    alert("⏳ Subiendo productos a la Nube. Por favor no cierres la página... Te avisaremos cuando termine.");
+
+                    let count = 0;
+                    for (const row of json) {
+                        const name = row.Nombre || row.nombre || row.PRODUCTO || row.Producto || 'Sin Nombre';
+                        const category = row.Categoria || row.categoria || row.CATEGORIA || 'General';
+                        const rawPrice = row.Precio || row.precio || row.PRECIO;
+                        let price = rawPrice;
+                        
+                        if (rawPrice == null || String(rawPrice).trim().toLowerCase() === 'no') price = "NO_DISPONIBLE";
+                        else price = Number(String(rawPrice).replace(/[^0-9.-]+/g,""));
+                        
+                        const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
+                        
+                        let productData = { name, category, price, sku };
+
+                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
+                        image = String(image).replace('img/', '').replace('IMG/', '').trim();
+
+                        if (image && image !== '[Imagen en nube]') {
+                            productData.image = image;
+                        }
+
+                        await db.collection("pomelero_products").doc(sku).set(productData, { merge: true });
+                        count++;
+                    }
+                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
+                } catch (err) { alert("Error al leer el archivo Excel."); }
+            };
+            reader.readAsArrayBuffer(file);
+        }
     </script>
 </body>
 </html>
