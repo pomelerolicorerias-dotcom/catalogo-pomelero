@@ -144,7 +144,9 @@
         <!-- VISTA 2: AUTENTICACIÓN / USUARIO -->
         <div id="view-auth" class="hidden max-w-md mx-auto space-y-6">
             <div id="loginFormContainer" class="relative bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
+                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
+                
                 <div class="text-center space-y-2 pt-2">
                     <h2 id="authFormTitle" class="text-xl font-bold text-slate-100">Iniciar Sesión</h2>
                     <p id="authFormSubtitle" class="text-xs text-slate-400">Ingresa tus datos para registrar o enviar tus pedidos.</p>
@@ -175,7 +177,9 @@
             </div>
 
             <div id="activeSessionContainer" class="relative hidden bg-pomelero-card p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
+                <!-- BOTÓN X PARA CERRAR -->
                 <button onclick="switchView('catalogo')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-light transition">&times;</button>
+                
                 <div class="flex flex-col items-center text-center space-y-3 pt-2">
                     <div class="w-20 h-20 rounded-full bg-pomelero-gold/20 border-2 border-pomelero-gold flex items-center justify-center text-pomelero-gold text-2xl font-bold shadow-inner" id="userInitial">U</div>
                     <div>
@@ -399,7 +403,7 @@
                             </h3>
                             <div class="grid grid-cols-2 gap-2">
                                 <input type="text" id="newAdminUser" placeholder="Nombre de usuario" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <input type="text" id="newAdminPass" placeholder="Contraseña" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
+                                <input type="text" id="newAdminPass" placeholder="Contraseña segura" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="space-y-2 mt-2 bg-slate-900 p-3 rounded-lg border border-slate-800">
                                 <p class="text-[10px] font-bold text-slate-400 mb-2">Permisos permitidos:</p>
@@ -454,7 +458,6 @@
         let currentAdminUser = null;
         let currentAdminPerms = null; 
         
-        // Variables para la Ficha Técnica (Edición rápida y Segura de Usuarios/Productos)
         let editingAdminUserId = null; 
         let originalEditSku = null;
         let pendingModalImage = null;
@@ -495,7 +498,9 @@
                 
                 if (snapshot.empty) { products = []; } 
                 else { products = snapshot.docs.map(doc => doc.data()); }
+                
                 renderCategories();
+                // ESCUDO DE PROTECCIÓN: Ejecutar el renderizado de forma segura y automática en la carga.
                 renderProducts();
             }, err => {
                 document.getElementById("loadingCatalog").innerHTML = "<p class='text-rose-400'>Error de conexión con la nube.</p>";
@@ -562,100 +567,130 @@
             setTimeout(updateCategoryArrows, 100);
         }
 
-        function filterByCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
+        function filterByCategory(cat) { 
+            currentCategory = cat; 
+            renderCategories(); 
+            renderProducts(); 
+        }
         
         function filterProducts() { 
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const sortMode = document.getElementById('sortProductsSelect').value;
-            const grid = document.getElementById('productsGrid');
-            const empty = document.getElementById('emptyCatalog');
-
-            let filtered = products.filter(p => {
-                const matchesCat = currentCategory === 'TODOS' || (p.category || 'General') === currentCategory;
-                const matchesQuery = p.name.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query));
-                return matchesCat && matchesQuery;
-            });
-
-            filtered.sort((a, b) => {
-                if (sortMode === 'price_asc') {
-                    let priceA = a.price === "NO_DISPONIBLE" ? 999999 : Number(a.price);
-                    let priceB = b.price === "NO_DISPONIBLE" ? 999999 : Number(b.price);
-                    return priceA - priceB;
-                } else if (sortMode === 'price_desc') {
-                    let priceA = a.price === "NO_DISPONIBLE" ? -1 : Number(a.price);
-                    let priceB = b.price === "NO_DISPONIBLE" ? -1 : Number(b.price);
-                    return priceB - priceA;
-                } else if (sortMode === 'name_asc') {
-                    return a.name.localeCompare(b.name);
-                }
-                return 0; 
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '';
-                empty.classList.remove('hidden');
-                return;
-            }
-            empty.classList.add('hidden');
-
-            grid.innerHTML = filtered.map(p => {
-                const isAvailable = p.price !== "NO_DISPONIBLE" && p.price !== null && p.price !== "";
-                const priceBadge = isAvailable ? `<span class="text-lg font-bold text-pomelero-gold">$${Number(p.price).toFixed(2)}</span>` : `<span class="text-sm font-bold text-rose-500">No disponible</span>`;
-                const btnStyle = isAvailable ? 'bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark' : 'bg-slate-700 text-slate-500 cursor-not-allowed';
-                const action = isAvailable ? `onclick="addToCartWithQty('${p.sku}')"` : '';
-
-                let imgHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
-                if (p.image) {
-                    imgHTML = `<img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain cursor-pointer p-2 hover:scale-105 transition-transform duration-300" onclick="openImageModal('${p.image}')">`;
-                }
-
-                const inputQtyHTML = isAvailable 
-                    ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
-                    : '';
-
-                let adminEditBtn = '';
-                if (currentAdminPerms && currentAdminPerms.inv) {
-                    adminEditBtn = `<button onclick="openEditProductModal('${p.sku}')" class="absolute top-2 right-2 bg-slate-800/90 text-pomelero-gold p-1.5 rounded-lg border border-slate-700 shadow hover:bg-slate-700 transition z-10" title="Ficha Técnica (Editar)">✏️</button>`;
-                }
-
-                return `
-                    <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition relative">
-                        ${adminEditBtn}
-                        <div class="space-y-3">
-                            <div class="w-full h-40 bg-pomelero-dark rounded-xl flex items-center justify-center overflow-hidden border border-slate-800 relative">
-                                ${imgHTML}
-                                <span class="absolute top-2 left-2 bg-pomelero-dark/80 backdrop-blur-sm text-[10px] font-bold text-pomelero-gold px-2 py-1 rounded-lg border border-slate-700 pointer-events-none">${p.category || 'General'}</span>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-100 line-clamp-2">${p.name}</h3>
-                                <p class="text-xs text-slate-400 mt-1">SKU: ${p.sku || 'N/D'}</p>
-                            </div>
-                        </div>
-                        <div class="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between">
-                            <div>
-                                <span class="text-[10px] text-slate-400 block uppercase">Precio Mayoreo</span>
-                                ${priceBadge}
-                            </div>
-                            
-                            <div class="flex items-center gap-2">
-                                ${inputQtyHTML}
-                                <button ${action} class="${btnStyle} px-3 py-1.5 rounded-xl transition shadow font-bold text-xs flex items-center justify-center">
-                                    + Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            renderProducts(); 
         }
 
-        // ---------- NUEVO: LÓGICA DE FICHA TÉCNICA REPARADA Y SEGURA ----------
+        // ---------- FUNCIÓN SEGURA PARA RENDERIZAR PRODUCTOS ----------
+        function renderProducts() { 
+            try {
+                const searchInput = document.getElementById('searchInput');
+                const sortSelect = document.getElementById('sortProductsSelect');
+                
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const sortMode = sortSelect ? sortSelect.value : 'default';
+                
+                const grid = document.getElementById('productsGrid');
+                const empty = document.getElementById('emptyCatalog');
+
+                if (!grid || !empty) return;
+
+                let filtered = products.filter(p => {
+                    if (!p) return false;
+                    const cat = p.category || 'General';
+                    const matchesCat = currentCategory === 'TODOS' || cat === currentCategory;
+                    
+                    const safeName = (p.name || '').toLowerCase();
+                    const safeSku = (p.sku || '').toLowerCase();
+                    const matchesQuery = safeName.includes(query) || safeSku.includes(query);
+                    
+                    return matchesCat && matchesQuery;
+                });
+
+                filtered.sort((a, b) => {
+                    if (!a || !b) return 0;
+                    
+                    if (sortMode === 'price_asc') {
+                        let priceA = (a.price === "NO_DISPONIBLE" || !a.price) ? 999999 : Number(a.price);
+                        let priceB = (b.price === "NO_DISPONIBLE" || !b.price) ? 999999 : Number(b.price);
+                        return priceA - priceB;
+                    } else if (sortMode === 'price_desc') {
+                        let priceA = (a.price === "NO_DISPONIBLE" || !a.price) ? -1 : Number(a.price);
+                        let priceB = (b.price === "NO_DISPONIBLE" || !b.price) ? -1 : Number(b.price);
+                        return priceB - priceA;
+                    } else if (sortMode === 'name_asc') {
+                        const nameA = a.name || "";
+                        const nameB = b.name || "";
+                        return nameA.localeCompare(nameB);
+                    }
+                    return 0; 
+                });
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = '';
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                
+                empty.classList.add('hidden');
+
+                grid.innerHTML = filtered.map(p => {
+                    const isAvailable = p.price !== "NO_DISPONIBLE" && p.price !== null && p.price !== "" && p.price !== undefined;
+                    const priceBadge = isAvailable ? `<span class="text-lg font-bold text-pomelero-gold">$${Number(p.price).toFixed(2)}</span>` : `<span class="text-sm font-bold text-rose-500">No disponible</span>`;
+                    const btnStyle = isAvailable ? 'bg-pomelero-gold hover:bg-pomelero-goldHover text-pomelero-dark' : 'bg-slate-700 text-slate-500 cursor-not-allowed';
+                    const action = isAvailable ? `onclick="addToCartWithQty('${p.sku}')"` : '';
+
+                    let imgHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+                    if (p.image && p.image !== '[Imagen en nube]') {
+                        imgHTML = `<img src="${p.image}" alt="${p.name || 'Producto'}" class="w-full h-full object-contain cursor-pointer p-2 hover:scale-105 transition-transform duration-300" onclick="openImageModal('${p.image}')">`;
+                    }
+
+                    const inputQtyHTML = isAvailable 
+                        ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
+                        : '';
+
+                    let adminEditBtn = '';
+                    if (currentAdminPerms && currentAdminPerms.inv) {
+                        adminEditBtn = `<button onclick="openEditProductModal('${p.sku}')" class="absolute top-2 right-2 bg-slate-800/90 text-pomelero-gold p-1.5 rounded-lg border border-slate-700 shadow hover:bg-slate-700 transition z-10" title="Ficha Técnica (Editar)">✏️</button>`;
+                    }
+
+                    return `
+                        <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition relative">
+                            ${adminEditBtn}
+                            <div class="space-y-3">
+                                <div class="w-full h-40 bg-pomelero-dark rounded-xl flex items-center justify-center overflow-hidden border border-slate-800 relative">
+                                    ${imgHTML}
+                                    <span class="absolute top-2 left-2 bg-pomelero-dark/80 backdrop-blur-sm text-[10px] font-bold text-pomelero-gold px-2 py-1 rounded-lg border border-slate-700 pointer-events-none">${p.category || 'General'}</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-100 line-clamp-2">${p.name || 'Sin nombre'}</h3>
+                                    <p class="text-xs text-slate-400 mt-1">SKU: ${p.sku || 'N/D'}</p>
+                                </div>
+                            </div>
+                            <div class="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block uppercase">Precio Mayoreo</span>
+                                    ${priceBadge}
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    ${inputQtyHTML}
+                                    <button ${action} class="${btnStyle} px-3 py-1.5 rounded-xl transition shadow font-bold text-xs flex items-center justify-center">
+                                        + Agregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                console.error("Error renderizando catálogo", e);
+            }
+        }
+        // -----------------------------------------------------------------------------
+
         function openEditProductModal(sku) {
             const p = products.find(x => x.sku === sku);
             if(!p) return;
             
             originalEditSku = p.sku;
-            pendingModalImage = null; // Reiniciar imagen pendiente
+            pendingModalImage = null; 
             document.getElementById('editModalImageInput').value = ''; 
             
             document.getElementById('editModalSku').value = p.sku;
@@ -664,7 +699,7 @@
             document.getElementById('editModalPrice').value = p.price === 'NO_DISPONIBLE' ? '' : p.price;
             
             const imgEl = document.getElementById('editModalImgPreview');
-            if (p.image) {
+            if (p.image && p.image !== '[Imagen en nube]') {
                 imgEl.src = p.image;
                 imgEl.classList.remove('hidden');
             } else {
@@ -732,7 +767,6 @@
             
             const oldProd = products.find(p => p.sku === originalEditSku);
             
-            // Lógica para mantener foto vieja o aplicar la nueva
             if (pendingModalImage) {
                 productData.image = pendingModalImage;
             } else if (oldProd && oldProd.image) {
@@ -740,7 +774,6 @@
             }
 
             try {
-                // Si el SKU cambió, es un producto "nuevo" (corregido o duplicado)
                 if (newSku !== originalEditSku) {
                     const existing = products.find(p => p.sku.toLowerCase() === newSku.toLowerCase());
                     if (existing) return alert(`El código ${newSku} ya existe en otro producto.`);
@@ -748,7 +781,6 @@
                     await db.collection("pomelero_products").doc(newSku).set(productData);
                     await db.collection("pomelero_products").doc(originalEditSku).delete();
                 } else {
-                    // Si el SKU es igual, solo sobreescribe
                     await db.collection("pomelero_products").doc(originalEditSku).set(productData, { merge: true });
                 }
 
@@ -770,7 +802,6 @@
                 alert("Error al borrar.");
             }
         }
-        // ---------------------------------------------------------------------------------
 
         function openImageModal(imgSrc) {
             document.getElementById('modalImageSrc').src = imgSrc;
@@ -1246,7 +1277,6 @@
             }
         }
 
-        // ---------- LÓGICA DE USUARIOS ADMINISTRADORES CORREGIDA ----------
         function loadAdminUsers() {
             db.collection("pomelero_admins").onSnapshot(snap => {
                 const list = document.getElementById('adminUsersList');
@@ -1255,7 +1285,7 @@
                 let html = '<h3 class="text-xs font-bold text-slate-400 mt-4 mb-2">Usuarios Activos:</h3>';
                 snap.forEach(doc => {
                     const data = doc.data();
-                    const p = data.perms || {}; // Protección anti-errores si el permiso está vacío
+                    const p = data.perms || {}; 
                     
                     let permsTxt = [];
                     if(p.inv) permsTxt.push('Inventario');
@@ -1424,451 +1454,6 @@
                 } catch (err) { alert("Error al leer el archivo Excel."); }
             };
             reader.readAsArrayBuffer(file);
-        }
-
-        function generateNextSKU() {
-            if (products.length === 0) {
-                document.getElementById('newProdSku').value = 'SKU-1000';
-                return;
-            }
-            
-            let maxNumber = 0;
-            products.forEach(p => {
-                if (p.sku) {
-                    const match = p.sku.match(/\d+/);
-                    if (match) {
-                        const num = parseInt(match[0], 10);
-                        if (num > maxNumber) {
-                            maxNumber = num;
-                        }
-                    }
-                }
-            });
-            
-            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
-            document.getElementById('newProdSku').value = 'SKU-' + nextNumber;
-        }
-
-        async function createNewProduct() {
-            const sku = document.getElementById('newProdSku').value.trim();
-            const name = document.getElementById('newProdName').value.trim();
-            const category = document.getElementById('newProdCat').value.trim();
-            const rawPrice = document.getElementById('newProdPrice').value.trim();
-            const imageInput = document.getElementById('newProdImage');
-
-            if (!sku || !name || !category) return alert("SKU, Nombre y Categoría son obligatorios para crear un producto.");
-
-            const existing = products.find(p => p.sku.toLowerCase() === sku.toLowerCase());
-            if (existing) return alert(`Ya existe un producto con el SKU: ${sku}. Por favor elige uno diferente.`);
-
-            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
-            let productData = { sku, name, category, price };
-
-            try {
-                if (imageInput.files && imageInput.files[0]) {
-                    const file = imageInput.files[0];
-                    if (file.size > 1500000) {
-                        alert("⚠️ La imagen es muy pesada. Intenta con una imagen de menor tamaño (máx 1.5MB).");
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = async function(evt) {
-                        productData.image = evt.target.result;
-                        await db.collection("pomelero_products").doc(sku).set(productData);
-                        alert("✅ Producto y foto guardados correctamente en la nube.");
-                        clearNewProductForm();
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    await db.collection("pomelero_products").doc(sku).set(productData);
-                    alert("✅ Producto guardado correctamente sin imagen.");
-                    clearNewProductForm();
-                }
-            } catch (error) {
-                alert("Error de conexión al crear el producto.");
-            }
-        }
-
-        function clearNewProductForm() {
-            document.getElementById('newProdSku').value = '';
-            document.getElementById('newProdName').value = '';
-            document.getElementById('newProdCat').value = '';
-            document.getElementById('newProdPrice').value = '';
-            document.getElementById('newProdImage').value = '';
-        }
-
-        async function clearDatabase() {
-            if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
-            alert("Borrando catálogo... Esto tomará unos segundos.");
-            try {
-                const snapshot = await db.collection("pomelero_products").get();
-                let borrados = 0;
-                for (const doc of snapshot.docs) { await doc.ref.delete(); borrados++; }
-                alert(`✅ ¡Catálogo Vaciado! Se borraron ${borrados} productos.`);
-            } catch (error) { alert("Hubo un error al borrar el catálogo."); }
-        }
-
-        function downloadCatalogExcel() {
-            if(products.length === 0) return alert("No hay productos.");
-            const data = products.map(p => {
-                let imgVal = p.image || "";
-                if (imgVal.startsWith('data:image')) {
-                    imgVal = "[Imagen en nube]";
-                }
-                return {
-                    SKU: p.sku,
-                    Nombre: p.name,
-                    Categoria: p.category,
-                    Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
-                    Imagen: imgVal
-                };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
-            XLSX.writeFile(wb, "Catalogo_Pomelero.xlsx");
-        }
-
-        function loadAdminClients() {
-            db.collection("pomelero_users").onSnapshot(snapshot => {
-                if (snapshot.empty) { 
-                    document.getElementById('adminClientsList').innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; 
-                    adminClientsData = [];
-                    return; 
-                }
-                adminClientsData = snapshot.docs.map(doc => doc.data());
-                renderAdminClients();
-            });
-        }
-
-        function renderAdminClients() {
-            const list = document.getElementById('adminClientsList');
-            const sortMode = document.getElementById('clientSortSelect').value;
-
-            let processedClients = adminClientsData.map(u => {
-                const orderCount = u.orders ? u.orders.length : 0;
-                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
-                const lastOrder = orderCount > 0 ? u.orders[0] : null; 
-                
-                let category = "⚠️ Inactivo / Malo";
-                let catColor = "text-rose-400 border-rose-500/20 bg-rose-500/10";
-                
-                if (orderCount >= 5 || totalSpent >= 3000) {
-                    category = "⭐ Cliente Bueno";
-                    catColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
-                } else if (orderCount >= 2) {
-                    category = "👍 Cliente Medio";
-                    catColor = "text-blue-400 border-blue-500/20 bg-blue-500/10";
-                } else if (orderCount === 1) {
-                    category = "🆕 Nuevo Cliente";
-                    catColor = "text-amber-400 border-amber-500/20 bg-amber-500/10";
-                }
-
-                return { ...u, orderCount, totalSpent, lastOrder, category, catColor };
-            });
-
-            if (sortMode === 'recent') {
-                processedClients.sort((a, b) => {
-                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
-                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tB - tA; 
-                });
-            } else if (sortMode === 'inactive') {
-                processedClients.sort((a, b) => {
-                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
-                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tA - tB; 
-                });
-            } else if (sortMode === 'best') {
-                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); 
-            }
-
-            let html = '';
-            processedClients.forEach(u => {
-                let ordersHTML = '';
-                if (u.orderCount > 0) {
-                    ordersHTML = `
-                    <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
-                        <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
-                        <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
-                    
-                    u.orders.forEach(o => {
-                        const st = o.status || 'Pendiente';
-                        let stClass = "text-amber-400 border-amber-500/20";
-                        if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
-                        if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
-                        if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
-
-                        const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
-                        
-                        let itemsList = '';
-                        o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
-
-                        let deleteOrderBtn = currentAdminPerms && currentAdminPerms.cli 
-                            ? `<button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>` 
-                            : '';
-
-                        ordersHTML += `
-                                <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
-                                    <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
-                                        <div class="flex items-center">
-                                            <span>${o.id}</span>
-                                            ${stBadge}
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
-                                            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
-                                        </div>
-                                    </summary>
-                                    <div class="p-3 border-t border-slate-700 bg-slate-800/80">
-                                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
-                                            <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
-                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
-                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
-                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
-                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
-                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
-                                            </select>
-                                        </div>
-                                        <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
-                                            ${itemsList}
-                                        </ul>
-                                        <div class="flex gap-2">
-                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
-                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
-                                            ${deleteOrderBtn}
-                                        </div>
-                                    </div>
-                                </details>
-                            `;
-                    });
-                    
-                    ordersHTML += `
-                        </div>
-                    </div>`;
-                } else {
-                    ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
-                }
-
-                let clientActionButtons = '';
-                if (currentAdminPerms && currentAdminPerms.cli) {
-                    clientActionButtons = `
-                        <div class="flex gap-2">
-                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
-                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
-                        </div>
-                    `;
-                }
-
-                html += `
-                <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
-                            <span class="text-[9px] px-1.5 py-0.5 rounded border inline-block mt-1 w-max ${u.catColor}">${u.category}</span>
-                        </div>
-                        ${clientActionButtons}
-                    </div>
-                    <div class="flex justify-between items-center text-[10px]">
-                        <p class="text-slate-400">Tel: ${u.phone} | Dir: ${u.address || 'N/D'}</p>
-                        <p class="text-pomelero-gold font-bold">Gasto: $${u.totalSpent.toFixed(2)}</p>
-                    </div>
-                    ${ordersHTML}
-                </div>`;
-            });
-            
-            list.innerHTML = html;
-        }
-
-        async function downloadClientsExcel() {
-            if (adminClientsData.length === 0) return alert("No hay clientes registrados.");
-            
-            const data = adminClientsData.map(u => {
-                const orderCount = u.orders ? u.orders.length : 0;
-                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
-                const lastOrderDate = orderCount > 0 ? u.orders[0].date : 'Nunca';
-
-                let category = "Inactivo / Malo";
-                if (orderCount >= 5 || totalSpent >= 3000) category = "Bueno";
-                else if (orderCount >= 2) category = "Medio";
-                else if (orderCount === 1) category = "Nuevo";
-
-                return { 
-                    Nombre: u.name, 
-                    Telefono: u.phone, 
-                    Direccion: u.address || 'N/D', 
-                    Clasificacion: category,
-                    Total_Gastado: "$" + totalSpent.toFixed(2),
-                    Pedidos_Realizados: orderCount,
-                    Ultimo_Pedido: lastOrderDate,
-                    Contrasena: u.password
-                };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Reporte_Clientes");
-            XLSX.writeFile(wb, "Reporte_Inteligente_Clientes.xlsx");
-        }
-
-        async function adminDownloadOrderPDF(phone, orderId, format) {
-            try {
-                const doc = await db.collection("pomelero_users").doc(phone).get();
-                if(doc.exists) {
-                    const user = doc.data();
-                    const ord = (user.orders || []).find(o => o.id === orderId);
-                    if(ord) {
-                        let styleHtml = '';
-                        let bodyHtml = '';
-
-                        const logoHtml = storeLogo 
-                            ? `<img src="${storeLogo}" style="filter: invert(1) brightness(0); ${format === 'ticket' ? 'max-width: 45mm; margin-bottom: 5px;' : 'max-width: 150px;'}">` 
-                            : `<h2>GRUPO POMELERO</h2>`;
-
-                        const companyInfoHtml = `
-                            <strong>Grupo Pomelero</strong><br>
-                            Blvd. Lic. Anacleto Glez F. Sur 340a<br>
-                            San Miguel, 47660<br>
-                            Tepatitlán de Morelos, Jal.<br>
-                            Tel: 3781165303<br>
-                        `;
-
-                        if (format === 'ticket') {
-                            styleHtml = `
-                                @page { margin: 0; }
-                                body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 10px 5px; color: #000; background: #fff; text-align: center; }
-                                .text-left { text-align: left; }
-                                .divider { border-top: 1px dashed #000; margin: 8px 0; }
-                                .info { font-size: 11px; margin-bottom: 5px; line-height: 1.2; text-align: left; }
-                                table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
-                                th, td { text-align: left; padding: 2px 0; vertical-align: top; }
-                                th { border-bottom: 1px solid #000; padding-bottom: 4px; }
-                                .right { text-align: right; }
-                                .total { font-size: 14px; font-weight: bold; text-align: right; margin-top: 5px; }
-                            `;
-                            bodyHtml = `
-                                ${logoHtml}
-                                <div class="info text-left" style="text-align: center;">${companyInfoHtml}</div>
-                                <div class="divider"></div>
-                                <div class="info">
-                                    <strong>Folio:</strong> ${ord.id}<br>
-                                    <strong>Fecha:</strong> ${ord.date}<br>
-                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
-                                    <strong>Cliente:</strong> ${user.name}<br>
-                                    <strong>Tel:</strong> ${user.phone}<br>
-                                    <strong>Dir:</strong> ${user.address || 'Recoger en tienda'}
-                                </div>
-                                <div class="divider"></div>
-                                <table>
-                                    <thead><tr><th style="width: 15%">Cant</th><th style="width: 55%">Desc</th><th class="right" style="width: 30%">Total</th></tr></thead>
-                                    <tbody>
-                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="divider"></div>
-                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
-                                <div class="divider"></div>
-                                <div style="font-size: 10px; margin-top: 10px;">*** TICKET INTERNO ***</div>
-                            `;
-                        } else {
-                            styleHtml = `
-                                @page { margin: 15mm; }
-                                body { font-family: Arial, sans-serif; font-size: 14px; color: #000; background: #fff; }
-                                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                                .company { text-align: right; font-size: 12px; line-height: 1.4; }
-                                .info { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
-                                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                                th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
-                                th { background-color: #f8fafc; font-weight: bold; border-bottom: 2px solid #000; }
-                                .right { text-align: right; }
-                                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px; }
-                            `;
-                            bodyHtml = `
-                                <div class="header">
-                                    <div>${logoHtml}</div>
-                                    <div class="company">${companyInfoHtml}</div>
-                                </div>
-                                <div class="info">
-                                    <strong>Copia de Pedido (Administrador)</strong><br>
-                                    <strong>Folio:</strong> ${ord.id} | <strong>Fecha:</strong> ${ord.date} | <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
-                                    <strong>Cliente:</strong> ${user.name} | <strong>Teléfono:</strong> ${user.phone}<br>
-                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
-                                </div>
-                                <table>
-                                    <thead><tr><th>Cant</th><th>Descripción</th><th>Precio Unitario</th><th class="right">Subtotal</th></tr></thead>
-                                    <tbody>
-                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${i.price.toFixed(2)}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
-                            `;
-                        }
-
-                        const printWindow = window.open('', '_blank');
-                        printWindow.document.write(`<html><head><title>Admin_Pedido_${ord.id}</title><style>${styleHtml}</style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
-                        printWindow.document.close();
-                    }
-                }
-            } catch(e) {
-                alert("Error al descargar el ticket.");
-            }
-        }
-
-        async function deleteOrder(phone, orderId) {
-            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
-            try {
-                const userRef = db.collection("pomelero_users").doc(phone);
-                const doc = await userRef.get();
-                if(doc.exists) {
-                    let ordersArray = doc.data().orders || [];
-                    ordersArray = ordersArray.filter(o => o.id !== orderId);
-                    await userRef.update({ orders: ordersArray });
-                    alert("Pedido eliminado correctamente.");
-                }
-            } catch (error) {
-                alert("Hubo un error al eliminar el pedido.");
-            }
-        }
-
-        async function editClient(phone, currentName, currentAddress) {
-            const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
-            const newAddr = prompt("Modificar Dirección del cliente:", currentAddress !== 'Sin dirección' ? currentAddress : '') || currentAddress;
-            const newPass = prompt("Modificar Contraseña (deja en blanco para mantener la actual):");
-
-            let updates = { name: newName, address: newAddr !== 'Sin dirección' ? newAddr : '' };
-            if(newPass && newPass.trim() !== "") { updates.password = newPass.trim(); }
-
-            await db.collection("pomelero_users").doc(phone).update(updates);
-            alert("Información del cliente actualizada.");
-        }
-
-        async function deleteClient(phone) {
-            if(confirm("¿Seguro que deseas eliminar este cliente? Perderá todos sus pedidos.")) {
-                await db.collection("pomelero_users").doc(phone).delete();
-            }
-        }
-
-        function saveWhatsappNumber() {
-            const val = document.getElementById('adminWhatsappInput').value.trim();
-            if(val) {
-                db.collection("config").doc("global").set({ whatsapp: val }, { merge: true });
-                alert("Número sincronizado en la nube.");
-            }
-        }
-
-        function handleLogoUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                await db.collection("config").doc("global").set({ logo: evt.target.result }, { merge: true });
-                alert("Logotipo guardado en la nube.");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function setTheme(themeName) {
-            db.collection("config").doc("global").set({ theme: themeName }, { merge: true });
-            alert("Tema sincronizado en la nube.");
         }
     </script>
 </body>
