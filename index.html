@@ -251,11 +251,55 @@
         <img id="modalImageSrc" src="" alt="Vista Previa" class="max-w-[90vw] max-h-[90vh] object-contain rounded-xl shadow-2xl transition-transform transform scale-100">
     </div>
 
+    <!-- MODAL FICHA TÉCNICA (EDICIÓN RÁPIDA DE ADMIN) -->
+    <div id="editProductModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
+        <div class="bg-pomelero-card w-full max-w-md rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
+                <h3 class="font-bold text-pomelero-gold text-sm">✏️ Ficha Técnica (Edición Rápida)</h3>
+                <button onclick="closeEditProductModal()" class="text-slate-400 hover:text-white text-2xl font-light">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex justify-center mb-2">
+                    <img id="editModalImgPreview" src="" class="h-28 object-contain bg-slate-900 rounded-lg border border-slate-700 p-2 hidden">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">SKU (No editable)</label>
+                    <input type="text" id="editModalSku" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-500 cursor-not-allowed shadow-inner">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">Nombre</label>
+                    <input type="text" id="editModalName" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">Categoría</label>
+                    <input type="text" id="editModalCat" list="existingCatsModal" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                    <datalist id="existingCatsModal"></datalist>
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">Precio Mayoreo (Vacío = No disponible)</label>
+                    <input type="number" id="editModalPrice" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Cambiar Imagen (Auto-guardado):</label>
+                    <input type="file" accept="image/*" onchange="uploadImageFromModal(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-800 flex gap-2 bg-slate-800/50">
+                <button id="btnSaveModal" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">Guardar Cambios</button>
+                <button id="btnDeleteModal" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2 rounded-xl text-xs transition border border-rose-500/20">Borrar Producto</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE ADMINISTRADOR -->
     <div id="adminModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-pomelero-card w-full max-w-2xl rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">Panel de Administración</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">Panel de Administración</h2>
+                    <!-- BOTÓN CERRAR SESIÓN ADMIN -->
+                    <button id="adminLogoutBtn" onclick="logoutAdmin()" class="hidden text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/20 transition border border-rose-500/20">Salir de Admin</button>
+                </div>
                 <button onclick="closeAdminModal()" class="p-2 text-slate-400 hover:text-white rounded-lg">✕</button>
             </div>
 
@@ -306,7 +350,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN: Crear Producto Manualmente -->
+                        <!-- SECCIÓN: Crear Producto Manualmente CON AUTO SKU Y DATALIST CATEGORÍA -->
                         <div class="bg-pomelero-dark p-4 rounded-xl border border-slate-800 space-y-3 mt-4 shadow-lg">
                             <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
                                 ➕ Agregar Producto Nuevo
@@ -319,6 +363,7 @@
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 
+                                <!-- NUEVO: Buscador inteligente híbrido de Categorías (Datalist) -->
                                 <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 <datalist id="existingCats"></datalist>
 
@@ -436,6 +481,8 @@
         let isRegistering = false;
         let editingAdminUserId = null; 
         
+        // VARIABLES GLOBALES PARA SESIÓN ADMIN
+        let currentAdminUser = null;
         let currentAdminPerms = null; 
 
         const statusColors = {
@@ -447,6 +494,16 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
+            
+            // NUEVO: CHECAR SI LA SESIÓN ADMIN YA EXISTE
+            const savedAdmin = localStorage.getItem('pomelero_admin_profile');
+            if (savedAdmin) {
+                try {
+                    const parsed = JSON.parse(savedAdmin);
+                    currentAdminUser = parsed.user;
+                    currentAdminPerms = parsed.perms;
+                } catch(e){}
+            }
             
             db.collection("config").doc("global").onSnapshot(doc => {
                 if(doc.exists) {
@@ -525,16 +582,15 @@
             `).join('');
             
             const dl = document.getElementById('existingCats');
-            if (dl) {
-                dl.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
-            }
+            const dlModal = document.getElementById('existingCatsModal'); // Para ficha técnica
+            if (dl) dl.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
+            if (dlModal) dlModal.innerHTML = uniqueCategories.map(c => `<option value="${c}">`).join('');
 
             setTimeout(updateCategoryArrows, 100);
         }
 
         function filterByCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
         
-        // ---------- NUEVA LÓGICA DE FILTRADO Y ORDENAMIENTO (MERCADO LIBRE) ----------
         function filterProducts() { 
             const query = document.getElementById('searchInput').value.toLowerCase();
             const sortMode = document.getElementById('sortProductsSelect').value;
@@ -547,7 +603,6 @@
                 return matchesCat && matchesQuery;
             });
 
-            // Lógica de Ordenamiento
             filtered.sort((a, b) => {
                 if (sortMode === 'price_asc') {
                     let priceA = a.price === "NO_DISPONIBLE" ? 999999 : Number(a.price);
@@ -585,8 +640,15 @@
                     ? `<input type="number" id="qty-${p.sku}" value="1" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs text-slate-200 py-1.5 outline-none focus:border-pomelero-gold shadow-inner">` 
                     : '';
 
+                // NUEVO: Botón de Edición Rápida en el catálogo si el admin tiene permisos
+                let adminEditBtn = '';
+                if (currentAdminPerms && currentAdminPerms.inv) {
+                    adminEditBtn = `<button onclick="openEditProductModal('${p.sku}')" class="absolute top-2 right-2 bg-slate-800/90 text-pomelero-gold p-1.5 rounded-lg border border-slate-700 shadow hover:bg-slate-700 transition z-10" title="Ficha Técnica (Editar)">✏️</button>`;
+                }
+
                 return `
-                    <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition">
+                    <div class="bg-pomelero-card rounded-2xl border border-slate-800 p-4 flex flex-col justify-between shadow-lg hover:border-slate-700 transition relative">
+                        ${adminEditBtn}
                         <div class="space-y-3">
                             <div class="w-full h-40 bg-pomelero-dark rounded-xl flex items-center justify-center overflow-hidden border border-slate-800 relative">
                                 ${imgHTML}
@@ -614,7 +676,87 @@
                 `;
             }).join('');
         }
-        // -----------------------------------------------------------------------------
+
+        // ---------- NUEVO: LÓGICA DE LA FICHA TÉCNICA (MODAL EDICIÓN RÁPIDA) ----------
+        function openEditProductModal(sku) {
+            const p = products.find(x => x.sku === sku);
+            if(!p) return;
+            
+            document.getElementById('editModalSku').value = p.sku;
+            document.getElementById('editModalName').value = p.name;
+            document.getElementById('editModalCat').value = p.category || 'General';
+            document.getElementById('editModalPrice').value = p.price === 'NO_DISPONIBLE' ? '' : p.price;
+            
+            const imgEl = document.getElementById('editModalImgPreview');
+            if (p.image) {
+                imgEl.src = p.image;
+                imgEl.classList.remove('hidden');
+            } else {
+                imgEl.src = '';
+                imgEl.classList.add('hidden');
+            }
+
+            document.getElementById('btnSaveModal').onclick = () => saveProductFromModal(p.sku);
+            document.getElementById('btnDeleteModal').onclick = () => deleteProductFromModal(p.sku);
+
+            document.getElementById('editProductModal').classList.remove('hidden');
+        }
+
+        function closeEditProductModal() {
+            document.getElementById('editProductModal').classList.add('hidden');
+        }
+
+        async function saveProductFromModal(sku) {
+            const name = document.getElementById('editModalName').value.trim();
+            const cat = document.getElementById('editModalCat').value.trim();
+            const rawPrice = document.getElementById('editModalPrice').value.trim();
+            
+            if (!name || !cat) return alert("El nombre y la categoría no pueden estar vacíos.");
+            
+            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
+
+            try {
+                await db.collection("pomelero_products").doc(sku).update({ name, category: cat, price });
+                alert("✅ Cambios guardados correctamente.");
+                closeEditProductModal();
+            } catch(e) {
+                alert("Error al guardar en la nube. Revisa tu conexión.");
+            }
+        }
+
+        async function deleteProductFromModal(sku) {
+            if(!confirm("¿Estás 100% seguro de borrar este producto del catálogo?")) return;
+            try {
+                await db.collection("pomelero_products").doc(sku).delete();
+                alert("🗑️ Producto borrado.");
+                closeEditProductModal();
+            } catch(e) {
+                alert("Error al borrar.");
+            }
+        }
+
+        function uploadImageFromModal(e) {
+            const sku = document.getElementById('editModalSku').value;
+            const file = e.target.files[0];
+            if (!file || !sku) return;
+
+            if (file.size > 1500000) return alert("⚠️ La imagen es muy pesada (máximo 1.5MB).");
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    await db.collection("pomelero_products").doc(sku).update({ image: evt.target.result });
+                    const imgEl = document.getElementById('editModalImgPreview');
+                    imgEl.src = evt.target.result;
+                    imgEl.classList.remove('hidden');
+                    alert("✅ Foto actualizada.");
+                } catch (error) {
+                    alert("Error al subir la foto.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        // ------------------------------------------------------------------------------
 
         function openImageModal(imgSrc) {
             document.getElementById('modalImageSrc').src = imgSrc;
@@ -988,9 +1130,23 @@
 
         function openAdminModal() {
             document.getElementById('adminModal').classList.remove('hidden');
-            document.getElementById('adminLoginView').classList.remove('hidden');
-            document.getElementById('adminDashboardView').classList.add('hidden');
+            
+            // Si el admin ya tiene sesión activa en la memoria
+            if (currentAdminPerms) {
+                document.getElementById('adminLoginView').classList.add('hidden');
+                document.getElementById('adminDashboardView').classList.remove('hidden');
+                document.getElementById('adminWhatsappInput').value = whatsappNumber;
+                document.getElementById('adminLogoutBtn').classList.remove('hidden');
+                applyAdminPerms();
+                loadAdminClients();
+                if (currentAdminPerms.adm) loadAdminUsers();
+            } else {
+                document.getElementById('adminLoginView').classList.remove('hidden');
+                document.getElementById('adminDashboardView').classList.add('hidden');
+                document.getElementById('adminLogoutBtn').classList.add('hidden');
+            }
         }
+        
         function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
         async function handleAdminLogin(e) {
@@ -1000,7 +1156,10 @@
 
             if (user === 'admin' && pass === 'pomelero2026') {
                 currentAdminPerms = { inv: true, ord: true, cli: true, app: true, adm: true };
+                currentAdminUser = 'admin';
+                localStorage.setItem('pomelero_admin_profile', JSON.stringify({ user: currentAdminUser, perms: currentAdminPerms }));
                 finishAdminLogin();
+                renderProducts(); // Renderiza de nuevo para mostrar el lapicito de edición
                 return;
             }
 
@@ -1008,7 +1167,10 @@
                 const doc = await db.collection("pomelero_admins").doc(user).get();
                 if (doc.exists && doc.data().password === pass) {
                     currentAdminPerms = doc.data().perms || {};
+                    currentAdminUser = user;
+                    localStorage.setItem('pomelero_admin_profile', JSON.stringify({ user: currentAdminUser, perms: currentAdminPerms }));
                     finishAdminLogin();
+                    renderProducts(); 
                 } else {
                     alert("Usuario o contraseña incorrectos.");
                 }
@@ -1021,6 +1183,7 @@
             document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('adminDashboardView').classList.remove('hidden');
             document.getElementById('adminWhatsappInput').value = whatsappNumber;
+            document.getElementById('adminLogoutBtn').classList.remove('hidden');
             
             applyAdminPerms();
             loadAdminClients();
@@ -1028,6 +1191,16 @@
             if (currentAdminPerms.adm) {
                 loadAdminUsers();
             }
+        }
+        
+        // ---------- NUEVO: CERRAR SESIÓN DE ADMINISTRADOR ----------
+        function logoutAdmin() {
+            localStorage.removeItem('pomelero_admin_profile');
+            currentAdminPerms = null;
+            currentAdminUser = null;
+            closeAdminModal();
+            renderProducts(); 
+            alert("Sesión de administrador cerrada.");
         }
 
         function applyAdminPerms() {
@@ -1192,636 +1365,6 @@
                 await db.collection("pomelero_admins").doc(user).delete();
                 if (editingAdminUserId === user) cancelEditAdmin();
             }
-        }
-
-        function handleExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet);
-                    if (json.length === 0) return alert("El archivo está vacío.");
-
-                    alert("⏳ Subiendo productos a la Nube. Por favor no cierres la página... Te avisaremos cuando termine.");
-
-                    let count = 0;
-                    for (const row of json) {
-                        const name = row.Nombre || row.nombre || row.PRODUCTO || row.Producto || 'Sin Nombre';
-                        const category = row.Categoria || row.categoria || row.CATEGORIA || 'General';
-                        const rawPrice = row.Precio || row.precio || row.PRECIO;
-                        let price = rawPrice;
-                        
-                        if (rawPrice == null || String(rawPrice).trim().toLowerCase() === 'no') price = "NO_DISPONIBLE";
-                        else price = Number(String(rawPrice).replace(/[^0-9.-]+/g,""));
-                        
-                        const sku = String(row.SKU || row.sku || row.Codigo || ('PROD' + count + Math.floor(Math.random()*100)));
-                        
-                        let productData = { name, category, price, sku };
-
-                        let image = row.Imagen || row.imagen || row.IMAGEN || '';
-                        image = String(image).replace('img/', '').replace('IMG/', '').trim();
-
-                        if (image && image !== '[Imagen en nube]') {
-                            productData.image = image;
-                        }
-
-                        await db.collection("pomelero_products").doc(sku).set(productData, { merge: true });
-                        count++;
-                    }
-                    alert(`✅ ¡Completado! Se sincronizaron ${count} productos.`);
-                } catch (err) { alert("Error al leer el archivo Excel."); }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function liveSearchAdminProduct() {
-            const query = document.getElementById('adminProductSearchInput').value.toLowerCase().trim();
-            const resultsBox = document.getElementById('adminLiveSearchResults');
-            const editBox = document.getElementById('adminProductResult');
-            
-            if (!query) {
-                resultsBox.innerHTML = '';
-                resultsBox.classList.add('hidden');
-                editBox.classList.add('hidden');
-                return;
-            }
-
-            const matches = products.filter(p => 
-                (p.sku && p.sku.toLowerCase().includes(query)) || 
-                (p.name && p.name.toLowerCase().includes(query))
-            ).slice(0, 8); 
-
-            if (matches.length > 0) {
-                resultsBox.innerHTML = matches.map(m => `
-                    <div onclick="selectAdminProduct('${m.sku}')" class="p-3 hover:bg-slate-600 cursor-pointer flex justify-between items-center transition">
-                        <span class="text-xs text-slate-100 font-medium line-clamp-1">${m.name}</span>
-                        <span class="text-[10px] text-pomelero-gold font-bold ml-2 shrink-0">${m.sku}</span>
-                    </div>
-                `).join('');
-                resultsBox.classList.remove('hidden');
-            } else {
-                resultsBox.innerHTML = '<div class="p-3 text-xs text-slate-400">No hay coincidencias...</div>';
-                resultsBox.classList.remove('hidden');
-            }
-        }
-
-        function selectAdminProduct(sku) {
-            document.getElementById('adminLiveSearchResults').classList.add('hidden');
-            const found = products.find(p => p.sku === sku);
-            if (!found) return;
-
-            document.getElementById('adminProductSearchInput').value = found.name;
-            const resultBox = document.getElementById('adminProductResult');
-            
-            let imgPreview = '';
-            if (found.image) {
-                imgPreview = `<img src="${found.image}" class="w-16 h-16 object-contain rounded-lg bg-slate-800 border border-slate-700">`;
-            } else {
-                imgPreview = `<div class="w-16 h-16 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 text-center leading-tight">Sin<br>foto</div>`;
-            }
-
-            resultBox.innerHTML = `
-                <div class="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                    <div class="flex items-center gap-3 w-full">
-                        ${imgPreview}
-                        <div class="w-full">
-                            <h4 class="text-sm font-bold text-slate-100 line-clamp-1">${found.name}</h4>
-                            <p class="text-[10px] text-slate-400">SKU: ${found.sku}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-2 space-y-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 block mb-1">Nombre del producto:</label>
-                        <input type="text" id="editProdNameInput" value="${found.name}" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 block mb-1">Precio Mayoreo (deja vacío si no está disponible):</label>
-                        <input type="number" id="editProdPriceInput" value="${found.price === 'NO_DISPONIBLE' ? '' : found.price}" placeholder="Ej: 150.50" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
-                    </div>
-                    <div class="flex gap-2 mt-1">
-                        <button onclick="saveProductDetails('${found.sku}')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow">💾 Guardar Cambios</button>
-                        <button onclick="deleteProduct('${found.sku}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2.5 rounded-xl text-xs transition shadow border border-rose-500/20">🗑️ Borrar Producto</button>
-                    </div>
-                </div>
-
-                <div class="pt-4 mt-2 border-t border-slate-700">
-                    <label class="text-[10px] font-bold text-pomelero-gold block mb-1">Subir nueva imagen (Se guarda en automático al elegirla):</label>
-                    <input type="file" accept="image/*" onchange="uploadSingleImage(event, '${found.sku}')" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-700 file:text-slate-200 cursor-pointer">
-                </div>
-            `;
-            resultBox.classList.remove('hidden');
-        }
-
-        function generateNextSKU() {
-            if (products.length === 0) {
-                document.getElementById('newProdSku').value = 'SKU-1000';
-                return;
-            }
-            
-            let maxNumber = 0;
-            products.forEach(p => {
-                if (p.sku) {
-                    const match = p.sku.match(/\d+/);
-                    if (match) {
-                        const num = parseInt(match[0], 10);
-                        if (num > maxNumber) {
-                            maxNumber = num;
-                        }
-                    }
-                }
-            });
-            
-            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
-            document.getElementById('newProdSku').value = 'SKU-' + nextNumber;
-        }
-
-        async function deleteProduct(sku) {
-            if(!confirm(`¿Estás seguro de eliminar el producto ${sku}? Esto no se puede deshacer.`)) return;
-            try {
-                await db.collection("pomelero_products").doc(sku).delete();
-                alert("✅ Producto eliminado de la nube.");
-                document.getElementById('adminProductSearchInput').value = '';
-                document.getElementById('adminProductResult').classList.add('hidden');
-            } catch (error) {
-                alert("Error al eliminar el producto.");
-            }
-        }
-
-        async function createNewProduct() {
-            const sku = document.getElementById('newProdSku').value.trim();
-            const name = document.getElementById('newProdName').value.trim();
-            const category = document.getElementById('newProdCat').value.trim();
-            const rawPrice = document.getElementById('newProdPrice').value.trim();
-            const imageInput = document.getElementById('newProdImage');
-
-            if (!sku || !name || !category) return alert("SKU, Nombre y Categoría son obligatorios para crear un producto.");
-
-            const existing = products.find(p => p.sku.toLowerCase() === sku.toLowerCase());
-            if (existing) return alert(`Ya existe un producto con el SKU: ${sku}. Por favor elige uno diferente.`);
-
-            let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
-            let productData = { sku, name, category, price };
-
-            try {
-                if (imageInput.files && imageInput.files[0]) {
-                    const file = imageInput.files[0];
-                    if (file.size > 1500000) {
-                        alert("⚠️ La imagen es muy pesada. Intenta con una imagen de menor tamaño (máx 1.5MB).");
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = async function(evt) {
-                        productData.image = evt.target.result;
-                        await db.collection("pomelero_products").doc(sku).set(productData);
-                        alert("✅ Producto y foto guardados correctamente en la nube.");
-                        clearNewProductForm();
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    await db.collection("pomelero_products").doc(sku).set(productData);
-                    alert("✅ Producto guardado correctamente sin imagen.");
-                    clearNewProductForm();
-                }
-            } catch (error) {
-                alert("Error de conexión al crear el producto.");
-            }
-        }
-
-        function clearNewProductForm() {
-            document.getElementById('newProdSku').value = '';
-            document.getElementById('newProdName').value = '';
-            document.getElementById('newProdCat').value = '';
-            document.getElementById('newProdPrice').value = '';
-            document.getElementById('newProdImage').value = '';
-        }
-
-        async function saveProductDetails(sku) {
-            const newName = document.getElementById('editProdNameInput').value.trim();
-            const rawPrice = document.getElementById('editProdPriceInput').value.trim();
-            
-            let newPrice = rawPrice;
-            if (rawPrice === '' || rawPrice.toLowerCase() === 'no') {
-                newPrice = "NO_DISPONIBLE";
-            } else {
-                newPrice = Number(rawPrice);
-            }
-
-            if (!newName) return alert("El nombre no puede estar vacío.");
-
-            try {
-                await db.collection("pomelero_products").doc(sku).update({
-                    name: newName,
-                    price: newPrice
-                });
-                alert("✅ Nombre y precio actualizados correctamente en la nube.");
-                document.getElementById('adminProductSearchInput').value = '';
-                document.getElementById('adminProductResult').classList.add('hidden');
-            } catch (error) {
-                alert("Error al actualizar el producto. Revisa tu conexión.");
-            }
-        }
-
-        function uploadSingleImage(e, sku) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (file.size > 1500000) {
-                alert("⚠️ La imagen es muy pesada. Intenta subir una de menor tamaño para no saturar la base de datos.");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                try {
-                    await db.collection("pomelero_products").doc(sku).update({ image: evt.target.result });
-                    alert("✅ Imagen actualizada correctamente en la nube.");
-                    document.getElementById('adminProductSearchInput').value = '';
-                    document.getElementById('adminProductResult').classList.add('hidden');
-                } catch (error) {
-                    alert("Error al guardar la imagen. Revisa tu conexión.");
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function clearDatabase() {
-            if (!confirm("⚠️ ¿Estás seguro de borrar TODO el catálogo de la nube? Esto no se puede deshacer.")) return;
-            alert("Borrando catálogo... Esto tomará unos segundos.");
-            try {
-                const snapshot = await db.collection("pomelero_products").get();
-                let borrados = 0;
-                for (const doc of snapshot.docs) { await doc.ref.delete(); borrados++; }
-                alert(`✅ ¡Catálogo Vaciado! Se borraron ${borrados} productos.`);
-            } catch (error) { alert("Hubo un error al borrar el catálogo."); }
-        }
-
-        function downloadCatalogExcel() {
-            if(products.length === 0) return alert("No hay productos.");
-            const data = products.map(p => {
-                let imgVal = p.image || "";
-                if (imgVal.startsWith('data:image')) {
-                    imgVal = "[Imagen en nube]";
-                }
-                return {
-                    SKU: p.sku,
-                    Nombre: p.name,
-                    Categoria: p.category,
-                    Precio: p.price === "NO_DISPONIBLE" ? "no" : p.price,
-                    Imagen: imgVal
-                };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Catálogo");
-            XLSX.writeFile(wb, "Catalogo_Pomelero.xlsx");
-        }
-
-        function loadAdminClients() {
-            db.collection("pomelero_users").onSnapshot(snapshot => {
-                if (snapshot.empty) { 
-                    document.getElementById('adminClientsList').innerHTML = `<p class="text-xs text-slate-500">No hay clientes en la nube.</p>`; 
-                    adminClientsData = [];
-                    return; 
-                }
-                adminClientsData = snapshot.docs.map(doc => doc.data());
-                renderAdminClients();
-            });
-        }
-
-        function renderAdminClients() {
-            const list = document.getElementById('adminClientsList');
-            const sortMode = document.getElementById('clientSortSelect').value;
-
-            let processedClients = adminClientsData.map(u => {
-                const orderCount = u.orders ? u.orders.length : 0;
-                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
-                const lastOrder = orderCount > 0 ? u.orders[0] : null; 
-                
-                let category = "⚠️ Inactivo / Malo";
-                let catColor = "text-rose-400 border-rose-500/20 bg-rose-500/10";
-                
-                if (orderCount >= 5 || totalSpent >= 3000) {
-                    category = "⭐ Cliente Bueno";
-                    catColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
-                } else if (orderCount >= 2) {
-                    category = "👍 Cliente Medio";
-                    catColor = "text-blue-400 border-blue-500/20 bg-blue-500/10";
-                } else if (orderCount === 1) {
-                    category = "🆕 Nuevo Cliente";
-                    catColor = "text-amber-400 border-amber-500/20 bg-amber-500/10";
-                }
-
-                return { ...u, orderCount, totalSpent, lastOrder, category, catColor };
-            });
-
-            if (sortMode === 'recent') {
-                processedClients.sort((a, b) => {
-                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
-                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tB - tA; 
-                });
-            } else if (sortMode === 'inactive') {
-                processedClients.sort((a, b) => {
-                    let tA = a.lastOrder ? (a.lastOrder.timestamp || 1) : 0;
-                    let tB = b.lastOrder ? (b.lastOrder.timestamp || 1) : 0;
-                    return tA - tB; 
-                });
-            } else if (sortMode === 'best') {
-                processedClients.sort((a, b) => b.totalSpent - a.totalSpent); 
-            }
-
-            let html = '';
-            processedClients.forEach(u => {
-                let ordersHTML = '';
-                if (u.orderCount > 0) {
-                    ordersHTML = `
-                    <div class="mt-2 pt-2 border-t border-slate-700 space-y-2">
-                        <p class="text-[10px] font-bold text-pomelero-gold">Historial de Pedidos:</p>
-                        <div class="max-h-48 overflow-y-auto pr-1 space-y-2 no-scrollbar">`;
-                    
-                    u.orders.forEach(o => {
-                        const st = o.status || 'Pendiente';
-                        let stClass = "text-amber-400 border-amber-500/20";
-                        if (st === 'En Proceso') stClass = "text-blue-400 border-blue-500/20";
-                        if (st === 'Atendido') stClass = "text-emerald-400 border-emerald-500/20";
-                        if (st === 'Cancelado') stClass = "text-rose-400 border-rose-500/20";
-
-                        const stBadge = `<span class="px-1.5 py-0.5 rounded text-[8px] font-bold border ${stClass} ml-2">${st}</span>`;
-                        
-                        let itemsList = '';
-                        o.items.forEach(i => { itemsList += `<li>${i.qty}x ${i.name}</li>`; });
-
-                        let deleteOrderBtn = currentAdminPerms && currentAdminPerms.cli 
-                            ? `<button onclick="deleteOrder('${u.phone}', '${o.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 py-2 rounded-lg text-[9px] transition border border-rose-500/20 shadow">🗑️ Eliminar</button>` 
-                            : '';
-
-                        ordersHTML += `
-                                <details class="bg-slate-800 rounded-lg border border-slate-700 group overflow-hidden shadow-sm">
-                                    <summary class="p-2 flex justify-between items-center text-[10px] font-bold text-slate-200 cursor-pointer outline-none hover:bg-slate-700/50 transition">
-                                        <div class="flex items-center">
-                                            <span>${o.id}</span>
-                                            ${stBadge}
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-pomelero-gold text-xs">$${o.total.toFixed(2)}</span>
-                                            <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
-                                        </div>
-                                    </summary>
-                                    <div class="p-3 border-t border-slate-700 bg-slate-800/80">
-                                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
-                                            <span class="text-[9px] text-slate-400 font-normal">Fecha: ${o.date}</span>
-                                            <select onchange="updateOrderStatus('${u.phone}', '${o.id}', this.value)" class="bg-slate-900 border border-slate-600 text-[9px] text-slate-200 rounded p-1 outline-none focus:border-pomelero-gold cursor-pointer shadow-inner">
-                                                <option value="Pendiente" ${st==='Pendiente'?'selected':''}>⏳ Pendiente</option>
-                                                <option value="En Proceso" ${st==='En Proceso'?'selected':''}>🔄 En Proceso</option>
-                                                <option value="Atendido" ${st==='Atendido'?'selected':''}>✅ Atendido</option>
-                                                <option value="Cancelado" ${st==='Cancelado'?'selected':''}>❌ Cancelado</option>
-                                            </select>
-                                        </div>
-                                        <ul class="text-[9px] text-slate-300 mb-4 list-disc pl-4 space-y-1">
-                                            ${itemsList}
-                                        </ul>
-                                        <div class="flex gap-2">
-                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'ticket')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">🧾 Ticket</button>
-                                            <button onclick="adminDownloadOrderPDF('${u.phone}', '${o.id}', 'carta')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 rounded-lg text-[9px] transition border border-slate-600 shadow">📄 Carta</button>
-                                            ${deleteOrderBtn}
-                                        </div>
-                                    </div>
-                                </details>
-                            `;
-                    });
-                    
-                    ordersHTML += `
-                        </div>
-                    </div>`;
-                } else {
-                    ordersHTML = `<p class="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-700">Sin pedidos aún.</p>`;
-                }
-
-                let clientActionButtons = '';
-                if (currentAdminPerms && currentAdminPerms.cli) {
-                    clientActionButtons = `
-                        <div class="flex gap-2">
-                            <button onclick="editClient('${u.phone}', '${u.name}', '${u.address || ''}')" class="text-[10px] bg-slate-800 px-2 py-1 rounded border border-slate-700">Editar</button>
-                            <button onclick="deleteClient('${u.phone}')" class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">Borrar</button>
-                        </div>
-                    `;
-                }
-
-                html += `
-                <div class="bg-pomelero-dark p-3 rounded-xl border border-slate-800 flex flex-col space-y-2">
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <h4 class="text-xs font-bold text-slate-100">${u.name}</h4>
-                            <span class="text-[9px] px-1.5 py-0.5 rounded border inline-block mt-1 w-max ${u.catColor}">${u.category}</span>
-                        </div>
-                        ${clientActionButtons}
-                    </div>
-                    <div class="flex justify-between items-center text-[10px]">
-                        <p class="text-slate-400">Tel: ${u.phone} | Dir: ${u.address || 'N/D'}</p>
-                        <p class="text-pomelero-gold font-bold">Gasto: $${u.totalSpent.toFixed(2)}</p>
-                    </div>
-                    ${ordersHTML}
-                </div>`;
-            });
-            
-            list.innerHTML = html;
-        }
-
-        async function downloadClientsExcel() {
-            if (adminClientsData.length === 0) return alert("No hay clientes registrados.");
-            
-            const data = adminClientsData.map(u => {
-                const orderCount = u.orders ? u.orders.length : 0;
-                const totalSpent = u.orders ? u.orders.reduce((sum, o) => sum + o.total, 0) : 0;
-                const lastOrderDate = orderCount > 0 ? u.orders[0].date : 'Nunca';
-
-                let category = "Inactivo / Malo";
-                if (orderCount >= 5 || totalSpent >= 3000) category = "Bueno";
-                else if (orderCount >= 2) category = "Medio";
-                else if (orderCount === 1) category = "Nuevo";
-
-                return { 
-                    Nombre: u.name, 
-                    Telefono: u.phone, 
-                    Direccion: u.address || 'N/D', 
-                    Clasificacion: category,
-                    Total_Gastado: "$" + totalSpent.toFixed(2),
-                    Pedidos_Realizados: orderCount,
-                    Ultimo_Pedido: lastOrderDate,
-                    Contrasena: u.password
-                };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Reporte_Clientes");
-            XLSX.writeFile(wb, "Reporte_Inteligente_Clientes.xlsx");
-        }
-
-        async function adminDownloadOrderPDF(phone, orderId, format) {
-            try {
-                const doc = await db.collection("pomelero_users").doc(phone).get();
-                if(doc.exists) {
-                    const user = doc.data();
-                    const ord = (user.orders || []).find(o => o.id === orderId);
-                    if(ord) {
-                        let styleHtml = '';
-                        let bodyHtml = '';
-
-                        const logoHtml = storeLogo 
-                            ? `<img src="${storeLogo}" style="filter: invert(1) brightness(0); ${format === 'ticket' ? 'max-width: 45mm; margin-bottom: 5px;' : 'max-width: 150px;'}">` 
-                            : `<h2>GRUPO POMELERO</h2>`;
-
-                        const companyInfoHtml = `
-                            <strong>Grupo Pomelero</strong><br>
-                            Blvd. Lic. Anacleto Glez F. Sur 340a<br>
-                            San Miguel, 47660<br>
-                            Tepatitlán de Morelos, Jal.<br>
-                            Tel: 3781165303<br>
-                        `;
-
-                        if (format === 'ticket') {
-                            styleHtml = `
-                                @page { margin: 0; }
-                                body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 10px 5px; color: #000; background: #fff; text-align: center; }
-                                .text-left { text-align: left; }
-                                .divider { border-top: 1px dashed #000; margin: 8px 0; }
-                                .info { font-size: 11px; margin-bottom: 5px; line-height: 1.2; text-align: left; }
-                                table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
-                                th, td { text-align: left; padding: 2px 0; vertical-align: top; }
-                                th { border-bottom: 1px solid #000; padding-bottom: 4px; }
-                                .right { text-align: right; }
-                                .total { font-size: 14px; font-weight: bold; text-align: right; margin-top: 5px; }
-                            `;
-                            bodyHtml = `
-                                ${logoHtml}
-                                <div class="info text-left" style="text-align: center;">${companyInfoHtml}</div>
-                                <div class="divider"></div>
-                                <div class="info">
-                                    <strong>Folio:</strong> ${ord.id}<br>
-                                    <strong>Fecha:</strong> ${ord.date}<br>
-                                    <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
-                                    <strong>Cliente:</strong> ${user.name}<br>
-                                    <strong>Tel:</strong> ${user.phone}<br>
-                                    <strong>Dir:</strong> ${user.address || 'Recoger en tienda'}
-                                </div>
-                                <div class="divider"></div>
-                                <table>
-                                    <thead><tr><th style="width: 15%">Cant</th><th style="width: 55%">Desc</th><th class="right" style="width: 30%">Total</th></tr></thead>
-                                    <tbody>
-                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="divider"></div>
-                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
-                                <div class="divider"></div>
-                                <div style="font-size: 10px; margin-top: 10px;">*** TICKET INTERNO ***</div>
-                            `;
-                        } else {
-                            styleHtml = `
-                                @page { margin: 15mm; }
-                                body { font-family: Arial, sans-serif; font-size: 14px; color: #000; background: #fff; }
-                                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                                .company { text-align: right; font-size: 12px; line-height: 1.4; }
-                                .info { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
-                                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                                th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
-                                th { background-color: #f8fafc; font-weight: bold; border-bottom: 2px solid #000; }
-                                .right { text-align: right; }
-                                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px; }
-                            `;
-                            bodyHtml = `
-                                <div class="header">
-                                    <div>${logoHtml}</div>
-                                    <div class="company">${companyInfoHtml}</div>
-                                </div>
-                                <div class="info">
-                                    <strong>Copia de Pedido (Administrador)</strong><br>
-                                    <strong>Folio:</strong> ${ord.id} | <strong>Fecha:</strong> ${ord.date} | <strong>Estado:</strong> ${ord.status || 'Pendiente'}<br>
-                                    <strong>Cliente:</strong> ${user.name} | <strong>Teléfono:</strong> ${user.phone}<br>
-                                    <strong>Dirección:</strong> ${user.address || 'Recoger en tienda'}
-                                </div>
-                                <table>
-                                    <thead><tr><th>Cant</th><th>Descripción</th><th>Precio Unitario</th><th class="right">Subtotal</th></tr></thead>
-                                    <tbody>
-                                        ${ord.items.map(i => `<tr><td>${i.qty}</td><td>${i.name}</td><td>$${i.price.toFixed(2)}</td><td class="right">$${(i.price * i.qty).toFixed(2)}</td></tr>`).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="total">TOTAL: $${ord.total.toFixed(2)}</div>
-                            `;
-                        }
-
-                        const printWindow = window.open('', '_blank');
-                        printWindow.document.write(`<html><head><title>Admin_Pedido_${ord.id}</title><style>${styleHtml}</style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
-                        printWindow.document.close();
-                    }
-                }
-            } catch(e) {
-                alert("Error al descargar el ticket.");
-            }
-        }
-
-        async function deleteOrder(phone, orderId) {
-            if(!confirm("¿Seguro que deseas eliminar permanentemente este pedido? El cliente ya no podrá verlo.")) return;
-            try {
-                const userRef = db.collection("pomelero_users").doc(phone);
-                const doc = await userRef.get();
-                if(doc.exists) {
-                    let ordersArray = doc.data().orders || [];
-                    ordersArray = ordersArray.filter(o => o.id !== orderId);
-                    await userRef.update({ orders: ordersArray });
-                    alert("Pedido eliminado correctamente.");
-                }
-            } catch (error) {
-                alert("Hubo un error al eliminar el pedido.");
-            }
-        }
-
-        async function editClient(phone, currentName, currentAddress) {
-            const newName = prompt("Modificar Nombre del cliente:", currentName) || currentName;
-            const newAddr = prompt("Modificar Dirección del cliente:", currentAddress !== 'Sin dirección' ? currentAddress : '') || currentAddress;
-            const newPass = prompt("Modificar Contraseña (deja en blanco para mantener la actual):");
-
-            let updates = { name: newName, address: newAddr !== 'Sin dirección' ? newAddr : '' };
-            if(newPass && newPass.trim() !== "") { updates.password = newPass.trim(); }
-
-            await db.collection("pomelero_users").doc(phone).update(updates);
-            alert("Información del cliente actualizada.");
-        }
-
-        async function deleteClient(phone) {
-            if(confirm("¿Seguro que deseas eliminar este cliente? Perderá todos sus pedidos.")) {
-                await db.collection("pomelero_users").doc(phone).delete();
-            }
-        }
-
-        function saveWhatsappNumber() {
-            const val = document.getElementById('adminWhatsappInput').value.trim();
-            if(val) {
-                db.collection("config").doc("global").set({ whatsapp: val }, { merge: true });
-                alert("Número sincronizado en la nube.");
-            }
-        }
-
-        function handleLogoUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                await db.collection("config").doc("global").set({ logo: evt.target.result }, { merge: true });
-                alert("Logotipo guardado en la nube.");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function setTheme(themeName) {
-            db.collection("config").doc("global").set({ theme: themeName }, { merge: true });
-            alert("Tema sincronizado en la nube.");
         }
     </script>
 </body>
