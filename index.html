@@ -263,6 +263,8 @@
                 <div>
                     <label class="text-[10px] text-slate-400 font-bold block mb-1">Categoría</label>
                     <input type="text" id="editModalCat" list="existingCatsModal" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-pomelero-gold shadow-inner">
+                    <!-- DATALIST PARA MODAL -->
+                    <datalist id="existingCatsModal"></datalist>
                 </div>
                 <div>
                     <label class="text-[10px] text-slate-400 font-bold block mb-1">Precio Mayoreo (Vacío = No disponible)</label>
@@ -352,8 +354,10 @@
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 
+                                <!-- DATALIST RESTAURADO -->
                                 <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                
+                                <datalist id="existingCats"></datalist>
+
                                 <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="pt-2">
@@ -607,7 +611,7 @@
                     const matchesCat = currentCategory === 'TODOS' || cat === currentCategory;
                     
                     const safeName = (p.name || '').toLowerCase();
-                    const safeSku = String(p.sku || '').toLowerCase(); // BLINDAJE: String() evita error
+                    const safeSku = String(p.sku || '').toLowerCase(); 
                     const matchesQuery = safeName.includes(query) || safeSku.includes(query);
                     
                     return matchesCat && matchesQuery;
@@ -695,7 +699,7 @@
         }
 
         function openEditProductModal(sku) {
-            const p = products.find(x => x.sku === sku);
+            const p = products.find(x => String(x.sku) === String(sku));
             if(!p) return;
             
             originalEditSku = p.sku;
@@ -725,7 +729,6 @@
             pendingModalImage = null;
         }
 
-        // ---------- BLINDAJE: Generar Código (Evita error si SKU es un número puro) ----------
         function generateNextSKUForEditModal() {
             if (products.length === 0) {
                 document.getElementById('editModalSku').value = 'SKU-1000';
@@ -794,7 +797,7 @@
             let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
             let productData = { sku: newSku, name, category: cat, price };
             
-            const oldProd = products.find(p => p.sku === originalEditSku);
+            const oldProd = products.find(p => String(p.sku) === String(originalEditSku));
             
             if (pendingModalImage) {
                 productData.image = pendingModalImage;
@@ -838,7 +841,7 @@
             let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
             let productData = { sku: newSku, name, category: cat, price };
             
-            const oldProd = products.find(p => p.sku === originalEditSku);
+            const oldProd = products.find(p => String(p.sku) === String(originalEditSku));
             
             if (pendingModalImage) {
                 productData.image = pendingModalImage;
@@ -877,7 +880,7 @@
         }
 
         function addToCartWithQty(sku) {
-            const prod = products.find(p => p.sku === sku);
+            const prod = products.find(p => String(p.sku) === String(sku));
             if (!prod) return;
             
             let qtyToAdd = 1;
@@ -888,7 +891,7 @@
                 qtyInput.value = 1; 
             }
 
-            const existing = cart.find(item => item.sku === sku);
+            const existing = cart.find(item => String(item.sku) === String(sku));
             if (existing) existing.qty += qtyToAdd;
             else cart.push({ ...prod, qty: qtyToAdd });
             
@@ -897,10 +900,10 @@
         }
 
         function changeQty(sku, delta) {
-            const item = cart.find(i => i.sku === sku);
+            const item = cart.find(i => String(i.sku) === String(sku));
             if (item) {
                 item.qty += delta;
-                if (item.qty <= 0) cart = cart.filter(i => i.sku !== sku);
+                if (item.qty <= 0) cart = cart.filter(i => String(i.sku) !== String(sku));
             }
             updateCartBadge();
             renderCartItems();
@@ -908,10 +911,10 @@
 
         function setQty(sku, val) {
             const qty = parseInt(val);
-            const item = cart.find(i => i.sku === sku);
+            const item = cart.find(i => String(i.sku) === String(sku));
             if (item) {
                 if (isNaN(qty) || qty <= 0) {
-                    cart = cart.filter(i => i.sku !== sku);
+                    cart = cart.filter(i => String(i.sku) !== String(sku));
                 } else {
                     item.qty = qty;
                 }
@@ -1345,7 +1348,6 @@
             }
         }
 
-        // ---------- LÓGICA DE USUARIOS ADMIN (BLINDADA) ----------
         function loadAdminUsers() {
             const list = document.getElementById('adminUsersList');
             if(!list) return;
