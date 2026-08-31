@@ -352,10 +352,8 @@
                                 </div>
                                 <input type="text" id="newProdName" placeholder="Nombre del producto" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                                 
-                                <!-- DATALIST RESTAURADO -->
                                 <input type="text" id="newProdCat" list="existingCats" placeholder="Categoría (Elige o escribe nueva)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
-                                <datalist id="existingCats"></datalist>
-
+                                
                                 <input type="number" id="newProdPrice" placeholder="Precio (Vacío si no hay)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pomelero-gold">
                             </div>
                             <div class="pt-2">
@@ -609,7 +607,7 @@
                     const matchesCat = currentCategory === 'TODOS' || cat === currentCategory;
                     
                     const safeName = (p.name || '').toLowerCase();
-                    const safeSku = (p.sku || '').toLowerCase();
+                    const safeSku = String(p.sku || '').toLowerCase(); // BLINDAJE: String() evita error
                     const matchesQuery = safeName.includes(query) || safeSku.includes(query);
                     
                     return matchesCat && matchesQuery;
@@ -727,6 +725,7 @@
             pendingModalImage = null;
         }
 
+        // ---------- BLINDAJE: Generar Código (Evita error si SKU es un número puro) ----------
         function generateNextSKUForEditModal() {
             if (products.length === 0) {
                 document.getElementById('editModalSku').value = 'SKU-1000';
@@ -735,7 +734,7 @@
             let maxNumber = 0;
             products.forEach(p => {
                 if (p.sku) {
-                    const match = p.sku.match(/\d+/);
+                    const match = String(p.sku).match(/\d+/);
                     if (match) {
                         const num = parseInt(match[0], 10);
                         if (num > maxNumber) maxNumber = num;
@@ -744,6 +743,25 @@
             });
             const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
             document.getElementById('editModalSku').value = 'SKU-' + nextNumber;
+        }
+
+        function generateNextSKU() {
+            if (products.length === 0) {
+                document.getElementById('newProdSku').value = 'SKU-1000';
+                return;
+            }
+            let maxNumber = 0;
+            products.forEach(p => {
+                if (p.sku) {
+                    const match = String(p.sku).match(/\d+/);
+                    if (match) {
+                        const num = parseInt(match[0], 10);
+                        if (num > maxNumber) maxNumber = num;
+                    }
+                }
+            });
+            const nextNumber = maxNumber > 0 ? maxNumber + 1 : 1000;
+            document.getElementById('newProdSku').value = 'SKU-' + nextNumber;
         }
 
         function uploadImageFromModal(e) {
@@ -786,7 +804,7 @@
 
             try {
                 if (newSku !== originalEditSku) {
-                    const existing = products.find(p => p.sku.toLowerCase() === newSku.toLowerCase());
+                    const existing = products.find(p => String(p.sku).toLowerCase() === newSku.toLowerCase());
                     if (existing) return alert(`El código ${newSku} ya existe en otro producto.`);
 
                     await db.collection("pomelero_products").doc(newSku).set(productData);
@@ -814,7 +832,7 @@
             
             if (newSku === originalEditSku) return alert("Para duplicar, primero debes Generar o escribir un SKU diferente al original.");
 
-            const existing = products.find(p => p.sku.toLowerCase() === newSku.toLowerCase());
+            const existing = products.find(p => String(p.sku).toLowerCase() === newSku.toLowerCase());
             if (existing) return alert(`El código ${newSku} ya existe. Genera otro.`);
 
             let price = rawPrice === '' ? "NO_DISPONIBLE" : Number(rawPrice);
@@ -1455,7 +1473,7 @@
                 }
                 alert("Usuario actualizado exitosamente.");
                 cancelEditAdmin();
-                loadAdminUsers();
+                loadAdminUsers(); 
             } else {
                 const doc = await db.collection("pomelero_admins").doc(newUserStr).get();
                 if (doc.exists) {
@@ -1464,7 +1482,7 @@
                 await db.collection("pomelero_admins").doc(newUserStr).set({ password: pass, perms });
                 alert("Usuario creado exitosamente.");
                 cancelEditAdmin();
-                loadAdminUsers();
+                loadAdminUsers(); 
             }
         }
 
@@ -1472,7 +1490,7 @@
             if(confirm(`¿Seguro que deseas eliminar el acceso al usuario "${user}"?`)) {
                 await db.collection("pomelero_admins").doc(user).delete();
                 if (editingAdminUserId === user) cancelEditAdmin();
-                loadAdminUsers();
+                loadAdminUsers(); 
             }
         }
 
